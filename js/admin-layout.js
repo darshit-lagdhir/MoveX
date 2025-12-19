@@ -1,0 +1,255 @@
+/**
+ * ADMIN LAYOUT MANAGER (SPA Version)
+ * Handles Sidebar, Header, and Partial Navigation for all Admin Pages.
+ */
+
+(function () {
+    'use strict';
+
+    // Track state to avoid double loading
+    let isLayoutInitialized = false;
+
+    async function fetchPartial(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Failed to fetch ${url}`);
+            return await response.text();
+        } catch (err) {
+            console.error(err);
+            return '';
+        }
+    }
+
+    async function initAdminLayout() {
+        const layout = document.querySelector('.admin-layout');
+        if (!layout || isLayoutInitialized) return;
+
+        // 1. Fetch and Inject Sidebar if not present
+        if (!document.getElementById('sidebar')) {
+            const sidebarHTML = await fetchPartial('/partials/admin-sidebar.html');
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = sidebarHTML;
+            const sidebar = tempDiv.firstElementChild;
+            layout.insertBefore(sidebar, layout.firstChild);
+        }
+
+        // 2. Wrap main content if needed and inject header
+        let mainContent = document.querySelector('.main-content');
+        if (!mainContent) {
+            mainContent = document.createElement('div');
+            mainContent.className = 'main-content';
+            const existingMain = layout.querySelector('main');
+            if (existingMain) {
+                layout.appendChild(mainContent);
+                mainContent.appendChild(existingMain);
+            }
+        }
+
+        if (!document.querySelector('.top-nav')) {
+            const headerHTML = await fetchPartial('/partials/admin-header.html');
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = headerHTML;
+            const header = tempDiv.firstElementChild;
+            mainContent.insertBefore(header, mainContent.firstChild);
+        }
+
+        isLayoutInitialized = true;
+
+        setupEventListeners();
+        updateActiveState();
+        initTheme();
+        updateUserInfo();
+
+        // Initialize functionality for the current page
+        const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
+        await ensureCoreLoaded();
+        if (window.MoveXAdmin) {
+            window.MoveXAdmin.init(currentPage);
+        }
+    }
+
+    async function ensureCoreLoaded() {
+        if (window.MoveXAdmin) return;
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = '/js/admin-core.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    function setupEventListeners() {
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        toggleBtn?.addEventListener('click', () => {
+            sidebar?.classList.toggle('collapsed');
+        });
+
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            const href = link.getAttribute('href');
+            if (href && (href.endsWith('.html') || !href.includes('.'))) {
+                // If the link is within the admin folder or is a relative link we want to intercept
+                const isInternal = !href.startsWith('http') && !href.startsWith('//') && !href.startsWith('/') || href.startsWith('/admin/');
+                if (isInternal && href.endsWith('.html')) {
+                    e.preventDefault();
+                    navigateTo(href);
+                }
+            }
+        });
+
+        window.addEventListener('popstate', (e) => {
+            const path = window.location.pathname.split('/').pop() || 'dashboard.html';
+            loadPageContent(path, false);
+        });
+    }
+
+    async function navigateTo(url) {
+        if (window.location.pathname.endsWith(url)) return;
+        history.pushState(null, '', url);
+        await loadPageContent(url, true);
+    }
+
+    async function loadPageContent(url, shouldHighlight = true) {
+        try {
+            const main = document.querySelector('main');
+            if (main) {
+                // Initial fade out
+                main.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                main.style.opacity = '0';
+                main.style.transform = 'translateY(10px)';
+            }
+
+            // Create and show progress bar
+            let progressBar = document.getElementById('navProgressBar');
+            if (!progressBar) {
+                progressBar = document.createElement('div');
+                progressBar.id = 'navProgressBar';
+                progressBar.style.cssText = 'position:fixed; top:0; left:0; height:3px; background:var(--brand-primary); z-index:10001; transition: width 0.3s ease; width:0; box-shadow: 0 0 10px var(--brand-primary-glow);';
+                document.body.appendChild(progressBar);
+            }
+            progressBar.style.width = '30%';
+
+            const response = await fetch(url);
+            progressBar.style.width = '70%';
+
+            if (!response.ok) throw new Error('Page not found');
+            const html = await response.text();
+            progressBar.style.width = '100%';
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newMain = doc.querySelector('main');
+
+            if (newMain && main) {
+                setTimeout(() => {
+                    main.innerHTML = newMain.innerHTML;
+                    document.title = doc.title || 'MoveX Admin';
+
+                    // Reset and show
+                    main.style.opacity = '1';
+                    main.style.transform = 'translateY(0)';
+
+                    updateActiveState();
+
+                    // Hide progress bar
+                    setTimeout(() => {
+                        progressBar.style.opacity = '0';
+                        setTimeout(() => {
+                            progressBar.style.width = '0';
+                            progressBar.style.opacity = '1';
+                        }, 300);
+                    }, 200);
+
+                    // Initialize functionality for the new content
+                    const pageName = url.split('/').pop();
+                    if (window.MoveXAdmin) {
+                        window.MoveXAdmin.init(pageName);
+                    }
+                }, 200); // Small delay for visual comfort
+            } else {
+                window.location.href = url;
+            }
+        } catch (err) {
+            console.error('Navigation error:', err);
+            window.location.href = url;
+        }
+    }
+
+    function updateActiveState() {
+        const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
+        const navItems = document.querySelectorAll('.nav-item');
+        const headerTitle = document.getElementById('headerTitle');
+
+        navItems.forEach(item => {
+            const href = item.getAttribute('href');
+            if (href === currentPage) {
+                item.classList.add('active');
+                if (headerTitle) {
+                    headerTitle.textContent = item.querySelector('span')?.textContent || '';
+                    headerTitle.style.display = 'block';
+                }
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+
+    function initTheme() {
+        const themeBtn = document.getElementById('themeToggle');
+        if (!themeBtn) return;
+
+        const sunIcon = themeBtn.querySelector('.sun-icon');
+        const moonIcon = themeBtn.querySelector('.moon-icon');
+        const html = document.documentElement;
+
+        const applyTheme = (isDark) => {
+            if (isDark) {
+                html.setAttribute('data-theme', 'dark');
+                if (sunIcon) sunIcon.style.display = 'block';
+                if (moonIcon) moonIcon.style.display = 'none';
+            } else {
+                html.removeAttribute('data-theme');
+                if (sunIcon) sunIcon.style.display = 'none';
+                if (moonIcon) moonIcon.style.display = 'block';
+            }
+        };
+
+        const savedTheme = localStorage.getItem('movex-theme') === 'dark';
+        applyTheme(savedTheme);
+
+        themeBtn.onclick = null;
+        themeBtn.addEventListener('click', () => {
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            const newTheme = !isDark;
+            applyTheme(newTheme);
+            localStorage.setItem('movex-theme', newTheme ? 'dark' : 'light');
+        });
+    }
+
+    function updateUserInfo() {
+        const update = () => {
+            if (window.MoveXUser) {
+                const nameEl = document.getElementById('topBarUserName');
+                const roleEl = document.getElementById('topBarRole');
+                if (nameEl) nameEl.textContent = window.MoveXUser.full_name || window.MoveXUser.email;
+                if (roleEl) roleEl.textContent = (window.MoveXUser.role || '').toUpperCase();
+            } else {
+                setTimeout(update, 500);
+            }
+        };
+        update();
+    }
+
+    document.addEventListener('movex:authenticated', updateUserInfo);
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAdminLayout);
+    } else {
+        initAdminLayout();
+    }
+
+})();

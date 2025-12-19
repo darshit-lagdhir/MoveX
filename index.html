@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoveX - Next Generation Logistics Platform</title>
+
+    <link rel="stylesheet" href="styles/base.css?v=3">
+    <link rel="stylesheet" href="styles/components.css?v=3">
+    <link rel="stylesheet" href="styles/animations.css?v=3">
+
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            /* Prevent default scrolling */
+            height: 100%;
+        }
+
+        main.container {
+            /* Remove min-height to prevent forcing scrollbar */
+        }
+    </style>
+
+<body>
+
+    <!-- Particle Canvas Background -->
+    <canvas id="particleCanvas" class="particle-canvas"></canvas>
+
+    <!-- Animated Background -->
+    <div class="background">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="gradient-overlay"></div>
+        <div class="mesh-gradient"></div>
+    </div>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+        <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+    </button>
+
+
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Card Flip Container -->
+        <div class="login-card-wrapper" id="cardWrapper">
+            <div class="card-flip-container">
+                <div class="card-flipper" id="cardFlipper">
+
+                    <!-- FRONT SIDE - CONTAINS VERTICAL FLIPPER -->
+                    <div class="card-face card-front">
+                        <div class="vertical-flipper" id="verticalFlipper">
+
+                            <!-- VERTICAL FRONT: LOGIN -->
+                            <div class="vertical-face vertical-front">
+                                <div class="login-card" id="loginCard">
+                                    <div class="card-shine"></div>
+                                    <div class="brand-header">
+                                        <div class="logo">
+                                            <h1 class="logo-text">MoveX</h1>
+                                        </div>
+                                        <p class="tagline">Next-Gen Logistics Management</p>
+                                    </div>
+                                    <div class="welcome-section" id="loginWelcome">
+                                        <h2 class="welcome-title">Welcome back</h2>
+                                        <p class="welcome-subtitle">Sign in to access your dashboard</p>
+                                    </div>
+
+                                    <form class="login-form" id="loginForm" novalidate>
+                                        <div class="input-group" style="margin-bottom:14px;">
+                                            <div class="modern-input">
+                                                <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24"
+                                                    fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                                    <circle cx="12" cy="7" r="4" />
+                                                </svg>
+                                                <input type="text" id="login-username" class="input-field"
+                                                    placeholder="Enter your username">
+                                                <label for="login-username" class="floating-label">Username</label>
+                                            </div>
+                                        </div>
+                                        <div class="input-group" style="margin-bottom:18px;">
+                                            <div class="modern-input">
+                                                <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24"
+                                                    fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                                </svg>
+                                                <input type="password" id="login-password" class="input-field"
+                                                    placeholder="Enter your password">
+                                                <label for="login-password" class="floating-label">Password</label>
+                                                <button type="button" class="password-toggle"
+                                                    data-target="login-password">
+                                                    <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24"
+                                                        fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                                        <circle cx="12" cy="12" r="3" />
+                                                    </svg>
+                                                    <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24"
+                                                        fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path
+                                                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                                        <line x1="1" y1="1" x2="23" y2="23" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Role Selection -->
+                                        <div class="input-group" style="margin-bottom:12px;">
+                                            <label class="section-label">Select Your Role</label>
+                                            <div class="role-selector">
+                                                <input type="radio" id="loginRoleAdmin" name="login-role" value="admin"
+                                                    class="role-input">
+                                                <label for="loginRoleAdmin" class="role-card">
+                                                    <div class="role-icon"><svg width="20" height="20"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2">
+                                                            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                                            <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+                                                        </svg></div><span class="role-name">Admin</span>
+                                                </label>
+                                                <input type="radio" id="loginRoleFranchisee" name="login-role"
+                                                    value="franchisee" class="role-input">
+                                                <label for="loginRoleFranchisee" class="role-card">
+                                                    <div class="role-icon"><svg width="20" height="20"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2">
+                                                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                                                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                                                        </svg></div><span class="role-name">Franchisee</span>
+                                                </label>
+                                                <input type="radio" id="loginRoleStaff" name="login-role" value="staff"
+                                                    class="role-input">
+                                                <label for="loginRoleStaff" class="role-card">
+                                                    <div class="role-icon"><svg width="20" height="20"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2">
+                                                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                                            <circle cx="9" cy="7" r="4" />
+                                                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                                        </svg></div><span class="role-name">Staff</span>
+                                                </label>
+                                                <input type="radio" id="loginRoleUser" name="login-role" value="user"
+                                                    class="role-input">
+                                                <label for="loginRoleUser" class="role-card">
+                                                    <div class="role-icon"><svg width="20" height="20"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2">
+                                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                                            <circle cx="12" cy="7" r="4" />
+                                                        </svg></div><span class="role-name">User</span>
+                                                </label>
+                                                <input type="radio" id="loginRoleCustomer" name="login-role"
+                                                    value="customer" class="role-input">
+                                                <label for="loginRoleCustomer" class="role-card">
+                                                    <div class="role-icon"><svg width="20" height="20"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="2">
+                                                            <circle cx="9" cy="21" r="1" />
+                                                            <circle cx="20" cy="21" r="1" />
+                                                            <path
+                                                                d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                                        </svg></div><span class="role-name">Customer</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <button type="submit" class="btn-login magnetic-btn" id="loginBtn"
+                                            style="margin-top:6px;">
+                                            <span class="btn-content"><span class="btn-text">Sign In</span><svg
+                                                    class="btn-icon" width="20" height="20" viewBox="0 0 24 24"
+                                                    fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                                </svg></span>
+                                            <span class="btn-loader"><svg class="spinner" width="24" height="24"
+                                                    viewBox="0 0 24 24">
+                                                    <circle cx="12" cy="12" r="10" stroke="currentColor"
+                                                        stroke-width="3" fill="none" opacity="0.25" />
+                                                    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor"
+                                                        stroke-width="3" fill="none" stroke-linecap="round" />
+                                                </svg></span>
+                                            <div class="btn-ripple"></div>
+                                        </button>
+
+                                        <div class="form-footer"><span>Don't have an account?</span><a href="#"
+                                                class="footer-link" id="show-register">Register Here</a></div>
+                                        <div class="form-footer" style="margin-top:8px;"><a href="#" class="footer-link"
+                                                id="show-forgot">Forgot password?</a></div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- VERTICAL BACK: FORGOT PASSWORD -->
+                            <div class="vertical-face vertical-back">
+                                <div class="login-card" id="forgotCard">
+                                    <div class="card-shine"></div>
+                                    <div class="brand-header">
+                                        <div class="logo">
+                                            <h1 class="logo-text">MoveX</h1>
+                                        </div>
+                                        <p class="tagline">Account Recovery</p>
+                                    </div>
+                                    <div class="welcome-section" id="forgotWelcome">
+                                        <h2 class="welcome-title">Recover Account</h2>
+                                        <p class="welcome-subtitle">Verify identity to reset password</p>
+                                    </div>
+
+                                    <form class="login-form" id="forgotForm" novalidate style="margin-top:12px;">
+                                        <div class="input-group">
+                                            <div class="modern-input">
+                                                <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24"
+                                                    fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M4 4h16v16H4z" />
+                                                    <polyline points="22,6 12,13 2,6" />
+                                                </svg>
+                                                <input type="text" id="forgot-username" class="input-field"
+                                                    placeholder="Enter your username" required>
+                                                <label for="forgot-username" class="floating-label">Username</label>
+                                            </div>
+                                        </div>
+
+                                        <div id="forgot-security-questions" style="display:none;">
+                                            <p class="section-subtitle"
+                                                style="text-align:center; margin-bottom:12px; font-size:0.9em; opacity:0.8;">
+                                                Answer your security questions</p>
+                                            <div class="input-group" style="margin-bottom:12px;">
+                                                <label class="section-label"
+                                                    style="font-size:0.85em; margin-bottom:4px; display:block;">Q1: What
+                                                    is your childhood nickname?</label>
+                                                <div class="modern-input"><input type="text" id="forgot-a1"
+                                                        class="input-field" placeholder="Answer 1"></div>
+                                            </div>
+                                            <div class="input-group" style="margin-bottom:12px;">
+                                                <label class="section-label"
+                                                    style="font-size:0.85em; margin-bottom:4px; display:block;">Q2: What
+                                                    is the name of your favorite pet?</label>
+                                                <div class="modern-input"><input type="text" id="forgot-a2"
+                                                        class="input-field" placeholder="Answer 2"></div>
+                                            </div>
+                                            <div class="input-group" style="margin-bottom:12px;">
+                                                <label class="section-label"
+                                                    style="font-size:0.85em; margin-bottom:4px; display:block;">Q3: In
+                                                    what city were you born?</label>
+                                                <div class="modern-input"><input type="text" id="forgot-a3"
+                                                        class="input-field" placeholder="Answer 3"></div>
+                                            </div>
+                                        </div>
+
+                                        <button type="button" class="btn-login magnetic-btn" id="forgotNextBtn">
+                                            <span class="btn-content"><span class="btn-text">Next</span></span>
+                                            <div class="btn-ripple"></div>
+                                        </button>
+                                        <button type="submit" class="btn-login magnetic-btn" id="forgotBtn"
+                                            style="display:none;">
+                                            <span class="btn-content"><span class="btn-text">Verify &
+                                                    Reset</span></span>
+                                            <span class="btn-loader"><svg class="spinner" width="24" height="24"
+                                                    viewBox="0 0 24 24">
+                                                    <circle cx="12" cy="12" r="10" stroke="currentColor"
+                                                        stroke-width="3" fill="none" opacity="0.25" />
+                                                    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor"
+                                                        stroke-width="3" fill="none" stroke-linecap="round" />
+                                                </svg></span>
+                                            <div class="btn-ripple"></div>
+                                        </button>
+                                        <div class="form-footer" style="margin-top:8px;"><a href="#" class="footer-link"
+                                                id="back-to-login">Back to login</a></div>
+                                    </form>
+
+                                    <!-- Reset Password Panel (hidden by default) -->
+                                    <form class="login-form" id="resetForm" novalidate
+                                        style="display:none; margin-top:12px;">
+                                        <div class="input-group">
+                                            <div class="modern-input">
+                                                <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24"
+                                                    fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M4 4h16v16H4z" />
+                                                    <polyline points="22,6 12,13 2,6" />
+                                                </svg>
+                                                <input type="text" id="reset-token" class="input-field"
+                                                    placeholder="Reset token">
+                                                <label for="reset-token" class="floating-label">Reset token</label>
+                                            </div>
+                                        </div>
+                                        <div class="input-group">
+                                            <div class="modern-input">
+                                                <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24"
+                                                    fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                                </svg>
+                                                <input type="password" id="reset-password" class="input-field"
+                                                    placeholder="New password">
+                                                <label for="reset-password" class="floating-label">New password</label>
+                                                <button type="button" class="password-toggle"
+                                                    data-target="reset-password">
+                                                    <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24"
+                                                        fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                                        <circle cx="12" cy="12" r="3" />
+                                                    </svg>
+                                                    <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24"
+                                                        fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path
+                                                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                                        <line x1="1" y1="1" x2="23" y2="23" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn-login magnetic-btn" id="resetBtn">
+                                            <span class="btn-content"><span class="btn-text">Reset
+                                                    Password</span></span>
+                                            <span class="btn-loader"><svg class="spinner" width="24" height="24"
+                                                    viewBox="0 0 24 24">
+                                                    <circle cx="12" cy="12" r="10" stroke="currentColor"
+                                                        stroke-width="3" fill="none" opacity="0.25" />
+                                                    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor"
+                                                        stroke-width="3" fill="none" stroke-linecap="round" />
+                                                </svg></span>
+                                            <div class="btn-ripple"></div>
+                                        </button>
+                                        <div class="form-footer" style="margin-top:8px;"><a href="#" class="footer-link"
+                                                id="back-to-login-2">Back to login</a></div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BACK SIDE - REGISTRATION CARD -->
+                    <div class="card-face card-back">
+                        <div class="login-card" id="registerCard">
+                            <!-- Shine Effect Overlay -->
+                            <div class="card-shine"></div>
+
+                            <!-- Brand Header -->
+                            <div class="brand-header">
+                                <div class="logo">
+                                    <h1 class="logo-text">MoveX</h1>
+                                </div>
+                                <p class="tagline">Next-Gen Logistics Management</p>
+                            </div>
+
+                            <!-- Welcome Section -->
+                            <div class="welcome-section">
+                                <h2 class="welcome-title">Create Account</h2>
+                                <p class="welcome-subtitle">Register to get started with MoveX</p>
+                            </div>
+
+                            <!-- Registration Form -->
+                            <form class="login-form" id="registerForm" novalidate>
+                                <!-- Username Input -->
+                                <div class="input-group">
+                                    <div class="modern-input">
+                                        <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                            <circle cx="12" cy="7" r="4" />
+                                        </svg>
+                                        <input type="text" id="register-username" class="input-field"
+                                            placeholder="Choose a username">
+                                        <label for="register-username" class="floating-label">Username</label>
+                                    </div>
+                                </div>
+
+                                <!-- Password Input -->
+                                <div class="input-group">
+                                    <div class="modern-input">
+                                        <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                        </svg>
+                                        <input type="password" id="register-password" class="input-field"
+                                            placeholder="Create a password">
+                                        <label for="register-password" class="floating-label">Password</label>
+                                        <button type="button" class="password-toggle" data-target="register-password">
+                                            <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                                <circle cx="12" cy="12" r="3" />
+                                            </svg>
+                                            <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24"
+                                                fill="none" stroke="currentColor" stroke-width="2">
+                                                <path
+                                                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                                <line x1="1" y1="1" x2="23" y2="23" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Confirm Password Input -->
+                                <div class="input-group">
+                                    <div class="modern-input">
+                                        <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                        </svg>
+                                        <input type="password" id="register-confirm-password" class="input-field"
+                                            placeholder="Re-enter your password">
+                                        <label for="register-confirm-password" class="floating-label">Confirm
+                                            Password</label>
+                                        <button type="button" class="password-toggle"
+                                            data-target="register-confirm-password">
+                                            <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                                <circle cx="12" cy="12" r="3" />
+                                            </svg>
+                                            <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24"
+                                                fill="none" stroke="currentColor" stroke-width="2">
+                                                <path
+                                                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                                <line x1="1" y1="1" x2="23" y2="23" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Security Questions -->
+                                <div class="input-group" style="margin-top:20px;">
+                                    <label class="section-label"
+                                        style="margin-bottom:8px; display:block; font-weight:600;">Security Questions
+                                        (Required)</label>
+
+                                    <!-- Q1 -->
+                                    <div class="security-q-block" style="margin-bottom:12px;">
+                                        <p class="security-q-text"
+                                            style="font-size:0.9em; margin-bottom:4px; opacity:0.9;">1. What is your
+                                            childhood nickname?</p>
+                                        <div class="modern-input">
+                                            <input type="text" id="reg-q1" class="input-field"
+                                                placeholder="Enter answer here">
+                                        </div>
+                                    </div>
+
+                                    <!-- Q2 -->
+                                    <div class="security-q-block" style="margin-bottom:12px;">
+                                        <p class="security-q-text"
+                                            style="font-size:0.9em; margin-bottom:4px; opacity:0.9;">2. What is the name
+                                            of your favorite pet?</p>
+                                        <div class="modern-input">
+                                            <input type="text" id="reg-q2" class="input-field"
+                                                placeholder="Enter answer here">
+                                        </div>
+                                    </div>
+
+                                    <!-- Q3 -->
+                                    <div class="security-q-block" style="margin-bottom:12px;">
+                                        <p class="security-q-text"
+                                            style="font-size:0.9em; margin-bottom:4px; opacity:0.9;">3. In what city
+                                            were you born?</p>
+                                        <div class="modern-input">
+                                            <input type="text" id="reg-q3" class="input-field"
+                                                placeholder="Enter answer here">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Role Selection (User & Customer only) -->
+                                <div class="input-group">
+                                    <label class="section-label">Select Your Role</label>
+                                    <div class="role-selector">
+                                        <input type="radio" id="registerRoleUser" name="register-role" value="user"
+                                            class="role-input" checked>
+                                        <label for="registerRoleUser" class="role-card">
+                                            <div class="role-icon">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                                    <circle cx="12" cy="7" r="4" />
+                                                </svg>
+                                            </div>
+                                            <span class="role-name">User</span>
+                                        </label>
+
+                                        <input type="radio" id="registerRoleCustomer" name="register-role"
+                                            value="customer" class="role-input">
+                                        <label for="registerRoleCustomer" class="role-card">
+                                            <div class="role-icon">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <circle cx="9" cy="21" r="1" />
+                                                    <circle cx="20" cy="21" r="1" />
+                                                    <path
+                                                        d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                                </svg>
+                                            </div>
+                                            <span class="role-name">Customer</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Magnetic Sign Up Button -->
+                                <button type="submit" class="btn-login magnetic-btn" id="registerBtn">
+                                    <span class="btn-content">
+                                        <span class="btn-text">Sign Up</span>
+                                        <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                            <circle cx="8.5" cy="7" r="4" />
+                                            <line x1="20" y1="8" x2="20" y2="14" />
+                                            <line x1="23" y1="11" x2="17" y2="11" />
+                                        </svg>
+                                    </span>
+                                    <span class="btn-loader">
+                                        <svg class="spinner" width="24" height="24" viewBox="0 0 24 24">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"
+                                                fill="none" opacity="0.25" />
+                                            <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3"
+                                                fill="none" stroke-linecap="round" />
+                                        </svg>
+                                    </span>
+                                    <div class="btn-ripple"></div>
+                                </button>
+
+                                <!-- Footer Links -->
+                                <div class="form-footer">
+                                    <span>Already have an account?</span>
+                                    <a href="#" class="footer-link" id="show-login">Back to Login</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Confetti Container -->
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <!-- MFA Challenge Modal -->
+    <div id="mfaModal" class="mfa-modal">
+        <div class="mfa-container">
+            <div class="mfa-icon">🔐</div>
+            <h2 class="mfa-title">Two-Factor Authentication</h2>
+            <p class="mfa-subtitle">Enter the 6-digit code from your authenticator app</p>
+            <div class="mfa-code-inputs">
+                <input type="text" maxlength="1" class="mfa-digit" id="mfa-1" inputmode="numeric">
+                <input type="text" maxlength="1" class="mfa-digit" id="mfa-2" inputmode="numeric">
+                <input type="text" maxlength="1" class="mfa-digit" id="mfa-3" inputmode="numeric">
+                <input type="text" maxlength="1" class="mfa-digit" id="mfa-4" inputmode="numeric">
+                <input type="text" maxlength="1" class="mfa-digit" id="mfa-5" inputmode="numeric">
+                <input type="text" maxlength="1" class="mfa-digit" id="mfa-6" inputmode="numeric">
+            </div>
+            <button type="button" id="mfaVerifyBtn" class="btn-login magnetic-btn">
+                <span class="btn-content">
+                    <span class="btn-text">Verify Code</span>
+                </span>
+            </button>
+            <button type="button" id="mfaCancelBtn" class="mfa-cancel-btn">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Scripts - API AUTH VERSION -->
+    <script src="js/particles.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/auth-api.js"></script>
+
+    <script>
+        window.addEventListener('load', function () {
+            const session = sessionStorage.getItem('movexsecuresession');
+            if (session) {
+                history.pushState(null, null, location.href);
+                window.onpopstate = function () {
+                    history.go(1);
+                };
+            }
+        });
+    </script>
+
+</body>
+
+</html>

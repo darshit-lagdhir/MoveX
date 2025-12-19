@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipment Management - MoveX Admin</title>
+    <link rel="stylesheet" href="../styles/base.css">
+    <link rel="stylesheet" href="../styles/admin.css">
+    <script src="../js/dashboard-guard.js"></script>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <main>
+            <div class="dashboard-container">
+                <div class="page-header">
+                    <h1 class="page-title">Shipment Management</h1>
+                </div>
+
+                <div class="card" style="margin-bottom: 2rem; padding: 1.5rem;">
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <input type="text" placeholder="Enter Tracking ID..."
+                            style="flex:1; min-width: 200px; padding: 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-md);">
+                        <select
+                            style="padding: 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-md); min-width: 150px;">
+                            <option>All Status</option>
+                            <option>In Transit</option>
+                            <option>Delivered</option>
+                            <option>Pending</option>
+                            <option>Failed</option>
+                        </select>
+                        <input type="date"
+                            style="padding: 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-md);">
+                        <button
+                            style="background: var(--brand-primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">Search</button>
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 0;">
+                    <div class="data-table-container" style="border: none;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tracking ID</th>
+                                    <th>Status</th>
+                                    <th>Customer</th>
+                                    <th>Origin</th>
+                                    <th>Destination</th>
+                                    <th>Ship Date</th>
+                                    <th>Amount</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="font-family: monospace; font-weight: 600;">MX88921</td>
+                                    <td><span class="status-badge status-active">In Transit</span></td>
+                                    <td>
+                                        <div>Anjali Gupta</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                                            anjali@example.com</div>
+                                    </td>
+                                    <td>Mumbai, MH</td>
+                                    <td>Delhi, NCR</td>
+                                    <td>Today</td>
+                                    <td>₹45.00</td>
+                                    <td><a href="#"
+                                            style="color: var(--brand-primary); text-decoration: none; font-weight: 500;">View</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-family: monospace; font-weight: 600;">MX88922</td>
+                                    <td><span class="status-badge status-info">Delivered</span></td>
+                                    <td>
+                                        <div>Vikram Malhotra</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                                            vikram@example.com</div>
+                                    </td>
+                                    <td>Chennai, TN</td>
+                                    <td>Bangalore, KA</td>
+                                    <td>Yesterday</td>
+                                    <td>₹25.00</td>
+                                    <td><a href="#"
+                                            style="color: var(--brand-primary); text-decoration: none; font-weight: 500;">View</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-family: monospace; font-weight: 600;">MX88923</td>
+                                    <td><span class="status-badge status-warn">Processing</span></td>
+                                    <td>
+                                        <div>Suresh Raina</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                                            suresh@example.com</div>
+                                    </td>
+                                    <td>Hyderabad, TS</td>
+                                    <td>Pune, MH</td>
+                                    <td>Today</td>
+                                    <td>₹60.00</td>
+                                    <td><a href="#"
+                                            style="color: var(--brand-primary); text-decoration: none; font-weight: 500;">View</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../js/admin-layout.js"></script>
+</body>
+
+</html>

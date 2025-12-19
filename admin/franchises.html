@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Franchise Management - MoveX Admin</title>
+    <link rel="stylesheet" href="../styles/base.css">
+    <link rel="stylesheet" href="../styles/admin.css">
+    <script src="../js/dashboard-guard.js"></script>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <main>
+            <div class="dashboard-container">
+                <div class="page-header">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h1 class="page-title">Franchise Management</h1>
+                            <p class="page-subtitle">Manage regional hubs and franchise partners.</p>
+                        </div>
+                        <button
+                            style="background: var(--brand-primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-md);">
+                            + Add Franchise
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid-kpi" style="margin-bottom: 2rem;">
+                    <div class="card">
+                        <div class="card-title">Total Franchises</div>
+                        <div class="card-value">142</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Active Areas</div>
+                        <div class="card-value">560+</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Pending Approval</div>
+                        <div class="card-value" style="color: var(--warning);">12</div>
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 0;">
+                    <div class="data-table-container" style="border: none; border-radius: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Franchise Name</th>
+                                    <th>Owner</th>
+                                    <th>Service Area</th>
+                                    <th>Pincodes</th>
+                                    <th>Status</th>
+                                    <th>Performance</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 600;">Mumbai Central Hub</div>
+                                        <div style="font-size: 0.85rem; color: var(--text-secondary);">ID: FR-MUM-001
+                                        </div>
+                                    </td>
+                                    <td>Rahul Verma</td>
+                                    <td>Andheri West, Mumbai</td>
+                                    <td>400053 - 400058</td>
+                                    <td><span class="status-badge status-active">Active</span></td>
+                                    <td>
+                                        <div style="font-weight: 600; color: var(--success);">98.5%</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary);">On-time Delivery
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button
+                                            style="border: 1px solid var(--border-default); background: var(--surface-primary); color: var(--text-primary); padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer;">Edit</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 600;">Bangalore Express</div>
+                                        <div style="font-size: 0.85rem; color: var(--text-secondary);">ID: FR-BLR-002
+                                        </div>
+                                    </td>
+                                    <td>Priya Singh</td>
+                                    <td>Indiranagar, Bangalore</td>
+                                    <td>560008 - 560038</td>
+                                    <td><span class="status-badge status-active">Active</span></td>
+                                    <td>
+                                        <div style="font-weight: 600; color: var(--warning);">92.1%</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary);">On-time Delivery
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button
+                                            style="border: 1px solid var(--border-default); background: var(--surface-primary); color: var(--text-primary); padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer;">Edit</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../js/admin-layout.js"></script>
+</body>
+
+</html>

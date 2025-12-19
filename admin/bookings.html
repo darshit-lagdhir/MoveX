@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookings - MoveX Admin</title>
+    <link rel="stylesheet" href="../styles/base.css">
+    <link rel="stylesheet" href="../styles/admin.css">
+    <script src="../js/dashboard-guard.js"></script>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <main>
+            <div class="dashboard-container">
+                <div class="page-header">
+                    <h1 class="page-title">Booking Requests</h1>
+                    <p class="page-subtitle">New pickup requests and booking management.</p>
+                </div>
+
+                <div class="grid-kpi">
+                    <div class="card">
+                        <div class="card-title">New Requests</div>
+                        <div class="card-value">24</div>
+                        <div class="card-trend"><span>Needs Assignment</span></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Scheduled Pickups</div>
+                        <div class="card-value">18</div>
+                        <div class="card-trend trend-up"><span>For Today</span></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div
+                        style="padding: 1rem; border-bottom: 1px solid var(--border-subtle); display:flex; justify-content: space-between; align-items: center;">
+                        <h3 class="card-title" style="margin:0;">Incoming Requests</h3>
+                        <div style="display:flex; gap: 0.5rem;">
+                            <button
+                                style="padding: 0.5rem 1rem; border: 1px solid var(--border-default); background: var(--surface-primary); border-radius: var(--radius-sm);">Pending</button>
+                            <button
+                                style="padding: 0.5rem 1rem; border: 1px solid var(--border-default); background: var(--surface-primary); border-radius: var(--radius-sm);">Assigned</button>
+                        </div>
+                    </div>
+                    <div class="data-table-container" style="border: none; border-radius: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Customer</th>
+                                    <th>Package Type</th>
+                                    <th>Pickup Location</th>
+                                    <th>Time Slot</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="font-family: monospace; font-weight: 600;">BK-1029</td>
+                                    <td>
+                                        <div>Neha Kapoor</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Member</div>
+                                    </td>
+                                    <td>Electronics (Fragile)</td>
+                                    <td>Plot 42, Hitech City, Hyderabad</td>
+                                    <td>Today, 2-4 PM</td>
+                                    <td><button
+                                            style="background: var(--brand-primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-weight: 600; cursor: pointer;">Assign
+                                            Driver</button></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-family: monospace; font-weight: 600;">BK-1030</td>
+                                    <td>
+                                        <div>Arjun Das</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Guest</div>
+                                    </td>
+                                    <td>Documents</td>
+                                    <td>Sector 29, Gurgaon, NCR</td>
+                                    <td>Tomorrow, 10-12 AM</td>
+                                    <td><button
+                                            style="background: var(--surface-tertiary); color: var(--text-primary); border: none; padding: 0.5rem 1rem; border-radius: 4px; font-weight: 600; cursor: pointer;">Details</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../js/admin-layout.js"></script>
+</body>
+
+</html>

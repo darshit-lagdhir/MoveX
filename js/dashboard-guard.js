@@ -1,0 +1,195 @@
+(function () {
+    'use strict';
+
+    const DASHBOARDS = {
+        admin: '/admin/dashboard.html',
+        franchisee: '/dashboards/franchisee.html',
+        staff: '/dashboards/staff.html',
+        user: '/dashboards/user.html',
+        customer: '/dashboards/customer.html'
+    };
+
+    const ROLE_HIERARCHY = {
+        'dashboard.html': ['admin'],
+        'users.html': ['admin'],
+        'franchises.html': ['admin'],
+        'staff.html': ['admin'],
+        'shipments.html': ['admin'],
+        'bookings.html': ['admin'],
+        'finance.html': ['admin'],
+        'reports.html': ['admin'],
+        'settings.html': ['admin'],
+        'audit-logs.html': ['admin'],
+        'franchisee.html': ['admin', 'franchisee'],
+        'staff.html': ['admin', 'franchisee', 'staff'],
+        'user.html': ['admin', 'franchisee', 'staff', 'user'],
+        'customer.html': ['admin', 'franchisee', 'staff', 'user', 'customer']
+    };
+
+    function getCurrentPage() {
+        const path = window.location.pathname;
+        const parts = path.split('/');
+        return parts[parts.length - 1] || 'index.html';
+    }
+
+    function getToken() {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'movex_session') {
+                return decodeURIComponent(value);
+            }
+        }
+
+        const session = sessionStorage.getItem('movexsecuresession');
+        if (session) {
+            try {
+                const data = JSON.parse(session);
+                return data.data?.token || null;
+            } catch (e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    async function validateSession() {
+        const token = getToken();
+
+        // RELAXED: Try to authenticate via Cookie (HttpOnly) even if no local token found
+        // if (!token) { return { valid: false, reason: 'NO_TOKEN' }; }
+
+        try {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const response = await fetch('/api/me', {
+                method: 'GET',
+                credentials: 'include', // Important: sends cookies
+                headers: headers
+            });
+
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                return {
+                    valid: false,
+                    reason: data.code || 'INVALID_SESSION',
+                    status: response.status
+                };
+            }
+
+            const data = await response.json();
+            return {
+                valid: true,
+                user: data.user,
+                organization: data.organization
+            };
+        } catch (err) {
+            console.error('Session validation error:', err);
+            return { valid: false, reason: 'NETWORK_ERROR' };
+        }
+    }
+
+    function checkRoleAccess(userRole, currentPage) {
+        const allowedRoles = ROLE_HIERARCHY[currentPage];
+        if (!allowedRoles) return true;
+        return allowedRoles.includes(userRole);
+    }
+
+    function redirectToLogin(message) {
+        sessionStorage.removeItem('movexsecuresession');
+        const encoded = encodeURIComponent(message || 'Please log in to continue');
+        window.location.href = `/?auth_message=${encoded}`;
+    }
+
+    function redirectToDashboard(role) {
+        const dashboard = DASHBOARDS[role] || DASHBOARDS.user;
+        window.location.href = dashboard;
+    }
+
+    async function guardDashboard() {
+        const currentPage = getCurrentPage();
+
+        if (currentPage === 'index.html' || currentPage === '' || currentPage === '/') {
+            return;
+        }
+
+        const isProtected = Object.keys(ROLE_HIERARCHY).includes(currentPage);
+        if (!isProtected) {
+            return;
+        }
+
+        const result = await validateSession();
+
+        if (!result.valid) {
+            const messages = {
+                'NO_TOKEN': 'Please log in to access the dashboard',
+                'SESSION_EXPIRED': 'Your session has expired. Please log in again.',
+                'INVALID_SESSION': 'Invalid session. Please log in again.',
+                'ACCOUNT_DISABLED': 'Your account has been disabled.',
+                'USER_NOT_FOUND': 'Account not found. Please log in again.',
+                'NETWORK_ERROR': 'Connection error. Please try again.'
+            };
+            redirectToLogin(messages[result.reason] || 'Please log in to continue');
+            return;
+        }
+
+        const user = result.user;
+
+        if (!checkRoleAccess(user.role, currentPage)) {
+            console.warn(`Role mismatch: ${user.role} cannot access ${currentPage}`);
+            redirectToDashboard(user.role);
+            return;
+        }
+
+        window.MoveXUser = user;
+        window.MoveXOrganization = result.organization || null;
+
+        const userEmailEl = document.getElementById('userEmail');
+        const userRoleEl = document.getElementById('userRole');
+        const userNameEl = document.getElementById('userName');
+        const orgNameEl = document.getElementById('orgName');
+
+        if (userEmailEl) userEmailEl.textContent = user.email;
+        if (userRoleEl) userRoleEl.textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+        if (userNameEl) userNameEl.textContent = user.full_name || user.email.split('@')[0];
+        if (orgNameEl && result.organization) {
+            orgNameEl.textContent = result.organization.name;
+        }
+
+        document.body.classList.add('authenticated');
+        document.dispatchEvent(new CustomEvent('movex:authenticated', { detail: { user, organization: result.organization } }));
+    }
+
+    window.MoveXLogout = async function () {
+        const token = getToken();
+
+        try {
+            await fetch('/api/dashboard/logout', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+        } catch (err) {
+            console.error('Logout error:', err);
+        }
+
+        document.cookie = 'movex_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        sessionStorage.removeItem('movexsecuresession');
+
+        window.location.href = '/';
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', guardDashboard);
+    } else {
+        guardDashboard();
+    }
+})();

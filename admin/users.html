@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - MoveX Admin</title>
+    <link rel="stylesheet" href="../styles/base.css">
+    <link rel="stylesheet" href="../styles/admin.css">
+    <script src="../js/dashboard-guard.js"></script>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <main>
+            <div class="dashboard-container">
+                <div class="page-header">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h1 class="page-title">User Management</h1>
+                            <p class="page-subtitle">Manage system access, roles, and security.</p>
+                        </div>
+                        <button class="btn-primary">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Add User
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 0;">
+                    <div
+                        style="padding: 1.5rem; border-bottom: 1px solid var(--border-subtle); display: flex; gap: 1rem; align-items: center;">
+                        <div style="position: relative; flex: 1; max-width: 400px;">
+                            <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary);"
+                                width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            <input type="text" placeholder="Search by name, email, or ID..."
+                                style="width: 100%; padding-left: 3rem;">
+                        </div>
+                        <select>
+                            <option value="">All Roles</option>
+                            <option value="admin">Admin</option>
+                            <option value="franchisee">Franchisee</option>
+                            <option value="staff">Staff</option>
+                        </select>
+                        <select>
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="disabled">Disabled</option>
+                        </select>
+                    </div>
+
+                    <div class="data-table-container" style="border: none; border-radius: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Organization</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <div
+                                                style="width: 40px; height: 40px; background: var(--brand-primary-soft); color: var(--brand-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                                                SA</div>
+                                            <div>
+                                                <div style="font-weight: 600;">System Administrator</div>
+                                                <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                                                    admin@movex.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="status-badge"
+                                            style="background: var(--accent-purple); color: white; opacity: 0.9;">Admin</span>
+                                    </td>
+                                    <td>MoveX HQ</td>
+                                    <td><span class="status-badge status-active">Active</span></td>
+                                    <td>Oct 15, 2023</td>
+                                    <td>
+                                        <button
+                                            style="border: none; background: none; color: var(--text-secondary); cursor: pointer;"><svg
+                                                width="20" height="20" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z">
+                                                </path>
+                                            </svg></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <div
+                                                style="width: 40px; height: 40px; background: var(--warning-soft); color: var(--warning); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                                                JD</div>
+                                            <div>
+                                                <div style="font-weight: 600;">John Doe</div>
+                                                <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                                                    john.doe@franchise1.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="status-badge"
+                                            style="background: var(--info-soft); color: var(--info);">Franchisee</span>
+                                    </td>
+                                    <td>Delhi Hub</td>
+                                    <td><span class="status-badge status-active">Active</span></td>
+                                    <td>Jan 10, 2024</td>
+                                    <td>
+                                        <button
+                                            style="border: none; background: none; color: var(--text-secondary); cursor: pointer;"><svg
+                                                width="20" height="20" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z">
+                                                </path>
+                                            </svg></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div
+                        style="padding: 1rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end; gap: 0.5rem;">
+                        <button class="btn-secondary" style="padding: 0.4rem 1rem;">Previous</button>
+                        <button class="btn-primary" style="padding: 0.4rem 1rem;">1</button>
+                        <button class="btn-secondary" style="padding: 0.4rem 1rem;">2</button>
+                        <button class="btn-secondary" style="padding: 0.4rem 1rem;">Next</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../js/admin-layout.js"></script>
+</body>
+
+</html>

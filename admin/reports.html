@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - MoveX Admin</title>
+    <link rel="stylesheet" href="../styles/base.css">
+    <link rel="stylesheet" href="../styles/admin.css">
+    <script src="../js/dashboard-guard.js"></script>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <main>
+            <div class="dashboard-container">
+                <div class="page-header">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h1 class="page-title">Analytics & Reports</h1>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button
+                                style="padding: 0.5rem 1rem; border: 1px solid var(--border-default); background: var(--surface-primary); border-radius: var(--radius-md);">Last
+                                30 Days</button>
+                            <button
+                                style="padding: 0.5rem 1rem; border: 1px solid var(--border-default); background: var(--brand-primary); color: white; border-radius: var(--radius-md);">Export
+                                PDF</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-kpi">
+                    <div class="card">
+                        <div class="card-title">Delivery Success Rate</div>
+                        <div class="card-value">98.2%</div>
+                        <div style="margin-top: 1rem; height: 40px; display: flex; align-items: flex-end; gap: 2px;">
+                            <!-- Mock Mini Bar Chart -->
+                            <div style="width: 10%; height: 60%; background: var(--brand-primary-soft);"></div>
+                            <div style="width: 10%; height: 80%; background: var(--brand-primary-soft);"></div>
+                            <div style="width: 10%; height: 70%; background: var(--brand-primary-soft);"></div>
+                            <div style="width: 10%; height: 90%; background: var(--brand-primary);"></div>
+                            <div style="width: 10%; height: 85%; background: var(--brand-primary-soft);"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Avg Delivery Time</div>
+                        <div class="card-value">1.8 Days</div>
+                        <div style="margin-top: 1rem; height: 40px; display: flex; align-items: flex-end; gap: 2px;">
+                            <div style="width: 10%; height: 50%; background: var(--info-soft);"></div>
+                            <div style="width: 10%; height: 40%; background: var(--info-soft);"></div>
+                            <div style="width: 10%; height: 45%; background: var(--info);"></div>
+                            <div style="width: 10%; height: 30%; background: var(--info-soft);"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Customer Satisfaction</div>
+                        <div class="card-value">4.8/5</div>
+                        <div style="margin-top: 0.5rem; color: var(--warning);">★★★★★</div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 2rem;">
+                    <h3 class="card-title">Shipment Volume by Region</h3>
+                    <div
+                        style="height: 300px; display: flex; align-items: center; justify-content: center; background: var(--surface-secondary); color: var(--text-tertiary); border-radius: var(--radius-sm); margin-top: 1rem;">
+                        [Interactive Map Placeholder]
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Daily Operations Report</h3>
+                    <div class="data-table-container" style="border:none; box-shadow: none;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Total Shipments</th>
+                                    <th>Completed</th>
+                                    <th>Issues</th>
+                                    <th>Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Oct 24, 2025</td>
+                                    <td>1,240</td>
+                                    <td>1,150</td>
+                                    <td style="color: var(--warning);">5</td>
+                                    <td>₹24,500</td>
+                                </tr>
+                                <tr>
+                                    <td>Oct 23, 2025</td>
+                                    <td>1,180</td>
+                                    <td>1,100</td>
+                                    <td style="color: var(--warning);">2</td>
+                                    <td>₹22,100</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../js/admin-layout.js"></script>
+</body>
+
+</html>

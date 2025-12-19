@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Management - MoveX Admin</title>
+    <link rel="stylesheet" href="../styles/base.css">
+    <link rel="stylesheet" href="../styles/admin.css">
+    <script src="../js/dashboard-guard.js"></script>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <main>
+            <div class="dashboard-container">
+                <div class="page-header">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h1 class="page-title">Staff Management</h1>
+                            <p class="page-subtitle">Drivers, handlers, and branch staff.</p>
+                        </div>
+                        <button
+                            style="background: var(--brand-primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-md);">
+                            + Add Staff
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 0;">
+                    <div style="padding: 1rem; border-bottom: 1px solid var(--border-subtle); display:flex; gap: 1rem;">
+                        <input type="text" placeholder="Search staff..."
+                            style="padding: 0.5rem; border: 1px solid var(--border-default); border-radius: var(--radius-sm); flex:1;">
+                        <select
+                            style="padding: 0.5rem; border: 1px solid var(--border-default); border-radius: var(--radius-sm);">
+                            <option>All Roles</option>
+                            <option>Driver</option>
+                            <option>Warehouse Manager</option>
+                            <option>Support Agent</option>
+                        </select>
+                    </div>
+                    <div class="data-table-container" style="border: none; border-radius: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Staff Member</th>
+                                    <th>Role</th>
+                                    <th>Assigned Franchise</th>
+                                    <th>Status</th>
+                                    <th>Contact</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 600;">Amit Patel</div>
+                                        <div style="font-size: 0.85rem; color: var(--text-secondary);">ID: MXSTF001
+                                        </div>
+                                    </td>
+                                    <td><span class="status-badge"
+                                            style="background: var(--surface-tertiary); color: var(--text-primary);">Driver</span>
+                                    </td>
+                                    <td>Andheri East, Mumbai</td>
+                                    <td><span class="status-badge status-active">On Duty</span></td>
+                                    <td>+91 98765 00001</td>
+                                    <td><button
+                                            style="border: 1px solid var(--border-default); background: var(--surface-primary); color: var(--text-primary); padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer;">Edit</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 600;">Rohit Sharma</div>
+                                        <div style="font-size: 0.85rem; color: var(--text-secondary);">ID: MXSTF002
+                                        </div>
+                                    </td>
+                                    <td><span class="status-badge"
+                                            style="background: var(--surface-tertiary); color: var(--text-primary);">Manager</span>
+                                    </td>
+                                    <td>Bhiwandi Warehouse</td>
+                                    <td><span class="status-badge status-active">Active</span></td>
+                                    <td>+91 98765 00002</td>
+                                    <td><button
+                                            style="border: 1px solid var(--border-default); background: var(--surface-primary); color: var(--text-primary); padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer;">Edit</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../js/admin-layout.js"></script>
+</body>
+
+</html>

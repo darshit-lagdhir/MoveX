@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs - MoveX Admin</title>
+    <link rel="stylesheet" href="../styles/base.css">
+    <link rel="stylesheet" href="../styles/admin.css">
+    <script src="../js/dashboard-guard.js"></script>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <main>
+            <div class="dashboard-container">
+                <div class="page-header">
+                    <h1 class="page-title">Security Audit Logs</h1>
+                    <p class="page-subtitle">Monitor system access and critical actions.</p>
+                </div>
+
+                <div class="card" style="padding: 0;">
+                    <div
+                        style="padding: 1rem; border-bottom: 1px solid var(--border-subtle); display: flex; gap: 1rem;">
+                        <input type="text" placeholder="Search logs..."
+                            style="padding: 0.5rem; border: 1px solid var(--border-default); border-radius: var(--radius-sm); flex: 1;">
+                        <input type="date"
+                            style="padding: 0.5rem; border: 1px solid var(--border-default); border-radius: var(--radius-sm);">
+                        <button
+                            style="padding: 0.5rem 1rem; border: 1px solid var(--border-default); background: var(--surface-primary); border-radius: var(--radius-sm);">Filter</button>
+                    </div>
+                    <div class="data-table-container" style="border: none; border-radius: 0;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>IP Address</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="font-family: monospace;">Oct 24, 14:32:01</td>
+                                    <td>admin@movex.com</td>
+                                    <td>Updated System Settings</td>
+                                    <td style="font-family: monospace;">192.168.1.1</td>
+                                    <td><span class="status-badge status-active">Success</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-family: monospace;">Oct 24, 14:05:22</td>
+                                    <td>john.doe@franchise.com</td>
+                                    <td>Login Attempt</td>
+                                    <td style="font-family: monospace;">10.0.0.52</td>
+                                    <td><span class="status-badge status-error">Failed</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-family: monospace;">Oct 24, 13:55:00</td>
+                                    <td>system</td>
+                                    <td>Cron Job: Invoice Gen</td>
+                                    <td style="font-family: monospace;">localhost</td>
+                                    <td><span class="status-badge status-active">Success</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../js/admin-layout.js"></script>
+</body>
+
+</html>

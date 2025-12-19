@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- ...existing head content... -->
+	<style>
+		/* Lockdown warning modal */
+		#lockdown-warning {
+			display: none;
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			background: #fff3cd;
+			border: 2px solid #ff9800;
+			border-radius: 8px;
+			padding: 30px;
+			max-width: 400px;
+			z-index: 9998;
+			text-align: center;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+		}
+
+		#lockdown-warning h3 {
+			color: #ff6f00;
+			margin: 0 0 10px 0;
+		}
+
+		#lockdown-warning p {
+			color: #333;
+			margin: 0;
+			font-size: 14px;
+		}
+
+		/* Lockdown overlay */
+		.lockdown-overlay {
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(0, 0, 0, 0.95);
+			color: #fff;
+			z-index: 9999;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
+		}
+
+		.lockdown-overlay.active {
+			display: flex;
+		}
+
+		.lockdown-overlay h2 {
+			margin: 0 0 20px 0;
+			font-size: 32px;
+		}
+
+		.lockdown-overlay p {
+			max-width: 600px;
+			font-size: 16px;
+			line-height: 1.6;
+			margin: 0 0 20px 0;
+		}
+
+		.lockdown-overlay .lockdown-icon {
+			font-size: 80px;
+			margin-bottom: 20px;
+			animation: pulse 2s infinite;
+		}
+
+		@keyframes pulse {
+			0%, 100% { opacity: 1; }
+			50% { opacity: 0.5; }
+		}
+	</style>
+</head>
+<body>
+	<!-- Lockdown warning modal -->
+	<div id="lockdown-warning">
+		<h3>⚠️ Warning</h3>
+		<p>Unauthorized access attempt detected. Please stop accessing developer tools.</p>
+	</div>
+
+	<!-- Lockdown overlay -->
+	<div class="lockdown-overlay" id="lockdown-overlay">
+		<div class="lockdown-icon">🔒</div>
+		<h2>Access Locked</h2>
+		<p>This application has been locked due to unauthorized access attempts.</p>
+		<p>Developer tools and unauthorized modifications are not permitted.</p>
+		<p>Please contact support if you believe this is an error.</p>
+	</div>
+
+	<!-- ...existing body content... -->
+	<main>
+		<!-- Login form and other UI -->
+	</main>
+
+	<script type="module" src="/src/main.js"></script>
+</body>
+</html>
