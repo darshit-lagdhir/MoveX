@@ -11,10 +11,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="../styles/base.css?v=4">
+
     <link rel="stylesheet" href="../styles/components.css?v=4">
-    <link rel="stylesheet" href="../styles/admin.css?v=4">
-    <script src="../js/dashboard-guard.js"></script>
-    <script src="../js/admin-core.js?v=2"></script>
+    <link rel="stylesheet" href="../styles/admin.css?v=5">
+    <script src="../js/dashboard-guard.js?v=2"></script>
+    <script src="../js/admin-core.js?v=3"></script>
 </head>
 
 <body>
@@ -36,21 +37,18 @@
                 </div>
 
                 <div class="card" style="margin-bottom: 2rem; padding: 1.5rem;">
-                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                        <input type="text" id="shipmentSearchInput" placeholder="Enter Tracking ID..." autofocus
-                            style="flex:1; min-width: 200px; padding: 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-md);">
-                        <select id="shipmentStatusFilter"
-                            style="padding: 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-md); min-width: 150px;">
+                    <div class="search-bar-container">
+                        <input type="text" id="shipmentSearchInput" placeholder="Enter Tracking ID..."
+                            class="search-input">
+                        <select id="shipmentStatusFilter" class="search-select">
                             <option>All Status</option>
                             <option>In Transit</option>
                             <option>Delivered</option>
                             <option>Pending</option>
                             <option>Failed</option>
                         </select>
-                        <input type="date" id="shipmentDateFilter"
-                            style="padding: 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-md);">
-                        <button id="shipmentSearchBtn"
-                            style="background: var(--brand-primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">Search</button>
+                        <input type="date" id="shipmentDateFilter" class="search-date">
+                        <button id="shipmentSearchBtn" class="search-btn">Search</button>
                     </div>
                 </div>
 
@@ -129,7 +127,8 @@
             </div>
         </main>
     </div>
-    <script src="../js/admin-layout.js"></script>
+
+    <script src="../js/admin-layout.js?v=2"></script>
 </body>
 
 </html>

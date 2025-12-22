@@ -112,20 +112,72 @@ router.get('/staff', validateSession, requireRole('admin', 'franchisee', 'staff'
     res.json({ success: true, message: 'Staff access granted', user: req.user });
 });
 
+// Real-time Admin Stats
 router.get('/admin/stats', validateSession, requireRole('admin'), async (req, res) => {
     try {
-        const stats = await db.query('SELECT COUNT(*) as total FROM users');
-        const active = await db.query("SELECT COUNT(*) as active FROM users WHERE status = 'active'");
+        const [shipmentCount, franchiseCount, revenueSum, failedCount] = await Promise.all([
+            db.query('SELECT COUNT(*) FROM shipments'),
+            db.query("SELECT COUNT(*) FROM organizations WHERE status = 'active'"),
+            db.query('SELECT SUM(price) FROM shipments'),
+            db.query("SELECT COUNT(*) FROM shipments WHERE status = 'failed'")
+        ]);
+
+        const totalShipments = parseInt(shipmentCount.rows[0].count);
+        const activeFranchises = parseInt(franchiseCount.rows[0].count);
+        const totalRevenue = parseFloat(revenueSum.rows[0].sum || 0);
+        const failed = parseInt(failedCount.rows[0].count);
+
+        // Calculate percentage, default to 0 to avoid NaN
+        const failedPercentage = totalShipments > 0 ? ((failed / totalShipments) * 100).toFixed(1) : 0;
+
         res.json({
             success: true,
             stats: {
-                users: parseInt(stats.rows[0].total),
-                active: parseInt(active.rows[0].active),
-                franchises: 0
+                totalShipments: totalShipments,
+                activeFranchises: activeFranchises,
+                totalRevenue: totalRevenue,
+                failedDeliveries: parseFloat(failedPercentage),
+                // Simple placeholder trends for now (could be calculated with historical queries)
+                shipmentTrend: 'Real-time Data',
+                franchiseTrend: 'Active count',
+                revenueTrend: 'Lifetime',
+                failedTrend: 'Failure Rate'
             }
         });
     } catch (err) {
-        res.json({ success: true, stats: { users: 0, active: 0, franchises: 0 } });
+        console.error("Dashboard Stats Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch stats' });
+    }
+});
+
+// Recent Shipments for Dashboard
+router.get('/admin/shipments', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        // Fetch latest 10 shipments
+        const result = await db.query(`
+            SELECT id, tracking_id, status, sender_name, receiver_name, 
+                   origin_address, destination_address, price, created_at
+            FROM shipments 
+            ORDER BY created_at DESC 
+            LIMIT 10
+        `);
+
+        // Format for frontend
+        const shipments = result.rows.map(row => ({
+            id: row.tracking_id,
+            status: row.status.charAt(0).toUpperCase() + row.status.slice(1).replace('_', ' '), // Clean status format
+            origin: row.origin_address ? row.origin_address.split(',')[0].trim() : 'N/A',     // Show city only
+            destination: row.destination_address ? row.destination_address.split(',')[0].trim() : 'N/A',
+            date: new Date(row.created_at).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }),
+            amount: parseFloat(row.price),
+            customer: row.sender_name || 'N/A',
+            email: 'N/A' // Email not currently in shipments table
+        }));
+
+        res.json({ success: true, shipments });
+    } catch (err) {
+        console.error("Dashboard Shipments Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch shipments' });
     }
 });
 
