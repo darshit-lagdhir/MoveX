@@ -1,17 +1,38 @@
--- 1) Create enums once (if not already)
-CREATE TYPE user_role AS ENUM ('admin', 'franchisee', 'staff', 'user', 'customer');
-CREATE TYPE user_status AS ENUM ('active', 'disabled', 'suspended');
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- MoveX Database Migration: Users Table Initiation
+-- ═══════════════════════════════════════════════════════════════════════════════
 
--- 2) Add missing columns to existing users table
-ALTER TABLE users
-  ADD COLUMN IF NOT EXISTS role   user_role NOT NULL DEFAULT 'user',
-  ADD COLUMN IF NOT EXISTS status user_status NOT NULL DEFAULT 'active';
+-- 1) Create Enums
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('admin', 'franchisee', 'staff', 'user', 'customer');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
--- 3) Optional indexes
-CREATE INDEX IF NOT EXISTS idx_users_role   ON users(role);
+DO $$ BEGIN
+    CREATE TYPE user_status AS ENUM ('active', 'disabled', 'suspended');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- 2) Create Users Table
+CREATE TABLE IF NOT EXISTS users (
+    id BIGSERIAL PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role user_role NOT NULL DEFAULT 'user',
+    status user_status NOT NULL DEFAULT 'active',
+    security_answers JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3) Create Indexes
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_status ON users(status);
 
--- Password reset tokens (hashed, time-limited, single-use)
+-- 4) Create Password Resets Table
 CREATE TABLE IF NOT EXISTS password_resets (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -20,5 +41,6 @@ CREATE TABLE IF NOT EXISTS password_resets (
   used BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
 CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets(user_id);
 CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token_hash);

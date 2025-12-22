@@ -80,7 +80,7 @@ router.get('/me', validateSession, (req, res) => {
             email: req.user.email,
             role: req.user.role,
             mfa_enabled: req.user.mfa_enabled,
-            oauth_provider: req.user.oauth_provider,
+            mfa_enabled: req.user.mfa_enabled,
             dashboard: getDashboardForRole(req.user.role)
         }
     });
@@ -94,7 +94,7 @@ router.get('/profile', validateSession, (req, res) => {
             email: req.user.email,
             role: req.user.role,
             mfa_enabled: req.user.mfa_enabled,
-            oauth_provider: req.user.oauth_provider,
+            mfa_enabled: req.user.mfa_enabled,
             dashboard: getDashboardForRole(req.user.role)
         }
     });

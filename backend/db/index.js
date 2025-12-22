@@ -1,16 +1,18 @@
-require('dotenv').config();
-const { Pool } = require('pg');
+/**
+ * Database Connection (Backward Compatibility Layer)
+ * 
+ * This file re-exports the main database connection from src/config/db.js
+ * to maintain backward compatibility with modules that import from 'db' or '../db'.
+ * 
+ * IMPORTANT: All database configuration is in src/config/db.js
+ * This file exists only to avoid breaking existing imports.
+ */
 
-const pool = new Pool({
-        connectionString: process.env.DATABASE_URL,
-        ssl: process.env.DATABASE_URL?.includes('sslmode=require') ? { rejectUnauthorized: false } : false
-});
+// Import the main database configuration (which includes dotenv and TLS setup)
+const pool = require('../src/config/db');
 
-pool.on('error', (err) => {
-        console.error('[DB] Unexpected error on idle client', err);
-});
-
+// Re-export with the same interface this file previously provided
 module.exports = {
         query: (text, params) => pool.query(text, params),
-        pool,
+        pool: pool
 };

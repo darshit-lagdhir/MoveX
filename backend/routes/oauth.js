@@ -44,22 +44,26 @@ function createSessionAndRedirect(user, req, res) {
     });
     setSessionCookie(res, session.id);
 
+    // SECURITY: Do NOT pass userId or role in URL - they are in the secure HttpOnly session cookie
+    // Frontend should fetch user info from /api/me endpoint instead
+
     if (user.mfa_enabled) {
-        return res.redirect(`/?mfa_required=true&userId=${user.id}&role=${user.role}`);
+        // Only pass minimal flag - no sensitive data in URL
+        return res.redirect('/?mfa_required=true');
     }
 
     const dashboards = {
-        admin: '/admin-dashboard.html',
-        franchisee: '/franchisee-dashboard.html',
-        staff: '/staff-dashboard.html',
-        user: '/user-dashboard.html',
-        customer: '/customer-dashboard.html'
+        admin: '/admin/dashboard.html',
+        franchisee: '/dashboards/franchisee.html',
+        staff: '/dashboards/staff.html',
+        user: '/dashboards/user.html',
+        customer: '/dashboards/customer.html'
     };
 
-    const dashboard = dashboards[user.role] || '/user-dashboard.html';
+    const dashboard = dashboards[user.role] || '/dashboards/user.html';
 
-    // Pass minimal info in URL, session cookie handles the rest.
-    res.redirect(`${dashboard}?oauth_success=true&role=${user.role}`);
+    // SECURITY: Only pass success flag, no sensitive data
+    res.redirect(`${dashboard}?oauth_success=true`);
 }
 
 router.get('/google', (req, res, next) => {

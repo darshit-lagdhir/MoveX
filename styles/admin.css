@@ -5,14 +5,14 @@
     display: flex;
     min-height: 100vh;
     background: var(--app-background);
-    font-family: 'SF Pro Text', sans-serif;
+    font-family: 'Inter', sans-serif;
 }
 
 /* STRICT FONT ENFORCEMENT & INPUT STYLING */
 *,
 *::before,
 *::after {
-    font-family: 'SF Pro Text', sans-serif !important;
+    font-family: 'Inter', sans-serif !important;
 }
 
 body,
@@ -20,7 +20,7 @@ input,
 select,
 textarea,
 button {
-    font-family: 'SF Pro Text', sans-serif !important;
+    font-family: 'Inter', sans-serif !important;
     color: inherit;
     /* Inherit from body/container */
 }
@@ -30,24 +30,132 @@ body {
 }
 
 /* FORMS & BUTTONS - Hope UI Blueprint */
+/* CUSTOM INPUTS & SELECTS - Redesigned to match UI */
 input,
 select,
 textarea {
-    background-color: var(--surface-primary);
+    background-color: var(--surface-secondary);
     color: var(--text-primary);
     border: 1px solid var(--border-default);
     border-radius: var(--radius-md);
-    padding: 0.6rem 1rem;
-    font-family: 'SF Pro Text', sans-serif;
+    padding: 0.75rem 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
     outline: none;
-    transition: all var(--transition-fast);
+    transition: all var(--transition-base);
 }
 
-input:focus,
-select:focus,
-textarea:focus {
+/* Custom Dropdown Wrapper */
+.custom-select-wrapper {
+    position: relative;
+    user-select: none;
+    min-width: 160px;
+}
+
+.custom-select-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    background: var(--surface-primary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.custom-select-trigger:hover {
     border-color: var(--brand-primary);
-    box-shadow: 0 0 0 3px var(--brand-primary-glow);
+    box-shadow: 0 4px 12px var(--brand-primary-glow);
+}
+
+.custom-options {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: var(--surface-primary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s var(--easing-spring);
+    overflow: hidden;
+    color: var(--text-primary);
+}
+
+.custom-select-wrapper.open .custom-options {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.custom-option {
+    padding: 0.75rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+}
+
+.custom-option:hover {
+    background: var(--brand-primary-soft);
+    color: var(--brand-primary);
+    padding-left: 1.5rem;
+}
+
+.custom-option.selected {
+    background: var(--brand-primary);
+    color: white;
+}
+
+/* FLATPICKR (DATE SELECTOR) CUSTOM THEME */
+.flatpickr-calendar {
+    background: var(--surface-primary) !important;
+    box-shadow: var(--shadow-2xl) !important;
+    border: 1px solid var(--border-default) !important;
+    border-radius: var(--radius-lg) !important;
+    font-family: inherit !important;
+    color: var(--text-primary) !important;
+}
+
+.flatpickr-day {
+    color: var(--text-primary) !important;
+}
+
+.flatpickr-day.flatpickr-disabled,
+.flatpickr-day.flatpickr-disabled:hover {
+    color: var(--text-tertiary) !important;
+    opacity: 0.3;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+    background: var(--brand-primary) !important;
+    border-color: var(--brand-primary) !important;
+    color: white !important;
+}
+
+.flatpickr-day:hover {
+    background: var(--brand-primary-soft) !important;
+    color: var(--brand-primary) !important;
+}
+
+.flatpickr-months .flatpickr-month,
+.flatpickr-weekdays,
+span.flatpickr-weekday {
+    background: transparent !important;
+    color: var(--text-secondary) !important;
+    fill: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .flatpickr-calendar {
+    background: var(--surface-tertiary) !important;
+    color: white !important;
 }
 
 .btn-primary,
@@ -118,31 +226,56 @@ textarea:focus {
 }
 
 .sidebar-header {
-    padding: 2rem 1.5rem;
+    height: 60px;
+    padding: 0 1.5rem;
     display: flex;
     align-items: center;
     gap: 1rem;
     border-bottom: 1px solid var(--border-subtle);
 }
 
-.sidebar-logo {
-    font-family: 'SF Pro Text', sans-serif;
-    font-weight: 800;
-    font-size: 1.5rem;
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    letter-spacing: -0.02em;
-    white-space: nowrap;
-    opacity: 1;
-    transition: opacity var(--transition-base);
+/* Sidebar branding now uses .nav-logo from base.css */
+.sidebar.collapsed .sidebar-header {
+    padding: 0;
+    justify-content: center;
 }
 
-.sidebar.collapsed .sidebar-logo {
-    opacity: 0;
-    width: 0;
+.sidebar.collapsed .nav-logo .logo-text {
     display: none;
+}
+
+.sidebar.collapsed .nav-logo {
+    gap: 0;
+    justify-content: center;
+    width: 100%;
+}
+
+.sidebar.collapsed .nav-group-title {
+    opacity: 0;
+    height: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.sidebar.collapsed .nav-item {
+    justify-content: center;
+    padding: 0.75rem 0;
+    gap: 0;
+}
+
+.sidebar.collapsed .nav-item span {
+    display: none;
+}
+
+.sidebar.collapsed .nav-item svg {
+    margin: 0;
+}
+
+.sidebar.collapsed .nav-item.active::after {
+    width: 4px;
+    left: 0;
+    right: auto;
 }
 
 .sidebar-nav {
@@ -315,36 +448,53 @@ textarea:focus {
 }
 
 .card {
+    position: relative;
     background: var(--surface-primary);
     border: 1px solid var(--border-default);
     border-radius: var(--radius-lg);
-    /* 12px for Hope UI cards */
     padding: 1.5rem;
-    /* 24px */
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--shadow-sm);
     transition: all var(--transition-smooth);
+    z-index: 1;
+    /* overflow: hidden; -- Removed to prevent cutting off tables */
+}
+
+/* Specific card for tables to remove the internal empty space */
+.card-table {
+    padding: 0 !important;
+}
+
+.card-table .data-table {
+    margin: 0;
+}
+
+.card:has(.custom-select-wrapper.open),
+.card.has-open-dropdown,
+.card.modal-content {
+    overflow: visible !important;
+    /* Restore for dropdowns and datepickers */
+    z-index: 100;
 }
 
 .card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
     border-color: var(--brand-primary-soft);
 }
 
-.card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: var(--gradient-primary);
-    opacity: 0;
-    transition: opacity var(--transition-base);
-}
-
 .card:hover::after {
     opacity: 1;
+}
+
+.card::after {
+    display: none !important;
+    /* Blue line removed per user request */
+}
+
+/* Hide branding bar for modals and detail views */
+.modal-content.card::after,
+.no-top-bar::after {
+    display: none !important;
 }
 
 .card-header {
@@ -375,6 +525,8 @@ textarea:focus {
 .card-icon svg {
     width: 24px;
     height: 24px;
+    stroke: currentColor;
+    display: block;
 }
 
 .card-value {
@@ -404,7 +556,7 @@ textarea:focus {
 /* TABLES (GENERIC) */
 .data-table-container {
     background: var(--surface-primary);
-    border-radius: var(--radius-lg);
+    border-radius: 0;
     border: 1px solid var(--border-default);
     overflow: hidden;
     box-shadow: var(--shadow-sm);
@@ -424,19 +576,24 @@ textarea:focus {
 }
 
 .data-table th {
-    background: #fdfdfd;
-    /* Subtly different from body */
+    background: var(--surface-secondary);
     color: var(--text-secondary);
-    font-weight: 500;
-    /* Hope UI uses medium weight tags */
-    font-size: 0.875rem;
+    /* Optional: Darker text for better contrast on colored bg */
+    font-weight: 600;
+    /* Slightly bolder for header */
+    font-size: 0.85rem;
+    white-space: nowrap;
+    /* Prevent messy wrapping like 'Tracking ID' splitting */
     position: sticky;
     top: 0;
     z-index: 10;
+    padding: 1.5rem 1.3rem 1rem;
+    /* Match search card spacing */
 }
 
 .data-table td {
     color: var(--text-primary);
+    /* Force visible color */
     font-size: 0.9rem;
     transition: background var(--transition-fast);
 }
@@ -536,4 +693,25 @@ textarea:focus {
 .status-info {
     background: var(--info-soft);
     color: var(--info);
+}
+
+/* Specific Shipment Statuses */
+.status-in-transit {
+    background: var(--info-soft);
+    color: var(--info);
+}
+
+.status-delivered {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.status-pending {
+    background: var(--warning-soft);
+    color: var(--warning);
+}
+
+.status-failed {
+    background: var(--error-soft);
+    color: var(--error);
 }

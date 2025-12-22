@@ -5,9 +5,10 @@ function validateEmail(email) {
 	return regex.test(email) && email.length <= 255;
 }
 
+// SECURITY: Password requirements - must match auth.controller.js MIN_PASSWORD_LENGTH
+// Minimum 8 characters, at least one letter and one number
 function validatePassword(password) {
-	// minimum: 12 chars, letter, number (matching backend rule from password reset)
-	return password && password.length >= 12 && /[A-Za-z]/.test(password) && /\d/.test(password);
+	return password && password.length >= 8 && /[A-Za-z]/.test(password) && /\d/.test(password);
 }
 
 // Middleware: reject oversized payloads early

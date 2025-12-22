@@ -1,68 +1,81 @@
 /* ═══════════════════════════════════════════════════════════
    ANTI-TAMPER PROTECTION - EPIC LOCKDOWN UI
-   SF Pro Text Font | Animated | Professional Design
+   Inter Font | Animated | Professional Design
+   
+   SECURITY NOTE: This is for deterrence only. Client-side
+   anti-tamper can always be bypassed. Real security must be
+   enforced server-side.
    ═══════════════════════════════════════════════════════════ */
 
-(function() {
+(function () {
     'use strict';
-    
+
     window.AntiTamper = class AntiTamper {
         constructor() {
             this.detectionCount = 0;
-            this.maxDetections = 3;
+            this.maxDetections = 10; // SECURITY: Increased threshold to reduce false positives
             this.checkInterval = null;
+            // SECURITY: Disable in development to allow debugging
+            this.isProduction = !window.location.hostname.includes('localhost') &&
+                !window.location.hostname.includes('127.0.0.1');
         }
-        
+
         initialize() {
+            // SECURITY: Skip anti-tamper in development
+            if (!this.isProduction) {
+                console.log('🛡️ Anti-tamper disabled in development mode');
+                return;
+            }
+
             console.log('🛡️ Anti-tamper protection ACTIVE');
-            
-            // Detect DevTools
+
+            // Detect DevTools (production only)
             this.detectDevTools();
-            
-            // Disable right-click
+
+            // Disable right-click (production only)
             this.disableRightClick();
-            
-            // Disable keyboard shortcuts
+
+            // Disable keyboard shortcuts (production only)
             this.disableKeyboardShortcuts();
-            
-            // Detect debugger
-            this.detectDebugger();
-            
+
+            // NOTE: Removed debugger detection - causes false positives
+            // this.detectDebugger();
+
             // Integrity check
             this.integrityCheck();
-            
+
             console.log('✅ Anti-tamper initialized');
         }
-        
+
         detectDevTools() {
             const element = new Image();
             let devtoolsOpen = false;
-            
+
             Object.defineProperty(element, 'id', {
                 get: () => {
                     devtoolsOpen = true;
                     this.onTamperDetected('DevTools detected');
                 }
             });
-            
+
             this.checkInterval = setInterval(() => {
                 devtoolsOpen = false;
                 console.log(element);
                 console.clear();
-                
+
                 if (devtoolsOpen) {
                     this.onTamperDetected('DevTools open');
                 }
             }, 1000);
         }
-        
+
         disableRightClick() {
             document.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 this.onTamperDetected('Right-click attempted');
             });
         }
-        
+
         disableKeyboardShortcuts() {
             document.addEventListener('keydown', (e) => {
                 // F12
@@ -70,25 +83,25 @@
                     e.preventDefault();
                     this.onTamperDetected('F12 pressed');
                 }
-                
+
                 // Ctrl+Shift+I (Inspect)
                 if (e.ctrlKey && e.shiftKey && e.key === 'I') {
                     e.preventDefault();
                     this.onTamperDetected('Inspect shortcut');
                 }
-                
+
                 // Ctrl+Shift+J (Console)
                 if (e.ctrlKey && e.shiftKey && e.key === 'J') {
                     e.preventDefault();
                     this.onTamperDetected('Console shortcut');
                 }
-                
+
                 // Ctrl+Shift+C (Element picker)
                 if (e.ctrlKey && e.shiftKey && e.key === 'C') {
                     e.preventDefault();
                     this.onTamperDetected('Element picker shortcut');
                 }
-                
+
                 // Ctrl+U (View source)
                 if (e.ctrlKey && e.key === 'u') {
                     e.preventDefault();
@@ -96,48 +109,53 @@
                 }
             });
         }
-        
+
         detectDebugger() {
             setInterval(() => {
                 const start = performance.now();
                 debugger;
                 const end = performance.now();
-                
+
                 if (end - start > 100) {
                     this.onTamperDetected('Debugger detected');
                 }
             }, 2000);
         }
-        
+
         integrityCheck() {
             setInterval(() => {
                 if (!localStorage.getItem || !sessionStorage.getItem) {
                     this.onTamperDetected('Storage functions tampered');
                 }
-                
+
                 if (!window.crypto || !window.crypto.subtle) {
                     this.onTamperDetected('Crypto API tampered');
                 }
             }, 5000);
         }
-        
+
         onTamperDetected(reason) {
             this.detectionCount++;
-            
+
             console.warn(`⚠️ Tamper attempt ${this.detectionCount}/${this.maxDetections}: ${reason}`);
-            
+
             if (this.detectionCount >= this.maxDetections) {
                 this.lockdown(reason);
             }
         }
-        
+
         lockdown(reason) {
             console.error('🚨 SECURITY LOCKDOWN:', reason);
-            
-            // Clear all data
-            localStorage.clear();
+
+            // SECURITY: Only clear session-related data, preserve user preferences
+            // Clearing all storage on false positive is a DoS to legitimate users
             sessionStorage.clear();
-            
+            // Only remove auth-related items from localStorage
+            localStorage.removeItem('movex_secure_session');
+            localStorage.removeItem('movex_encrypted_vault');
+            localStorage.removeItem('movex_device_secret');
+            // Preserve: movex-theme, movex_theme (user preferences)
+
             // Show EPIC lockdown screen
             document.body.innerHTML = `
                 <!DOCTYPE html>
@@ -154,7 +172,7 @@
                 }
                 
                 body {
-                    font-family: 'SF Pro Text', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
                     overflow: hidden;
                     background: #0a0a0a;
                 }
@@ -384,7 +402,7 @@
                     color: white;
                     font-size: 15px;
                     font-weight: 600;
-                    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
                     cursor: pointer;
                     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                     box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
@@ -545,7 +563,7 @@
                 </body>
                 </html>
             `;
-            
+
             // Clear interval
             if (this.checkInterval) {
                 clearInterval(this.checkInterval);

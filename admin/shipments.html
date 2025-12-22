@@ -5,24 +5,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shipment Management - MoveX Admin</title>
-    <link rel="stylesheet" href="../styles/base.css">
-    <link rel="stylesheet" href="../styles/admin.css">
+    <link rel="icon" type="image/png" href="../logo-images/logo1.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../styles/base.css?v=4">
+    <link rel="stylesheet" href="../styles/components.css?v=4">
+    <link rel="stylesheet" href="../styles/admin.css?v=4">
     <script src="../js/dashboard-guard.js"></script>
+    <script src="../js/admin-core.js?v=2"></script>
 </head>
 
 <body>
     <div class="admin-layout">
         <main>
             <div class="dashboard-container">
-                <div class="page-header">
-                    <h1 class="page-title">Shipment Management</h1>
+                <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 class="page-title">Shipment Management</h1>
+                        <p class="page-subtitle">Monitor and manage all logistics operations in real-time.</p>
+                    </div>
+                    <button class="btn-primary" id="createNewShipment">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
+                            </path>
+                        </svg>
+                        Create Shipment
+                    </button>
                 </div>
 
                 <div class="card" style="margin-bottom: 2rem; padding: 1.5rem;">
                     <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                        <input type="text" placeholder="Enter Tracking ID..."
+                        <input type="text" id="shipmentSearchInput" placeholder="Enter Tracking ID..." autofocus
                             style="flex:1; min-width: 200px; padding: 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-md);">
-                        <select
+                        <select id="shipmentStatusFilter"
                             style="padding: 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-md); min-width: 150px;">
                             <option>All Status</option>
                             <option>In Transit</option>
@@ -30,14 +47,14 @@
                             <option>Pending</option>
                             <option>Failed</option>
                         </select>
-                        <input type="date"
+                        <input type="date" id="shipmentDateFilter"
                             style="padding: 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-md);">
-                        <button
+                        <button id="shipmentSearchBtn"
                             style="background: var(--brand-primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">Search</button>
                     </div>
                 </div>
 
-                <div class="card" style="padding: 0;">
+                <div class="card card-table" style="padding: 0 !important; overflow: hidden !important;">
                     <div class="data-table-container" style="border: none;">
                         <table class="data-table">
                             <thead>
@@ -103,6 +120,10 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                    <div id="paginationControls"
+                        style="padding: 1rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; border-top: 1px solid var(--border-subtle); background: var(--surface-primary);">
+                        <!-- Injected by JS -->
                     </div>
                 </div>
             </div>

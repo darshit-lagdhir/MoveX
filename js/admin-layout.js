@@ -69,6 +69,18 @@
     }
 
     async function ensureCoreLoaded() {
+        // Load Flatpickr for premium date selection
+        if (!document.querySelector('link[href*="flatpickr"]')) {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';
+            document.head.appendChild(link);
+
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/flatpickr';
+            document.head.appendChild(script);
+        }
+
         if (window.MoveXAdmin) return;
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');

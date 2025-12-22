@@ -6,8 +6,18 @@ const sessionStore = require('../session');
 const { setSessionCookie, clearSessionCookie } = require('../sessionMiddleware');
 
 const MIN_PASSWORD_LENGTH = 8;
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '2h';
+
+// SECURITY: Validate JWT_SECRET is properly configured
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('❌ SECURITY ERROR: JWT_SECRET environment variable is not set!');
+  console.error('   Using a default value is UNSAFE for production.');
+  process.exit(1);
+}
+if (JWT_SECRET.length < 32) {
+  console.warn('⚠️ SECURITY WARNING: JWT_SECRET is shorter than recommended (32+ characters).');
+}
 const ALLOWED_LOGIN_FIELDS = ['username', 'password', 'role'];
 const ALLOWED_REGISTER_FIELDS = ['username', 'password', 'securityAnswers'];
 const ALLOWED_FORGOT_FIELDS = ['email', 'username']; // accept username (mapped to email column)
@@ -45,7 +55,8 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: 'Registration failed. Please check your input.' });
     }
 
-    const hash = await bcrypt.hash(password, 10);
+    // SECURITY: Use bcrypt cost factor 12 (industry standard)
+    const hash = await bcrypt.hash(password, 12);
 
     const defaultRole = 'user';
     const status = 'active';
@@ -97,9 +108,11 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials.' });
     }
 
-    /* Enforce Role Check if provided */
-    if (body.role && body.role !== user.role) {
-      return res.status(400).json({ message: 'Role mismatch. Please select the correct role.' });
+    const { role } = body;
+
+    // Validate role if provided (Strict Mode for User Request)
+    if (role && user.role !== role) {
+      return res.status(401).json({ message: 'Invalid role for this user.' });
     }
 
     if (user.status && user.status !== 'active') {
@@ -239,12 +252,11 @@ exports.checkRecoveryEligibility = async (req, res) => {
     );
     const user = rows[0];
 
+    // SECURITY: Return same response whether user exists or not (anti-enumeration)
     if (!user) {
-      // To prevent enumeration, we can say "Eligible" or error.
-      // User asked for specific error check for ADMIN/STAFF/FRANCHISEE.
-      // If user doesn't exist, we should probably just say "User not found" or handle it smoothly.
-      // Let's return 404 for not found to keep it simple for now as per "check whether username belongs..."
-      return res.status(404).json({ message: 'User not found.' });
+      // Fake delay to match DB lookup timing
+      await new Promise(r => setTimeout(r, 100));
+      return res.status(200).json({ message: 'Eligible.' });
     }
 
     if (['admin', 'staff', 'franchisee'].includes(user.role)) {
@@ -292,7 +304,8 @@ exports.resetPassword = async (req, res) => {
       return res.status(400).json({ message: 'Reset failed. Please try again.' });
     }
 
-    const hash = await bcrypt.hash(password, 10);
+    // SECURITY: Use bcrypt cost factor 12
+    const hash = await bcrypt.hash(password, 12);
 
     await pool.query('BEGIN');
     await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, reset.user_id]);

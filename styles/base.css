@@ -1,78 +1,18 @@
 /* ═══════════════════════════════════════════════════════════
-   SF PRO TEXT FONT FAMILY
+   INTER FONT FAMILY (Open Source - SIL Open Font License)
+   ═══════════════════════════════════════════════════════════
+   
+   Inter is a free and open source font family designed for 
+   computer screens by Rasmus Andersson. It features a tall 
+   x-height for better readability and is used by major 
+   companies like GitHub, Figma, and Mozilla.
+   
+   The font is loaded via Google Fonts CDN in the HTML files.
+   Weights available: 100-900
+   
+   License: SIL Open Font License 1.1
+   Website: https://rsms.me/inter/
    ═══════════════════════════════════════════════════════════ */
-
-@font-face {
-    font-family: 'SF Pro Text';
-    src: url('../fonts/SF-Pro-Text-Ultralight.otf') format('opentype');
-    font-weight: 100;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'SF Pro Text';
-    src: url('../fonts/SF-Pro-Text-Thin.otf') format('opentype');
-    font-weight: 200;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'SF Pro Text';
-    src: url('../fonts/SF-Pro-Text-Light.otf') format('opentype');
-    font-weight: 300;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'SF Pro Text';
-    src: url('../fonts/SF-Pro-Text-Regular.otf') format('opentype');
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'SF Pro Text';
-    src: url('../fonts/SF-Pro-Text-Medium.otf') format('opentype');
-    font-weight: 500;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'SF Pro Text';
-    src: url('../fonts/SF-Pro-Text-Semibold.otf') format('opentype');
-    font-weight: 600;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'SF Pro Text';
-    src: url('../fonts/SF-Pro-Text-Bold.otf') format('opentype');
-    font-weight: 700;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'SF Pro Text';
-    src: url('../fonts/SF-Pro-Text-Heavy.otf') format('opentype');
-    font-weight: 800;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'SF Pro Text';
-    src: url('../fonts/SF-Pro-Text-Black.otf') format('opentype');
-    font-weight: 900;
-    font-style: normal;
-    font-display: swap;
-}
 
 /* ═══════════════════════════════════════════════════════════
    MOVEX PROFESSIONAL COLOR SYSTEM - 2025
@@ -215,7 +155,13 @@
     --border-subtle: #1C1C1C;
     --border-focus: #6366F1;
 
-    /* Semantic Colors */
+    /* Semantic Soft Colors for Dark Mode - Enhanced Visibility */
+    --brand-primary-soft: rgba(99, 102, 241, 0.25);
+    --success-soft: rgba(34, 197, 94, 0.25);
+    --warning-soft: rgba(251, 191, 36, 0.25);
+    --error-soft: rgba(239, 68, 68, 0.25);
+    --info-soft: rgba(96, 165, 250, 0.25);
+
     --success: #22C55E;
     --warning: #FBBF24;
     --error: #EF4444;
@@ -231,6 +177,12 @@
     --shadow-soft: rgba(0, 0, 0, 0.30);
     --shadow-medium: rgba(0, 0, 0, 0.40);
     --shadow-strong: rgba(0, 0, 0, 0.60);
+
+    /* Semantic Soft Colors for Dark Mode */
+    --success-soft: rgba(34, 197, 94, 0.15);
+    --warning-soft: rgba(251, 191, 36, 0.15);
+    --error-soft: rgba(239, 68, 68, 0.15);
+    --info-soft: rgba(96, 165, 250, 0.15);
 
     /* Particle Network Colors - DARK MODE (MORE VISIBLE) */
     --particle-dot: rgba(99, 102, 241, 0.7);
@@ -249,7 +201,7 @@ html {
 }
 
 body {
-    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: #f9f9f9;
     /* Hope UI Body Background */
     color: var(--text-primary);
@@ -477,4 +429,41 @@ body {
     outline: 2px solid var(--border-focus);
     outline-offset: 3px;
     border-radius: var(--radius-xs);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GLOBAL BRANDING - NAV LOGO
+   ═══════════════════════════════════════════════════════════ */
+.nav-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    text-decoration: none !important;
+    transition: all var(--transition-base);
+    white-space: nowrap;
+}
+
+.nav-logo:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+.nav-logo .logo-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    filter: drop-shadow(0 4px 12px var(--brand-primary-glow));
+}
+
+.nav-logo .logo-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    /* Slightly reduced from 800 for better balance */
+    color: var(--brand-primary);
+    letter-spacing: -0.03em;
+    display: inline-block;
 }

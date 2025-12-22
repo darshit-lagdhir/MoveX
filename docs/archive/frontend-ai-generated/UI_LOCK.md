@@ -14,7 +14,7 @@
 - Layout structure
 - Navigation menus
 - Color schemes
-- Typography (SF Pro Text)
+- Typography (Inter)
 - Responsive breakpoints
 
 ### ✅ Theme System
