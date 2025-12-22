@@ -197,7 +197,6 @@ postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:6543/postgres
 └── Protocol (always postgresql)
 ```
 
-
 **Port Options:**
 - `5432` = Direct connection (limited connections, use for migrations)
 - `6543` = Connection pooler (recommended for apps, handles many connections)
