@@ -3,6 +3,7 @@
  * Handles functionality for all admin sections.
  */
 
+
 window.MoveXAdmin = (function () {
     'use strict';
 
@@ -379,46 +380,61 @@ window.MoveXAdmin = (function () {
             showSkeletons('.grid-kpi', 'cards');
             showSkeletons('.data-table-container', 'table');
 
-            // Simulate data fetch
-            setTimeout(() => {
-                const kpiCards = document.querySelectorAll('.grid-kpi .card');
-                if (kpiCards.length >= 4) {
-                    // Number Counter Animations
-                    animateValue(kpiCards[0].querySelector('.card-value'), 0, MOCK_DATA.stats.totalShipments, 1500);
-                    animateValue(kpiCards[1].querySelector('.card-value'), 0, MOCK_DATA.stats.activeFranchises, 1000);
-                    animateValue(kpiCards[2].querySelector('.card-value'), 0, MOCK_DATA.stats.totalRevenue / 1000, 2000, '₹', 'k');
-                    animateValue(kpiCards[3].querySelector('.card-value'), 0, MOCK_DATA.stats.failedDeliveries, 1000, '', '%');
+            // FETCH REAL DATA
+            Promise.all([
+                fetch('/api/dashboard/admin/stats').then(res => res.json()),
+                fetch('/api/dashboard/admin/shipments').then(res => res.json())
+            ]).then(([statsData, shipmentsData]) => {
 
-                    kpiCards[0].querySelector('.card-trend span').textContent = MOCK_DATA.stats.shipmentTrend;
-                    kpiCards[1].querySelector('.card-trend span').textContent = MOCK_DATA.stats.franchiseTrend;
-                    kpiCards[2].querySelector('.card-trend span').textContent = MOCK_DATA.stats.revenueTrend;
-                    kpiCards[3].querySelector('.card-trend span').textContent = MOCK_DATA.stats.failedTrend;
+                // 1. Update KPI Cards
+                if (statsData.success && statsData.stats) {
+                    const stats = statsData.stats;
+                    const kpiCards = document.querySelectorAll('.grid-kpi .card');
+                    if (kpiCards.length >= 4) {
+                        animateValue(kpiCards[0].querySelector('.card-value'), 0, stats.totalShipments, 1500);
+                        animateValue(kpiCards[1].querySelector('.card-value'), 0, stats.activeFranchises, 1000);
+                        animateValue(kpiCards[2].querySelector('.card-value'), 0, stats.totalRevenue, 2000, '₹', '');
+                        animateValue(kpiCards[3].querySelector('.card-value'), 0, stats.failedDeliveries, 1000, '', '%');
+
+                        kpiCards[0].querySelector('.card-trend span').textContent = stats.shipmentTrend;
+                        kpiCards[1].querySelector('.card-trend span').textContent = stats.franchiseTrend;
+                        kpiCards[2].querySelector('.card-trend span').textContent = stats.revenueTrend;
+                        kpiCards[3].querySelector('.card-trend span').textContent = stats.failedTrend;
+                    }
                 }
 
-                const tbody = document.querySelector('.data-table tbody');
-                if (tbody) {
-                    tbody.innerHTML = MOCK_DATA.shipments.slice(0, 4).map(s => `
-                        <tr>
-                            <td style="font-family: monospace; font-weight: 600; color: var(--brand-primary);">${s.id}</td>
-                            <td><span class="status-badge status-${s.status.toLowerCase().replace(' ', '-')}">${s.status}</span></td>
-                            <td>${s.origin}</td>
-                            <td>${s.destination}</td>
-                            <td>${s.date}</td>
-                            <td><strong style="font-family: monospace;">₹${s.amount.toFixed(2)}</strong></td>
-                        </tr>
-                    `).join('');
+                // 2. Update Recent Shipments Table
+                if (shipmentsData.success && shipmentsData.shipments) {
+                    const tbody = document.querySelector('.data-table tbody');
+                    if (tbody) {
+                        if (shipmentsData.shipments.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem;">No shipments found.</td></tr>';
+                        } else {
+                            tbody.innerHTML = shipmentsData.shipments.map(s => `
+                                <tr>
+                                    <td style="font-family: monospace; font-weight: 600; color: var(--brand-primary);">${s.id}</td>
+                                    <td><span class="status-badge status-${s.status.toLowerCase().replace(' ', '-')}">${s.status}</span></td>
+                                    <td>${s.origin}</td>
+                                    <td>${s.destination}</td>
+                                    <td>${s.date}</td>
+                                    <td><strong style="font-family: monospace;">₹${s.amount.toFixed(2)}</strong></td>
+                                </tr>
+                            `).join('');
 
-                    tbody.querySelectorAll('tr').forEach((row, i) => {
-                        row.onclick = () => showShipmentDetails(MOCK_DATA.shipments[i]);
-                    });
-
-                    // Staggered table row entry
-                    staggerEntries('.data-table tbody tr', 50);
+                            tbody.querySelectorAll('tr').forEach((row, i) => {
+                                row.onclick = () => showShipmentDetails(shipmentsData.shipments[i]);
+                            });
+                            staggerEntries('.data-table tbody tr', 50);
+                        }
+                    }
                 }
-
-                // Staggered card entrance
+            }).catch(err => {
+                console.error("Dashboard Fetch Error:", err);
+                showToast("Failed to load dashboard data", "error");
+            }).finally(() => {
+                // Staggered card entrance even if error (or after success)
                 staggerEntries('.grid-kpi .card', 100);
-            }, 600); // Artificial delay to show skeletons
+            });
 
             // Add "Last Updated" timestamp
             const header = document.querySelector('.page-header');
@@ -426,7 +442,7 @@ window.MoveXAdmin = (function () {
                 const updated = document.createElement('div');
                 updated.className = 'live-indicator';
                 updated.style.cssText = 'font-size: 0.75rem; color: var(--text-tertiary); margin-top: 0.25rem; display: flex; align-items: center; gap: 0.4rem;';
-                updated.innerHTML = '<span style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block; animation: pulse 2s infinite;"></span> System Live • Last updated just now';
+                updated.innerHTML = '<span style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block; animation: pulse 2s infinite;"></span> System Live • Real-time Data';
                 header.appendChild(updated);
             }
 
@@ -1028,16 +1044,7 @@ window.MoveXAdmin = (function () {
         });
     }
 
-    // Auto-init if on shipments page and not initialized
-    if (window.location.href.includes('shipments.html')) {
-        setTimeout(() => {
-            const tbody = document.querySelector('.data-table tbody');
-            // If table is empty (or has only placeholders), force render
-            if (tbody && tbody.children.length < 3) {
-                renderShipmentTable();
-            }
-        }, 300);
-    }
+
 
     return {
         init: function (page) {
@@ -1057,41 +1064,19 @@ window.MoveXAdmin = (function () {
             initCustomSelects();
 
             // Initialize Flatpickr for any date inputs
+            // Initialize Flatpickr for any date inputs - DISABLED FOR NATIVE UI
+            /* 
             if (window.flatpickr) {
                 const dateInputs = document.querySelectorAll('input[type="date"]');
                 dateInputs.forEach(input => {
-                    // Change type to text to prevent native UI clash
                     input.type = 'text';
                     input.placeholder = 'Select Date...';
-                    const fp = window.flatpickr(input, {
-                        dateFormat: "Y-m-d",
-                        animate: true,
-                        position: "auto",
-                        static: false,
-                        clickOpens: false, // Manual control to prevent loops
-                        onOpen: (selectedDates, dateStr, instance) => {
-                            instance.element.closest('.card')?.classList.add('has-open-dropdown');
-                        },
-                        onClose: (selectedDates, dateStr, instance) => {
-                            instance.element.closest('.card')?.classList.remove('has-open-dropdown');
-                        }
-                    });
-
-                    // True toggle behavior
-                    input.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        if (fp.isOpen) {
-                            fp.close();
-                        } else {
-                            fp.open();
-                        }
+                    window.flatpickr(input, {
+                        dateFormat: "Y-m-d"
                     });
                 });
-            } else {
-                setTimeout(() => {
-                    if (window.flatpickr) window.MoveXAdmin.init(page);
-                }, 800);
             }
+            */
         },
         toast: showToast,
         modal: createModal

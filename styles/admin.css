@@ -1,5 +1,18 @@
 /* Admin Dashboard Layout & Components */
 
+/* LOADING FIX: Hide UI during initial load to prevent "floating" elements */
+html.loading body {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+html.loading * {
+    transition: none !important;
+    animation: none !important;
+}
+
+
+
 /* LAYOUT STRUCTURE */
 .admin-layout {
     display: flex;
@@ -43,6 +56,18 @@ textarea {
     font-size: 0.875rem;
     outline: none;
     transition: all var(--transition-base);
+    height: 46px;
+    /* Uniform height for all inputs */
+}
+
+/* Ensure buttons match input height exactly */
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+#shipmentSearchBtn {
+    height: 46px;
+    padding: 0 1.5rem;
+    box-sizing: border-box;
 }
 
 /* Custom Dropdown Wrapper */
@@ -113,51 +138,51 @@ textarea {
     color: white;
 }
 
-/* FLATPICKR (DATE SELECTOR) CUSTOM THEME */
-.flatpickr-calendar {
-    background: var(--surface-primary) !important;
-    box-shadow: var(--shadow-2xl) !important;
-    border: 1px solid var(--border-default) !important;
-    border-radius: var(--radius-lg) !important;
-    font-family: inherit !important;
-    color: var(--text-primary) !important;
+/* SEARCH BAR SYSTEM */
+.search-bar-container {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: nowrap;
+    /* Prevent messy wrapping on standard desktops */
+    align-items: center !important;
 }
 
-.flatpickr-day {
-    color: var(--text-primary) !important;
+.search-input {
+    flex: 2;
+    min-width: 200px;
+    height: 46px !important;
 }
 
-.flatpickr-day.flatpickr-disabled,
-.flatpickr-day.flatpickr-disabled:hover {
-    color: var(--text-tertiary) !important;
-    opacity: 0.3;
+.search-select {
+    flex: 1;
+    min-width: 150px;
+    height: 46px !important;
 }
 
-.flatpickr-day.selected,
-.flatpickr-day.selected:hover {
+.search-date {
+    flex: 1;
+    min-width: 150px;
+    height: 46px !important;
+}
+
+.search-btn {
     background: var(--brand-primary) !important;
-    border-color: var(--brand-primary) !important;
     color: white !important;
+    border: none !important;
+    font-weight: 700 !important;
+    padding: 0 2rem !important;
+    height: 46px !important;
+    border-radius: var(--radius-md) !important;
+    cursor: pointer;
 }
 
-.flatpickr-day:hover {
-    background: var(--brand-primary-soft) !important;
-    color: var(--brand-primary) !important;
-}
 
-.flatpickr-months .flatpickr-month,
-.flatpickr-weekdays,
-span.flatpickr-weekday {
-    background: transparent !important;
-    color: var(--text-secondary) !important;
-    fill: var(--text-primary) !important;
-}
 
-[data-theme="dark"] .flatpickr-calendar {
-    background: var(--surface-tertiary) !important;
-    color: white !important;
-}
 
+
+/* ═══════════════════════════════════════════════════════════
+   BUTTONS & ACTIONS
+   ═══════════════════════════════════════════════════════════ */
 .btn-primary,
 .btn-secondary,
 .btn-ghost {

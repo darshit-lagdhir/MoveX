@@ -1,3 +1,6 @@
+// LOADING FIX: Hide UI immediately before first paint
+document.documentElement.classList.add('loading');
+
 (function () {
     'use strict';
 

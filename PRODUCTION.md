@@ -1,7 +1,7 @@
 # MoveX Production Guide
 
-> **Last Updated:** December 22, 2025  
-> **Version:** 1.0.0  
+> **Last Updated:** December 23, 2025  
+> **Version:** 1.0.1  
 > **Status:** Production-Ready
 
 This document provides a complete guide for running MoveX in a production environment. It covers database setup, security configuration, deployment options, and maintenance procedures.
@@ -68,7 +68,8 @@ This document provides a complete guide for running MoveX in a production enviro
 │                          │                                   │
 │  ┌───────────────────────────────────────────────────────┐  │
 │  │                    js/*.js                             │  │
-│  │  auth-api.js | admin-core.js | dashboard-guard.js     │  │
+│  │  auth-api.js | admin-layout.js | admin-core.js         │  │
+│  │  dashboard-guard.js | animations.js                    │  │
 │  └───────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
                               │

@@ -138,15 +138,6 @@ pool.on('error', (err, client) => {
  */
 // pool.on('connect') listener removed to reduce noise
 
-/**
- * Log when clients are removed from pool
- */
-pool.on('remove', (client) => {
-  if (!isProduction) {
-    console.log('[DB] Client removed from pool');
-  }
-});
-
 // ═══════════════════════════════════════════════════════════
 // CONNECTION VALIDATION
 // ═══════════════════════════════════════════════════════════
@@ -155,42 +146,39 @@ pool.on('remove', (client) => {
  * Test database connection on startup
  * Logs connection status but doesn't block startup
  */
-async function validateConnection() {
-  try {
-    const client = await pool.connect();
-    const result = await client.query('SELECT NOW() as now, current_database() as db');
-    client.release();
+async function validateConnection(retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const client = await pool.connect();
+      const result = await client.query('SELECT NOW() as now, current_database() as db');
+      client.release();
 
-    const { now, db } = result.rows[0];
-    // console.log(`✅ Database connected: ${db} at ${new Date(now).toISOString()}`);
-    // if (poolConfig.ssl) console.log('🔒 SSL connection enabled');
+      const { db } = result.rows[0];
+      // Success - only log success once
+      return true;
+    } catch (err) {
+      if (i === retries - 1) {
+        console.error('❌ Database connection failed after retries:', err.message);
 
-    return true;
-  } catch (err) {
-    console.error('❌ Database connection failed:', err.message);
+        // Provide helpful error messages
+        if (err.code === 'ECONNREFUSED' || err.code === 'ECONNRESET') {
+          console.error('   → Connection issues detected. Please check your network and DATABASE_URL.');
+        }
 
-    // Provide helpful error messages
-    if (err.code === 'ECONNREFUSED') {
-      console.error('   → Is the database server running?');
-      console.error('   → Check DB_HOST and DB_PORT settings');
-    } else if (err.code === 'ENOTFOUND') {
-      console.error('   → Database host not found');
-      console.error('   → Check your DATABASE_URL or DB_HOST');
-    } else if (err.message.includes('password')) {
-      console.error('   → Check DB_PASSWORD or DATABASE_URL password');
-    } else if (err.message.includes('SSL')) {
-      console.error('   → SSL configuration issue');
-      console.error('   → Try adding ?sslmode=require to DATABASE_URL');
+        // In production, exit on final failure
+        if (isProduction) {
+          console.error('   Exiting due to database connection failure in production mode.');
+          process.exit(1);
+        }
+      } else {
+        // Wait and retry (useful for waking up paused Supabase instances)
+        const delay = (i + 1) * 2000;
+        console.warn(`⏳ Database connection attempt ${i + 1} failed. Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
     }
-
-    // In production, exit on connection failure
-    if (isProduction) {
-      console.error('   Exiting due to database connection failure in production mode.');
-      process.exit(1);
-    }
-
-    return false;
   }
+  return false;
 }
 
 // Run validation on module load (non-blocking)

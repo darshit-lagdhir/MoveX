@@ -3,8 +3,23 @@
  * Handles Sidebar, Header, and Partial Navigation for all Admin Pages.
  */
 
+// LOADING FIX: Prevent UI flash and "settling" animations during initial load
+document.documentElement.classList.add('loading');
+
 (function () {
     'use strict';
+
+    // Failsafe: Always reveal UI after 1.5s in case of hanging fetches
+    const revealTimeout = setTimeout(revealUI, 1500);
+
+    function revealUI() {
+        if (!document.documentElement.classList.contains('loading')) return;
+        clearTimeout(revealTimeout);
+        requestAnimationFrame(() => {
+            document.documentElement.classList.remove('loading');
+        });
+    }
+
 
     // Track state to avoid double loading
     let isLayoutInitialized = false;
@@ -60,13 +75,21 @@
         initTheme();
         updateUserInfo();
 
-        // Initialize functionality for the current page
-        const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
+        // 3. SECURE INITIALIZATION: Wait for core JS before calling init
+        const currentPath = window.location.pathname.split('/').pop() || 'dashboard.html';
+
         await ensureCoreLoaded();
+
         if (window.MoveXAdmin) {
-            window.MoveXAdmin.init(currentPage);
+            console.log('Layout Manager: Triggering core init for', currentPath);
+            window.MoveXAdmin.init(currentPath);
         }
+
+        // Final step: Reveal the UI once everything is stable
+        revealUI();
     }
+
+
 
     async function ensureCoreLoaded() {
         // Load Flatpickr for premium date selection
