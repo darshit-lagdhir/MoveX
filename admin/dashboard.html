@@ -20,172 +20,80 @@
     <div class="admin-layout">
         <main>
             <div class="dashboard-container">
-                <div class="page-header">
-                    <h1 class="page-title">Dashboard Overview</h1>
-                    <p class="page-subtitle">Real-time insights across the national network.</p>
+                <!-- Page Header (Simplified) -->
+                <div class="page-header"
+                    style="flex-direction: column; align-items: flex-start; gap: 0.5rem; margin-bottom: 2rem;">
+                    <h1 class="page-title">Administrator Control</h1>
+                    <p class="page-subtitle">Select an operation to proceed.</p>
                 </div>
 
-                <!-- KPI Cards - Hope UI Structure -->
-                <div class="grid-kpi">
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <p class="card-subtitle">Total Shipments</p>
-                                <h2 class="card-value">12,450</h2>
-                            </div>
-                            <div class="card-icon"
-                                style="background: var(--brand-primary-soft); color: var(--brand-primary);">
-                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5"
-                                    viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-                                    <path
-                                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
-                                    </path>
-                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="card-trend trend-up">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                            </svg>
-                            <span>+12.5% vs last month</span>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <p class="card-subtitle">Active Franchises</p>
-                                <h2 class="card-value">48</h2>
-                            </div>
-                            <div class="card-icon" style="background: var(--info-soft); color: var(--info);">
-                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5"
-                                    viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 21h18"></path>
-                                    <path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3"></path>
-                                    <path d="M19 21v-7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v7"></path>
-                                    <rect x="9" y="17" width="2" height="4"></rect>
-                                    <rect x="13" y="17" width="2" height="4"></rect>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="card-trend trend-up">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                            </svg>
-                            <span>+2 New this week</span>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <p class="card-subtitle">Total Revenue</p>
-                                <h2 class="card-value">₹845.2k</h2>
-                            </div>
-                            <div class="card-icon" style="background: var(--success-soft); color: var(--success);">
-                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5"
-                                    viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="12" y1="1" x2="12" y2="23"></line>
-                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="card-trend trend-up">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                            </svg>
-                            <span>+8.2% vs last month</span>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <p class="card-subtitle">Failed Deliveries</p>
-                                <h2 class="card-value">1.2%</h2>
-                            </div>
-                            <div class="card-icon" style="background: var(--error-soft); color: var(--error);">
-                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5"
-                                    viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="card-trend trend-down">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
-                            </svg>
-                            <span>-0.5% Improved</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Activity Table -->
-                <div class="card" style="padding: 0;">
+                <!-- Quick Operations & Tools -->
+                <div>
+                    <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.5rem;">
+                        Available Tools</h3>
                     <div
-                        style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle);">
-                        <h3 style="margin:0; font-size: 1.125rem; font-weight: 600;">Recent Shipments</h3>
-                        <button
-                            style="background:none; border:none; color: var(--brand-primary); font-weight: 600; cursor: pointer; font-size: 0.875rem;">View
-                            All</button>
-                    </div>
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
 
-                    <div class="data-table-container" style="border:none; box-shadow:none;">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Tracking ID</th>
-                                    <th>Status</th>
-                                    <th>Origin</th>
-                                    <th>Destination</th>
-                                    <th>Date</th>
-                                    <th>Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="font-family: monospace; font-weight: 600;">MX290012</td>
-                                    <td><span class="status-badge status-active">In Transit</span></td>
-                                    <td>Mumbai, MH</td>
-                                    <td>Delhi, NCR</td>
-                                    <td>Oct 24, 2025</td>
-                                    <td>₹124.00</td>
-                                </tr>
-                                <tr>
-                                    <td style="font-family: monospace; font-weight: 600;">MX290013</td>
-                                    <td><span class="status-badge status-warn">Pending</span></td>
-                                    <td>Bangalore, KA</td>
-                                    <td>Chennai, TN</td>
-                                    <td>Oct 24, 2025</td>
-                                    <td>₹89.50</td>
-                                </tr>
-                                <tr>
-                                    <td style="font-family: monospace; font-weight: 600;">MX290014</td>
-                                    <td><span class="status-badge status-info">Delivered</span></td>
-                                    <td>Hyderabad, TS</td>
-                                    <td>Pune, MH</td>
-                                    <td>Oct 23, 2025</td>
-                                    <td>₹45.00</td>
-                                </tr>
-                                <tr>
-                                    <td style="font-family: monospace; font-weight: 600;">MX290015</td>
-                                    <td><span class="status-badge status-error">Failed</span></td>
-                                    <td>Kolkata, WB</td>
-                                    <td>Ahmedabad, GJ</td>
-                                    <td>Oct 23, 2025</td>
-                                    <td>₹210.00</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <!-- Create Shipment -->
+                        <div id="action-create-shipment" class="quick-card"
+                            style="cursor: pointer; background: var(--surface-primary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: 2rem; text-align: center; transition: all 0.2s; position: relative; overflow: hidden;">
+                            <div
+                                style="background: var(--brand-primary-soft); color: var(--brand-primary); width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                            </div>
+                            <h4 style="margin: 0 0 0.5rem; font-size: 1.1rem; font-weight: 600;">New Shipment</h4>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">Create a new delivery
+                                order.</p>
+                        </div>
+
+                        <!-- Add User -->
+                        <div id="action-add-user" class="quick-card"
+                            style="cursor: pointer; background: var(--surface-primary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: 2rem; text-align: center; transition: all 0.2s;">
+                            <div
+                                style="background: var(--info-soft); color: var(--info); width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h4 style="margin: 0 0 0.5rem; font-size: 1.1rem; font-weight: 600;">Add User</h4>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">Register staff or
+                                franchise.</p>
+                        </div>
+
+                        <!-- Serviceability Check (New Tool) -->
+                        <div id="action-check-service" class="quick-card"
+                            style="cursor: pointer; background: var(--surface-primary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: 2rem; text-align: center; transition: all 0.2s;">
+                            <div
+                                style="background: var(--warning-soft); color: var(--warning); width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                                    </path>
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                            <h4 style="margin: 0 0 0.5rem; font-size: 1.1rem; font-weight: 600;">Check Serviceability
+                            </h4>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">Verify delivery
+                                coverage.</p>
+                        </div>
+
                     </div>
+                    <style>
+                        .quick-card:hover {
+                            transform: translateY(-4px);
+                            box-shadow: var(--shadow-xl);
+                            border-color: var(--brand-primary);
+                        }
+                    </style>
                 </div>
 
             </div>
