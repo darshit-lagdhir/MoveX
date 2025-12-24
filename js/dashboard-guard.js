@@ -5,34 +5,37 @@ document.documentElement.classList.add('loading');
     'use strict';
 
     const DASHBOARDS = {
-        admin: '/admin/dashboard.html',
-        franchisee: '/dashboards/franchisee.html',
-        staff: '/dashboards/staff.html',
-        user: '/dashboards/user.html',
-        customer: '/dashboards/customer.html'
+        admin: '/admin/dashboard',
+        franchisee: '/dashboards/franchisee',
+        staff: '/dashboards/staff',
+        user: '/dashboards/user',
+        customer: '/dashboards/customer'
     };
 
     const ROLE_HIERARCHY = {
-        'dashboard.html': ['admin'],
-        'users.html': ['admin'],
-        'franchises.html': ['admin'],
-        'staff.html': ['admin'],
-        'shipments.html': ['admin'],
-        'bookings.html': ['admin'],
-        'finance.html': ['admin'],
-        'reports.html': ['admin'],
-        'settings.html': ['admin'],
-        'audit-logs.html': ['admin'],
-        'franchisee.html': ['admin', 'franchisee'],
-        'staff.html': ['admin', 'franchisee', 'staff'],
-        'user.html': ['admin', 'franchisee', 'staff', 'user'],
-        'customer.html': ['admin', 'franchisee', 'staff', 'user', 'customer']
+        'dashboard': ['admin'],
+        'users': ['admin'],
+        'franchises': ['admin'],
+        'staff': ['admin', 'franchisee', 'staff'],
+        'shipments': ['admin'],
+        'bookings': ['admin'],
+        'finance': ['admin'],
+        'reports': ['admin'],
+        'settings': ['admin'],
+        'audit-logs': ['admin'],
+        'franchisee': ['admin', 'franchisee'],
+        'user': ['admin', 'franchisee', 'staff', 'user'],
+        'customer': ['admin', 'franchisee', 'staff', 'user', 'customer']
     };
 
     function getCurrentPage() {
         const path = window.location.pathname;
         const parts = path.split('/');
-        return parts[parts.length - 1] || 'index.html';
+        let page = parts[parts.length - 1] || 'index.html';
+        if (page.endsWith('.html') && page !== 'index.html') {
+            page = page.slice(0, -5);
+        }
+        return page;
     }
 
     function getToken() {

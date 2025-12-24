@@ -247,14 +247,14 @@
     );
 
     const dashboards = {
-      admin: 'admin/dashboard.html',
-      franchisee: 'dashboards/franchisee.html',
-      staff: 'dashboards/staff.html',
-      user: 'dashboards/user.html',
-      customer: 'dashboards/customer.html'
+      admin: 'admin/dashboard',
+      franchisee: 'dashboards/franchisee',
+      staff: 'dashboards/staff',
+      user: 'dashboards/user',
+      customer: 'dashboards/customer'
     };
 
-    const target = dashboards[user.role] || 'dashboards/user.html';
+    const target = dashboards[user.role] || 'dashboards/user';
     window.location.href = target;
   }
 
@@ -310,13 +310,13 @@
         setTimeout(() => {
           const user = data.user || {};
           const dashboards = {
-            admin: 'admin/dashboard.html',
-            franchisee: 'dashboards/franchisee.html',
-            staff: 'dashboards/staff.html',
-            user: 'dashboards/user.html',
-            customer: 'dashboards/customer.html'
+            admin: 'admin/dashboard',
+            franchisee: 'dashboards/franchisee',
+            staff: 'dashboards/staff',
+            user: 'dashboards/user',
+            customer: 'dashboards/customer'
           };
-          const target = dashboards[user.role] || 'dashboards/user.html';
+          const target = dashboards[user.role] || 'dashboards/user';
           window.location.href = target;
         }, 800);
       } catch (err) {
@@ -667,13 +667,13 @@
           triggerConfetti();
 
           const dashboards = {
-            admin: 'admin/dashboard.html',
-            franchisee: 'dashboards/franchisee.html',
-            staff: 'dashboards/staff.html',
-            user: 'dashboards/user.html',
-            customer: 'dashboards/customer.html'
+            admin: 'admin/dashboard',
+            franchisee: 'dashboards/franchisee',
+            staff: 'dashboards/staff',
+            user: 'dashboards/user',
+            customer: 'dashboards/customer'
           };
-          const target = dashboards[pendingSession.role] || 'dashboards/user.html';
+          const target = dashboards[pendingSession.role] || 'dashboards/user';
           setTimeout(() => window.location.href = target, 800);
         } catch (err) {
           console.error('MFA verify error:', err);
