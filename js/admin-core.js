@@ -169,7 +169,7 @@ window.MoveXAdmin = (function () {
                 dropdown.innerHTML = '<div style="padding: 0.75rem; color: var(--text-tertiary); font-size: 0.85rem;">No cities found</div>';
             } else {
                 dropdown.innerHTML = filtered.map(city => `
-                    <div class="city-option" style="padding: 0.75rem 1rem; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;" 
+                    <div class="city-option" data-value="${city}" style="padding: 0.75rem 1rem; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;" 
                          onmouseover="this.style.background='var(--brand-primary-soft)'; this.style.paddingLeft='1.25rem';" 
                          onmouseout="this.style.background='none'; this.style.paddingLeft='1rem';">
                         <span>${city}</span>
@@ -179,7 +179,7 @@ window.MoveXAdmin = (function () {
 
                 dropdown.querySelectorAll('.city-option').forEach(opt => {
                     opt.addEventListener('mousedown', (e) => {
-                        input.value = opt.textContent.trim();
+                        input.value = opt.getAttribute('data-value');
                         dropdown.style.display = 'none';
                     });
                 });
@@ -420,7 +420,7 @@ window.MoveXAdmin = (function () {
                     const dateVal = dateInput?.value || '';
 
                     const filtered = MOCK_DATA.shipments.filter(s => {
-                        const mQuery = !query || String(s.id).toLowerCase().includes(query) || String(s.customer).toLowerCase().includes(query) || String(s.email).toLowerCase().includes(query);
+                        const mQuery = !query || String(s.id).toLowerCase().includes(query) || String(s.customer).toLowerCase().includes(query) || String(s.mobile).toLowerCase().includes(query);
                         const mStatus = status === 'all status' || s.status.toLowerCase() === status;
                         let mDate = true;
                         if (dateVal) {
@@ -434,7 +434,11 @@ window.MoveXAdmin = (function () {
                 };
 
                 if (searchBtn) searchBtn.onclick = () => performSearch(true);
-                if (searchInput) searchInput.onkeydown = (e) => { if (e.key === 'Enter') performSearch(true); };
+                if (searchInput) {
+                    // Real-time search
+                    searchInput.addEventListener('input', () => performSearch(false));
+                    searchInput.onkeydown = (e) => { if (e.key === 'Enter') performSearch(true); };
+                }
                 if (statusSelect) statusSelect.onchange = () => performSearch(false);
                 if (dateInput) dateInput.onchange = () => performSearch(false);
             }
@@ -564,7 +568,7 @@ window.MoveXAdmin = (function () {
                     <div>
                         <label style="display: block; font-size: 0.75rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.4rem; font-weight: 700;">Customer Details</label>
                         <div style="font-weight: 600; font-size: 1rem;">${s.customer}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">${s.email}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">+${s.mobile}</div>
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.75rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.4rem; font-weight: 700;">Financials</label>
@@ -666,7 +670,7 @@ window.MoveXAdmin = (function () {
                 <td style="padding: 1rem;"><span class="status-badge status-${s.status.toLowerCase().replace(' ', '-')}">${s.status}</span></td>
                 <td style="padding: 1rem;">
                     <div style="font-weight: 600; color: var(--text-primary);">${s.customer}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-secondary);">${s.email}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">${s.mobile}</div>
                 </td>
                 <td style="padding: 1rem; color: var(--text-primary);">${s.origin}</td>
                 <td style="padding: 1rem; color: var(--text-primary);">${s.destination}</td>
@@ -886,55 +890,84 @@ window.MoveXAdmin = (function () {
             createModal('Create New Shipment', `
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.2rem;">
                     <div style="grid-column: span 2;">
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Customer Name</label>
-                        <input type="text" id="ship_customer" placeholder="Full Name" style="width:100%;" autocomplete="off">
+                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Customer Name <span style="color:red">*</span></label>
+                        <input type="text" id="ship_customer" placeholder="Full Name (Letters only)" style="width:100%;" autocomplete="off">
                     </div>
                     <div style="grid-column: span 2;">
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Customer Email</label>
-                        <input type="email" id="ship_email" placeholder="email@example.com" style="width:100%;" autocomplete="off">
+                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Mobile Number <span style="color:red">*</span></label>
+                        <input type="tel" id="ship_mobile" placeholder="+91 9876543210" style="width:100%;" autocomplete="off">
                     </div>
                     <div style="position: relative;">
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Origin City</label>
+                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Origin City <span style="color:red">*</span></label>
                         <input type="text" id="loc_origin_val" placeholder="Select City" style="width:100%;" autocomplete="new-password" name="no-fill-origin">
                     </div>
                     <div style="position: relative;">
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Destination City</label>
+                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Destination City <span style="color:red">*</span></label>
                         <input type="text" id="loc_dest_val" placeholder="Select City" style="width:100%;" autocomplete="new-password" name="no-fill-destination">
                     </div>
                     <div>
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Amount (₹)</label>
+                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Amount (₹) <span style="color:red">*</span></label>
                         <input type="number" id="ship_amount" placeholder="0.00" style="width:100%;" autocomplete="off">
                     </div>
                     <div>
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Ship Date</label>
+                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Ship Date <span style="color:red">*</span></label>
                         <input type="date" id="ship_date" style="width:100%;">
                     </div>
                 </div>
             `, [
                 { label: 'Cancel', onClick: (close) => close() },
                 {
-                    label: 'Create Shipment', primary: true, onClick: (close) => {
-                        const customer = document.getElementById('ship_customer').value;
-                        if (!customer) return showToast('Customer name is required', 'error');
+                    label: 'Create Shipment', primary: true, onClick: async (close) => {
+                        const sender_name = document.getElementById('ship_customer').value.trim();
+                        const sender_mobile = document.getElementById('ship_mobile').value.trim();
+                        const origin = document.getElementById('loc_origin_val').value.trim();
+                        const destination = document.getElementById('loc_dest_val').value.trim();
+                        const price = document.getElementById('ship_amount').value.trim();
+                        const date = document.getElementById('ship_date').value;
 
-                        // Use simple fetch to POST, or mock for now as requested by user "everything from database"
-                        // For now we will just show toast since backend POST isn't fully set up in this conversation context
-                        // But I should try to support it if I can. 
-                        // Let's stick to the existing behavior but make it reusable
+                        // Mandatory Check
+                        if (!sender_name || !sender_mobile || !origin || !destination || !price || !date) {
+                            return showToast('All fields are mandatory', 'error');
+                        }
 
-                        showToast(`Shipment created successfully! (Please reload to see changes)`, 'success');
-                        // In a real implementation this would POST to /api/shipments
+                        // Validation
+                        if (!/^[a-zA-Z\s]+$/.test(sender_name)) {
+                            return showToast('Name must contain only letters', 'error');
+                        }
+                        if (!/^[0-9+]+$/.test(sender_mobile)) {
+                            return showToast('Mobile must contain only numbers and +', 'error');
+                        }
+                        if (isNaN(price) || parseFloat(price) <= 0) {
+                            return showToast('Invalid amount', 'error');
+                        }
 
-                        close();
+                        try {
+                            const res = await fetch('/api/dashboard/admin/shipments/create', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ sender_name, sender_mobile, origin, destination, price, date })
+                            });
 
-                        // If we are on shipments page, reload table
-                        if (typeof renderShipmentTable === 'function') {
-                            // trigger reload logic if possible
-                            // Since we don't have the POST endpoint yet, we can't really "save" it to DB 
-                            // without writing the POST route. 
-                            // The user said "remove that 3 default data... everything connected to DB".
-                            // So creating a shipment effectively does nothing right now if I don't implement the POST.
-                            // But I will stick to UI updates for this step.
+                            const data = await res.json();
+                            if (data.success) {
+                                showToast(`Shipment ${data.shipment.tracking_id} created successfully!`, 'success');
+                                close();
+                                // Reload shipments if currently viewing them
+                                if (document.querySelector('a[href="shipments"].active') || window.location.pathname.endsWith('shipments')) {
+                                    if (initializers['shipments']) initializers['shipments']();
+                                } else {
+                                    // Navigate to shipments page see new data
+                                    setTimeout(() => {
+                                        const shipmentsLink = document.querySelector('a[href="shipments"]');
+                                        if (shipmentsLink) shipmentsLink.click();
+                                    }, 1000);
+                                }
+                            } else {
+                                showToast(data.error || 'Failed to create shipment', 'error');
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            showToast('Network error while creating shipment', 'error');
                         }
                     }
                 }
@@ -948,5 +981,6 @@ window.MoveXAdmin = (function () {
             if (this.init) this.init('modal-date');
         }
     };
+
 
 })();
