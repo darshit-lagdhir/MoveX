@@ -160,7 +160,7 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
         const limit = req.query.limit === 'all' ? null : (parseInt(req.query.limit) || 10);
 
         let queryText = `
-            SELECT id, tracking_id, status, sender_name, sender_email, receiver_name, 
+            SELECT id, tracking_id, status, sender_name, sender_mobile, receiver_name, 
                    origin_address, destination_address, price, created_at
             FROM shipments 
             ORDER BY created_at DESC 
@@ -181,7 +181,7 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
             date: new Date(row.created_at).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }),
             amount: parseFloat(row.price),
             customer: row.sender_name || 'N/A',
-            email: row.sender_email || 'N/A'
+            mobile: row.sender_mobile || 'N/A'
         }));
 
         res.json({ success: true, shipments });
@@ -192,6 +192,83 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
 });
 
 
+
+// Create New Shipment
+router.post('/admin/shipments/create', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        const { sender_name, sender_mobile, origin, destination, price, date } = req.body;
+
+        if (!sender_name || !sender_mobile || !origin || !destination || !price) {
+            return res.status(400).json({ success: false, error: 'Missing required fields' });
+        }
+
+        // Validate formats
+        const nameRegex = /^[a-zA-Z\s]+$/;
+        if (!nameRegex.test(sender_name)) {
+            return res.status(400).json({ success: false, error: 'Sender name must contain only letters' });
+        }
+
+        const mobileRegex = /^[0-9+]+$/;
+        if (!mobileRegex.test(sender_mobile)) {
+            return res.status(400).json({ success: false, error: 'Mobile number must contain only numbers and +' });
+        }
+
+        const amountRegex = /^\d+(\.\d{1,2})?$/;
+        if (!amountRegex.test(String(price))) {
+            return res.status(400).json({ success: false, error: 'Amount must be a valid number' });
+        }
+
+        // Generate Sequential Tracking ID
+        // 1. Get the latest tracking ID that matches the MX pattern
+        const maxIdResult = await db.query("SELECT tracking_id FROM shipments WHERE tracking_id LIKE 'MX%' ORDER BY LENGTH(tracking_id) DESC, tracking_id DESC LIMIT 1");
+
+        let nextNum = 1;
+        if (maxIdResult.rows.length > 0) {
+            const lastId = maxIdResult.rows[0].tracking_id;
+            const numPart = parseInt(lastId.replace('MX', ''), 10);
+            if (!isNaN(numPart)) {
+                nextNum = numPart + 1;
+            }
+        }
+
+        const trackingId = `MX${String(nextNum).padStart(6, '0')}`;
+
+        // Calculate estimated delivery
+        const createdAt = date ? new Date(date) : new Date();
+        const deliveryDate = new Date(createdAt);
+        deliveryDate.setDate(deliveryDate.getDate() + Math.floor(Math.random() * 4) + 2);
+
+        const queryText = `
+            INSERT INTO shipments (
+                tracking_id, sender_name, sender_mobile, 
+                origin_address, destination_address, price, 
+                status, created_at, estimated_delivery
+            ) VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, $8)
+            RETURNING id, tracking_id
+        `;
+
+        const values = [
+            trackingId, sender_name, sender_mobile,
+            origin, destination, parseFloat(price),
+            createdAt, deliveryDate
+        ];
+
+        const result = await db.query(queryText, values);
+
+        res.json({
+            success: true,
+            message: 'Shipment created successfully',
+            shipment: {
+                id: result.rows[0].tracking_id,
+                tracking_id: result.rows[0].tracking_id
+            }
+        });
+
+    } catch (err) {
+        console.error("Create Shipment Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to create shipment' });
+    }
+});
 
 router.post('/logout', async (req, res) => {
     // 1. Destroy JWT Cookie (if any)
