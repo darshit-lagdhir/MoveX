@@ -194,23 +194,36 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
 
 
 // Create New Shipment
+// Create New Shipment
 router.post('/admin/shipments/create', validateSession, requireRole('admin'), async (req, res) => {
     try {
-        const { sender_name, sender_mobile, origin, destination, price, date } = req.body;
+        const {
+            sender_name, sender_mobile, sender_address, sender_pincode,
+            receiver_name, receiver_mobile, receiver_address, receiver_pincode,
+            origin, destination, price, date
+        } = req.body;
 
-        if (!sender_name || !sender_mobile || !origin || !destination || !price) {
-            return res.status(400).json({ success: false, error: 'Missing required fields' });
+        // Mandatory Field Check
+        if (!sender_name || !sender_mobile || !sender_address || !sender_pincode ||
+            !receiver_name || !receiver_mobile || !receiver_address || !receiver_pincode ||
+            !origin || !destination || !price) {
+            return res.status(400).json({ success: false, error: 'All fields are mandatory' });
         }
 
         // Validate formats
         const nameRegex = /^[a-zA-Z\s]+$/;
-        if (!nameRegex.test(sender_name)) {
-            return res.status(400).json({ success: false, error: 'Sender name must contain only letters' });
+        if (!nameRegex.test(sender_name) || !nameRegex.test(receiver_name)) {
+            return res.status(400).json({ success: false, error: 'Names must contain only letters' });
         }
 
         const mobileRegex = /^[0-9+]+$/;
-        if (!mobileRegex.test(sender_mobile)) {
-            return res.status(400).json({ success: false, error: 'Mobile number must contain only numbers and +' });
+        if (!mobileRegex.test(sender_mobile) || !mobileRegex.test(receiver_mobile)) {
+            return res.status(400).json({ success: false, error: 'Mobile numbers must contain only numbers and +' });
+        }
+
+        const pincodeRegex = /^[0-9]{6}$/;
+        if (!pincodeRegex.test(sender_pincode) || !pincodeRegex.test(receiver_pincode)) {
+            return res.status(400).json({ success: false, error: 'Pincodes must be exactly 6 digits' });
         }
 
         const amountRegex = /^\d+(\.\d{1,2})?$/;
@@ -240,17 +253,21 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
 
         const queryText = `
             INSERT INTO shipments (
-                tracking_id, sender_name, sender_mobile, 
-                origin_address, destination_address, price, 
-                status, created_at, estimated_delivery
-            ) VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, $8)
+                tracking_id, 
+                sender_name, sender_mobile, sender_address, sender_pincode,
+                receiver_name, receiver_mobile, receiver_address, receiver_pincode,
+                origin_address, destination_address, 
+                price, status, created_at, estimated_delivery
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'pending', $13, $14)
             RETURNING id, tracking_id
         `;
 
         const values = [
-            trackingId, sender_name, sender_mobile,
-            origin, destination, parseFloat(price),
-            createdAt, deliveryDate
+            trackingId,
+            sender_name, sender_mobile, sender_address, sender_pincode,
+            receiver_name, receiver_mobile, receiver_address, receiver_pincode,
+            origin, destination,
+            parseFloat(price), createdAt, deliveryDate
         ];
 
         const result = await db.query(queryText, values);

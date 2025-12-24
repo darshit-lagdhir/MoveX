@@ -221,20 +221,23 @@ window.MoveXAdmin = (function () {
         modal.className = 'modal-content card';
         modal.style.cssText = `
             width: 100%;
-            max-width: 520px;
+            max-width: 700px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
             padding: 0;
             transform: scale(0.95) translateY(20px);
             transition: all 0.3s var(--easing-spring);
             background: var(--surface-primary);
             color: var(--text-primary);
             border: 1px solid var(--border-default);
-            border-radius: var(--radius-xl); /* 16px - Standard premium curve */
+            border-radius: var(--radius-xl);
             box-shadow: var(--shadow-2xl);
-            overflow: hidden; /* Clips internal square headers */
+            overflow: hidden; 
         `;
 
         const headerHTML = `
-            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-default); display: flex; justify-content: space-between; align-items: center; background: var(--surface-secondary); border-top-left-radius: inherit; border-top-right-radius: inherit;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-default); display: flex; justify-content: space-between; align-items: center; background: var(--surface-secondary); border-top-left-radius: inherit; border-top-right-radius: inherit; flex-shrink: 0;">
                 <h3 style="margin:0; font-size: 1.25rem; font-weight: 700;">${title}</h3>
                 <button class="modal-close" style="background:var(--surface-primary); border:1px solid var(--border-subtle); cursor:pointer; color: var(--text-secondary); width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -242,10 +245,10 @@ window.MoveXAdmin = (function () {
             </div>
         `;
 
-        const bodyHTML = `<div style="padding: 2rem;">${content}</div>`;
+        const bodyHTML = `<div style="padding: 2rem; overflow-y: auto; flex-grow: 1;">${content}</div>`;
 
         const footerHTML = actions.length ? `
-            <div style="padding: 1.5rem; border-top: 1px solid var(--border-default); display: flex; justify-content: flex-end; gap: 1rem; background: var(--surface-secondary); border-bottom-left-radius: inherit; border-bottom-right-radius: inherit;">
+            <div style="padding: 1.5rem; border-top: 1px solid var(--border-default); display: flex; justify-content: flex-end; gap: 1rem; background: var(--surface-secondary); border-bottom-left-radius: inherit; border-bottom-right-radius: inherit; flex-shrink: 0;">
                 ${actions.map((a, i) => `
                     <button data-index="${i}" class="${a.primary ? 'btn-primary' : 'btn-secondary'}" 
                         style="padding: 0.625rem 1.5rem; border-radius: var(--radius-md); border: ${a.primary ? 'none' : '1px solid var(--border-default)'}; cursor: pointer; font-weight: 600; font-family:inherit; transition: all 0.2s;
@@ -888,14 +891,53 @@ window.MoveXAdmin = (function () {
         modal: createModal,
         createShipment: function () {
             createModal('Create New Shipment', `
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.2rem;">
-                    <div style="grid-column: span 2;">
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Customer Name <span style="color:red">*</span></label>
-                        <input type="text" id="ship_customer" placeholder="Full Name (Letters only)" style="width:100%;" autocomplete="off">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+                    
+                    <!-- Sender Section -->
+                    <div style="grid-column: span 2; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 0.5rem;">
+                        <div style="font-size: 0.95rem; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.02em;">SENDER DETAILS</div>
                     </div>
                     <div style="grid-column: span 2;">
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Mobile Number <span style="color:red">*</span></label>
-                        <input type="tel" id="ship_mobile" placeholder="+91 9876543210" style="width:100%;" autocomplete="off">
+                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Name <span style="color:red">*</span></label>
+                        <input type="text" id="ship_sender_name" placeholder="Full Name" style="width:100%;" autocomplete="off">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Mobile <span style="color:red">*</span></label>
+                        <input type="tel" id="ship_sender_mobile" placeholder="+91 9876543210" style="width:100%;" autocomplete="off">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Pincode <span style="color:red">*</span></label>
+                        <input type="text" id="ship_sender_pincode" placeholder="6-digit Pincode" maxlength="6" style="width:100%;" autocomplete="off">
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Address <span style="color:red">*</span></label>
+                        <textarea id="ship_sender_address" placeholder="Complete address" rows="2" style="width:100%; resize: vertical;"></textarea>
+                    </div>
+
+                    <!-- Receiver Section -->
+                    <div style="grid-column: span 2; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 0.5rem; margin-top: 0.5rem;">
+                        <div style="font-size: 0.95rem; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.02em;">RECEIVER DETAILS</div>
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Name <span style="color:red">*</span></label>
+                        <input type="text" id="ship_receiver_name" placeholder="Full Name" style="width:100%;" autocomplete="off">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Mobile <span style="color:red">*</span></label>
+                        <input type="tel" id="ship_receiver_mobile" placeholder="+91 9876543210" style="width:100%;" autocomplete="off">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Pincode <span style="color:red">*</span></label>
+                        <input type="text" id="ship_receiver_pincode" placeholder="6-digit Pincode" maxlength="6" style="width:100%;" autocomplete="off">
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Address <span style="color:red">*</span></label>
+                        <textarea id="ship_receiver_address" placeholder="Complete address" rows="2" style="width:100%; resize: vertical;"></textarea>
+                    </div>
+
+                    <!-- Shipment Logisitcs -->
+                    <div style="grid-column: span 2; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 0.5rem; margin-top: 0.5rem;">
+                         <div style="font-size: 0.95rem; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.02em;">SHIPMENT INFO</div>
                     </div>
                     <div style="position: relative;">
                         <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Origin City <span style="color:red">*</span></label>
@@ -918,24 +960,39 @@ window.MoveXAdmin = (function () {
                 { label: 'Cancel', onClick: (close) => close() },
                 {
                     label: 'Create Shipment', primary: true, onClick: async (close) => {
-                        const sender_name = document.getElementById('ship_customer').value.trim();
-                        const sender_mobile = document.getElementById('ship_mobile').value.trim();
+                        // Gather Data
+                        const sender_name = document.getElementById('ship_sender_name').value.trim();
+                        const sender_mobile = document.getElementById('ship_sender_mobile').value.trim();
+                        const sender_address = document.getElementById('ship_sender_address').value.trim();
+                        const sender_pincode = document.getElementById('ship_sender_pincode').value.trim();
+
+                        const receiver_name = document.getElementById('ship_receiver_name').value.trim();
+                        const receiver_mobile = document.getElementById('ship_receiver_mobile').value.trim();
+                        const receiver_address = document.getElementById('ship_receiver_address').value.trim();
+                        const receiver_pincode = document.getElementById('ship_receiver_pincode').value.trim();
+
                         const origin = document.getElementById('loc_origin_val').value.trim();
                         const destination = document.getElementById('loc_dest_val').value.trim();
                         const price = document.getElementById('ship_amount').value.trim();
                         const date = document.getElementById('ship_date').value;
 
                         // Mandatory Check
-                        if (!sender_name || !sender_mobile || !origin || !destination || !price || !date) {
+                        if (!sender_name || !sender_mobile || !sender_address || !sender_pincode ||
+                            !receiver_name || !receiver_mobile || !receiver_address || !receiver_pincode ||
+                            !origin || !destination || !price || !date) {
                             return showToast('All fields are mandatory', 'error');
                         }
 
                         // Validation
-                        if (!/^[a-zA-Z\s]+$/.test(sender_name)) {
-                            return showToast('Name must contain only letters', 'error');
+                        // Allow spaces in names
+                        if (!/^[a-zA-Z\s]+$/.test(sender_name) || !/^[a-zA-Z\s]+$/.test(receiver_name)) {
+                            return showToast('Names must contain only letters', 'error');
                         }
-                        if (!/^[0-9+]+$/.test(sender_mobile)) {
-                            return showToast('Mobile must contain only numbers and +', 'error');
+                        if (!/^[0-9+]+$/.test(sender_mobile) || !/^[0-9+]+$/.test(receiver_mobile)) {
+                            return showToast('Mobile numbers must contain only numbers and +', 'error');
+                        }
+                        if (!/^\d{6}$/.test(sender_pincode) || !/^\d{6}$/.test(receiver_pincode)) {
+                            return showToast('Pincodes must be exactly 6 digits', 'error');
                         }
                         if (isNaN(price) || parseFloat(price) <= 0) {
                             return showToast('Invalid amount', 'error');
@@ -945,7 +1002,11 @@ window.MoveXAdmin = (function () {
                             const res = await fetch('/api/dashboard/admin/shipments/create', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ sender_name, sender_mobile, origin, destination, price, date })
+                                body: JSON.stringify({
+                                    sender_name, sender_mobile, sender_address, sender_pincode,
+                                    receiver_name, receiver_mobile, receiver_address, receiver_pincode,
+                                    origin, destination, price, date
+                                })
                             });
 
                             const data = await res.json();
