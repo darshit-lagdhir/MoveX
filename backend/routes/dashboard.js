@@ -115,11 +115,13 @@ router.get('/staff', validateSession, requireRole('admin', 'franchisee', 'staff'
 // Real-time Admin Stats
 router.get('/admin/stats', validateSession, requireRole('admin'), async (req, res) => {
     try {
-        const [shipmentCount, franchiseCount, revenueSum, failedCount] = await Promise.all([
+        const [shipmentCount, franchiseCount, revenueSum, failedCount, todayCount] = await Promise.all([
             db.query('SELECT COUNT(*) FROM shipments'),
             db.query("SELECT COUNT(*) FROM organizations WHERE status = 'active'"),
             db.query('SELECT SUM(price) FROM shipments'),
-            db.query("SELECT COUNT(*) FROM shipments WHERE status = 'failed'")
+            db.query("SELECT COUNT(*) FROM shipments WHERE status = 'failed'"),
+            db.query("SELECT COUNT(*) FROM shipments WHERE created_at > NOW() - INTERVAL '24 HOURS'"),
+            db.query("SELECT COUNT(*) FROM shipments WHERE status = 'pending'")
         ]);
 
         const totalShipments = parseInt(shipmentCount.rows[0].count);
@@ -137,8 +139,9 @@ router.get('/admin/stats', validateSession, requireRole('admin'), async (req, re
                 activeFranchises: activeFranchises,
                 totalRevenue: totalRevenue,
                 failedDeliveries: parseFloat(failedPercentage),
-                // Simple placeholder trends for now (could be calculated with historical queries)
-                shipmentTrend: 'Real-time Data',
+                pendingShipments: parseInt(arguments[0][5]?.rows[0]?.count || 0), // Pending count (new query index 5)
+                shipmentsToday: parseInt(todayCount.rows[0].count),
+                shipmentTrend: `+${parseInt(todayCount.rows[0].count)} Today`,
                 franchiseTrend: 'Active count',
                 revenueTrend: 'Lifetime',
                 failedTrend: 'Failure Rate'
@@ -154,13 +157,20 @@ router.get('/admin/stats', validateSession, requireRole('admin'), async (req, re
 router.get('/admin/shipments', validateSession, requireRole('admin'), async (req, res) => {
     try {
         // Fetch latest 10 shipments
-        const result = await db.query(`
-            SELECT id, tracking_id, status, sender_name, receiver_name, 
+        const limit = req.query.limit === 'all' ? null : (parseInt(req.query.limit) || 10);
+
+        let queryText = `
+            SELECT id, tracking_id, status, sender_name, sender_email, receiver_name, 
                    origin_address, destination_address, price, created_at
             FROM shipments 
             ORDER BY created_at DESC 
-            LIMIT 10
-        `);
+        `;
+
+        if (limit) {
+            queryText += ` LIMIT ${limit}`;
+        }
+
+        const result = await db.query(queryText);
 
         // Format for frontend
         const shipments = result.rows.map(row => ({
@@ -171,7 +181,7 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
             date: new Date(row.created_at).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }),
             amount: parseFloat(row.price),
             customer: row.sender_name || 'N/A',
-            email: 'N/A' // Email not currently in shipments table
+            email: row.sender_email || 'N/A'
         }));
 
         res.json({ success: true, shipments });
