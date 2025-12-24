@@ -299,14 +299,10 @@ window.MoveXAdmin = (function () {
     // --- INITIALIZERS FOR EACH SECTION ---
 
     const initializers = {
-        'dashboard.html': function () {
-            // 1. Bind Quick Actions
+        'dashboard': function () {
             document.getElementById('action-create-shipment').onclick = () => window.MoveXAdmin.createShipment();
-            document.getElementById('action-add-user').onclick = () => {
-                document.querySelector('a[href="users.html"]').click();
-            };
+            document.getElementById('action-add-user').onclick = () => document.querySelector('a[href="users"]').click();
 
-            // Serviceability Check Tool
             document.getElementById('action-check-service').onclick = () => {
                 createModal('Check Serviceability', `
                     <div style="display:flex; flex-direction:column; gap:1.5rem;">
@@ -343,7 +339,7 @@ window.MoveXAdmin = (function () {
             };
         },
 
-        'users.html': function () {
+        'users': function () {
             renderUserTable();
             const addBtn = document.querySelector('.page-header button');
             if (addBtn) {
@@ -377,24 +373,21 @@ window.MoveXAdmin = (function () {
             const searchInput = document.querySelector('input[placeholder*="Search"]');
             if (searchInput) {
                 searchInput.oninput = (e) => {
-                    const val = e.target.value.toLowerCase();
+                    const val = (e.target.value || '').toLowerCase();
                     const items = MOCK_DATA.users.filter(u => u.name.toLowerCase().includes(val) || u.email.toLowerCase().includes(val));
                     renderUserTable(items);
                 };
             }
         },
 
-        'franchises.html': function () {
+        'franchises': function () {
             renderFranchiseTable();
             const addBtn = document.querySelector('.page-header button');
             if (addBtn) addBtn.onclick = () => showToast('Franchise onboarding module opened', 'info');
         },
 
-        'shipments.html': function () {
-            // Show loading state
+        'shipments': function () {
             showSkeletons('.data-table-container', 'table');
-
-            // Fetch Real Data from Database
             fetch('/api/dashboard/admin/shipments?limit=1000')
                 .then(res => res.json())
                 .then(data => {
@@ -402,98 +395,59 @@ window.MoveXAdmin = (function () {
                         MOCK_DATA.shipments = data.shipments;
                         renderShipmentTable(MOCK_DATA.shipments);
                     } else {
-                        showToast('Failed to load shipments from database', 'error');
-                        renderShipmentTable(); // Fallback
+                        showToast('Failed to load shipments', 'error');
+                        renderShipmentTable();
                     }
                 })
                 .catch(err => {
-                    console.error('Shipments Fetch Error:', err);
-                    showToast('Network error loading shipments', 'error');
-                    renderShipmentTable(); // Fallback
+                    console.error(err);
+                    showToast('Network error', 'error');
+                    renderShipmentTable();
                 });
 
-
-            // Create New Shipment Event
             const addBtn = document.getElementById('createNewShipment');
-            if (addBtn) {
-                addBtn.onclick = () => window.MoveXAdmin.createShipment();
-            }
+            if (addBtn) addBtn.onclick = () => window.MoveXAdmin.createShipment();
 
-            // Search & Filter functionality
             const searchInput = document.getElementById('shipmentSearchInput');
             const statusSelect = document.getElementById('shipmentStatusFilter');
             const dateInput = document.getElementById('shipmentDateFilter');
             const searchBtn = document.getElementById('shipmentSearchBtn');
 
-            if (searchInput || statusSelect || dateInput || searchBtn) {
-                const performSearch = (showToastMessage = false) => {
+            if (searchInput || statusSelect || dateInput) {
+                const performSearch = (showMessage = false) => {
                     const query = (searchInput?.value || '').toLowerCase().trim();
-                    const statusFilter = (statusSelect?.value || 'All Status').toLowerCase();
+                    const status = (statusSelect?.value || 'All Status').toLowerCase();
                     const dateVal = dateInput?.value || '';
 
                     const filtered = MOCK_DATA.shipments.filter(s => {
-                        // 1. Text Query (ID, Customer, Email)
-                        const matchesQuery = !query ||
-                            String(s.id).toLowerCase().includes(query) ||
-                            String(s.customer).toLowerCase().includes(query) ||
-                            String(s.email).toLowerCase().includes(query);
-
-                        // 2. Status match (Case insensitive)
-                        const matchesStatus = statusFilter === 'all status' ||
-                            String(s.status).toLowerCase() === statusFilter;
-
-                        // 3. Date match (Strict string match for Mmm DD, YYYY)
-                        let matchesDate = true;
-                        if (dateVal && dateVal !== '') {
-                            try {
-                                // Convert YYYY-MM-DD (input) to "Dec 19, 2025" (mock data format)
-                                const [year, month, day] = dateVal.split('-');
-                                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                                // Ensure day is handled correctly (input is 01-31, mock is 01-31)
-                                const formattedInputDate = `${months[parseInt(month) - 1]} ${day}, ${year}`;
-
-                                matchesDate = String(s.date).trim() === formattedInputDate;
-                            } catch (e) {
-                                console.warn('Date parsing error', e);
-                                matchesDate = false;
-                            }
+                        const mQuery = !query || String(s.id).toLowerCase().includes(query) || String(s.customer).toLowerCase().includes(query) || String(s.email).toLowerCase().includes(query);
+                        const mStatus = status === 'all status' || s.status.toLowerCase() === status;
+                        let mDate = true;
+                        if (dateVal) {
+                            const d = new Date(s.date);
+                            mDate = !isNaN(d) && d.toISOString().split('T')[0] === dateVal;
                         }
-
-
-                        return matchesQuery && matchesStatus && matchesDate;
+                        return mQuery && mStatus && mDate;
                     });
-
                     renderShipmentTable(filtered, 1);
-
-                    if (showToastMessage && query) {
-                        showToast(`Found ${filtered.length} matches for "${query}"`, 'info');
-                    }
+                    if (showMessage && query) showToast(`Found ${filtered.length} matches`, 'info');
                 };
 
                 if (searchBtn) searchBtn.onclick = () => performSearch(true);
-                if (searchInput) {
-                    searchInput.oninput = () => performSearch(false);
-                    searchInput.onkeydown = (e) => {
-                        if (e.key === 'Enter') performSearch(true);
-                    };
-                }
+                if (searchInput) searchInput.onkeydown = (e) => { if (e.key === 'Enter') performSearch(true); };
                 if (statusSelect) statusSelect.onchange = () => performSearch(false);
                 if (dateInput) dateInput.onchange = () => performSearch(false);
             }
         },
 
-        'staff.html': function () {
-            renderStaffTable();
-        },
+        'staff': function () { renderStaffTable(); },
+        'bookings': function () { renderBookingTable(); },
 
-        'bookings.html': function () {
-            renderBookingTable();
-        },
-
-        'finance.html': function () {
+        'finance': function () {
             const kpis = document.querySelectorAll('.card-value');
             if (kpis.length >= 3) {
-                kpis[0].textContent = '₹' + (MOCK_DATA.stats.totalRevenue * 2.8 / 1000000).toFixed(1) + 'M';
+                // Mock stats for finance currently
+                kpis[0].textContent = '₹' + (450000).toLocaleString();
                 kpis[1].textContent = '₹45,200';
                 kpis[2].textContent = '₹128k';
             }
@@ -508,7 +462,7 @@ window.MoveXAdmin = (function () {
             if (exportBtn) exportBtn.onclick = () => showToast('Financial report exported', 'success');
         },
 
-        'reports.html': function () {
+        'reports': function () {
             const buttons = document.querySelectorAll('.page-header button');
             if (buttons.length >= 2) {
                 buttons[0].onclick = () => showToast('Date range selector opened', 'info');
@@ -519,22 +473,19 @@ window.MoveXAdmin = (function () {
                 tbody.innerHTML = `
                     <tr><td>Oct 24, 2025</td><td>1,240</td><td>1,150</td><td style="color: var(--warning);">5</td><td>₹24,500</td></tr>
                     <tr><td>Oct 23, 2025</td><td>1,180</td><td>1,100</td><td style="color: var(--warning);">2</td><td>₹22,100</td></tr>
-                    <tr><td>Oct 22, 2025</td><td>1,050</td><td>1,020</td><td style="color: var(--warning);">0</td><td>₹19,800</td></tr>
                 `;
             }
         },
 
-        'settings.html': function () {
+        'settings': function () {
             const saveBtn = document.querySelector('button[style*="background: var(--brand-primary)"]');
             if (saveBtn) saveBtn.onclick = () => showToast('Settings saved successfully', 'success');
-
-            const toggles = document.querySelectorAll('input[type="checkbox"]');
-            toggles.forEach(t => {
+            document.querySelectorAll('input[type="checkbox"]').forEach(t => {
                 t.onchange = () => showToast(`${t.parentElement.textContent.trim()} ${t.checked ? 'enabled' : 'disabled'}`, 'success');
             });
         },
 
-        'audit-logs.html': function () {
+        'audit-logs': function () {
             renderAuditLogs();
             const filterBtn = document.querySelector('.card button');
             if (filterBtn) filterBtn.onclick = () => showToast('Logs filtered', 'info');

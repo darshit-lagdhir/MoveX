@@ -119,15 +119,21 @@ app.use(session({
 const sessionStore = require('./session');
 
 const protectStaticDashboards = (req, res, next) => {
-  const protectedFiles = [
-    '/admin/dashboard.html',
-    '/dashboards/franchisee.html',
-    '/dashboards/staff.html',
-    '/dashboards/user.html',
-    '/dashboards/customer.html'
-  ];
+  // Normalize path: Remove .html if present
+  const normalizedPath = req.path.endsWith('.html') ? req.path.slice(0, -5) : req.path;
+  const target = normalizedPath.substring(1); // remove leading slash
 
-  if (protectedFiles.includes(req.path)) {
+  // Simple mapping of who can see what
+  // Hierarchy: admin > franchisee > staff > user > customer
+  const dashboardMap = {
+    'admin/dashboard': ['admin'],
+    'dashboards/franchisee': ['admin', 'franchisee'],
+    'dashboards/staff': ['admin', 'franchisee', 'staff'],
+    'dashboards/user': ['admin', 'franchisee', 'staff', 'user'],
+    'dashboards/customer': ['admin', 'franchisee', 'staff', 'user', 'customer']
+  };
+
+  if (dashboardMap[target]) {
     // 1. Check for session cookie (Strict Server-Side Validation)
     const sid = req.cookies?.['movex.sid'];
     const session = sessionStore.getSession(sid);
@@ -139,41 +145,26 @@ const protectStaticDashboards = (req, res, next) => {
 
     // 2. Check Role Access
     const role = session.role;
-    const target = req.path.substring(1); // remove leading slash
 
-    // Simple mapping of who can see what
-    // Hierarchy: admin > franchisee > staff > user > customer
-
-    const dashboardMap = {
-      'admin/dashboard.html': ['admin'],
-      'dashboards/franchisee.html': ['admin', 'franchisee'],
-      'dashboards/staff.html': ['admin', 'franchisee', 'staff'],
-      'dashboards/user.html': ['admin', 'franchisee', 'staff', 'user'],
-      'dashboards/customer.html': ['admin', 'franchisee', 'staff', 'user', 'customer']
-    };
-
-    if (!dashboardMap[target]?.includes(role)) {
+    if (!dashboardMap[target].includes(role)) {
       const correctDashboardMap = {
-        admin: 'admin/dashboard.html',
-        franchisee: 'dashboards/franchisee.html',
-        staff: 'dashboards/staff.html',
-        user: 'dashboards/user.html',
-        customer: 'dashboards/customer.html'
+        admin: 'admin/dashboard',
+        franchisee: 'dashboards/franchisee',
+        staff: 'dashboards/staff',
+        user: 'dashboards/user',
+        customer: 'dashboards/customer'
       };
-      const correctDashboard = correctDashboardMap[role] || 'dashboards/user.html';
+      const correctDashboard = correctDashboardMap[role] || 'dashboards/user';
       return res.redirect(`/${correctDashboard}?error=role_mismatch`);
     }
-
-    // 3. Allowed -> Proceed
-    next();
-  } else {
-    next();
   }
+
+  next();
 };
 
 app.use(protectStaticDashboards);
 
-app.use(express.static(path.join(__dirname, '../../')));
+app.use(express.static(path.join(__dirname, '../../'), { extensions: ['html'] }));
 
 
 app.use('/api/auth', authRoutes);

@@ -76,13 +76,15 @@ document.documentElement.classList.add('loading');
         updateUserInfo();
 
         // 3. SECURE INITIALIZATION: Wait for core JS before calling init
-        const currentPath = window.location.pathname.split('/').pop() || 'dashboard.html';
+        let currentPath = window.location.pathname.split('/').pop();
+        if (!currentPath || currentPath === 'admin') currentPath = 'dashboard';
+        if (currentPath.endsWith('.html')) currentPath = currentPath.slice(0, -5);
 
         await ensureCoreLoaded();
 
         if (window.MoveXAdmin) {
             console.log('Layout Manager: Triggering core init for', currentPath);
-            window.MoveXAdmin.init(currentPath);
+            window.MoveXAdmin.init(currentPath); // init handles stripping too, but good to be safe
         }
 
         // Final step: Reveal the UI once everything is stable
@@ -125,11 +127,23 @@ document.documentElement.classList.add('loading');
             const link = e.target.closest('a');
             if (!link) return;
 
-            const href = link.getAttribute('href');
-            if (href && (href.endsWith('.html') || !href.includes('.'))) {
-                // If the link is within the admin folder or is a relative link we want to intercept
-                const isInternal = !href.startsWith('http') && !href.startsWith('//') && !href.startsWith('/') || href.startsWith('/admin/');
-                if (isInternal && href.endsWith('.html')) {
+            let href = link.getAttribute('href');
+            if (!href) return;
+
+            // Handle internal navigation
+            const isInternal = (!href.startsWith('http') && !href.startsWith('//')) || href.startsWith(window.location.origin);
+
+            if (isInternal) {
+                // Strip extension if present for internal links
+                if (href.endsWith('.html')) {
+                    href = href.slice(0, -5);
+                }
+
+                // Avoid empty or same-page links unless it's a specific route
+                if (href === '#' || href === '') return;
+
+                // Check if it looks like an admin page or relative path
+                if (!href.includes('.') || href.startsWith('/')) {
                     e.preventDefault();
                     navigateTo(href);
                 }
@@ -137,12 +151,17 @@ document.documentElement.classList.add('loading');
         });
 
         window.addEventListener('popstate', (e) => {
-            const path = window.location.pathname.split('/').pop() || 'dashboard.html';
-            loadPageContent(path, false);
+            const path = window.location.pathname.split('/').pop() || 'dashboard';
+            // Strip extension if present
+            const cleanPath = path.endsWith('.html') ? path.slice(0, -5) : path;
+            loadPageContent(cleanPath, false);
         });
     }
 
     async function navigateTo(url) {
+        // Strip .html if present
+        if (url.endsWith('.html')) url = url.slice(0, -5);
+
         if (window.location.pathname.endsWith(url)) return;
         history.pushState(null, '', url);
         await loadPageContent(url, true);
@@ -270,8 +289,16 @@ document.documentElement.classList.add('loading');
             if (window.MoveXUser) {
                 const nameEl = document.getElementById('topBarUserName');
                 const roleEl = document.getElementById('topBarRole');
-                if (nameEl) nameEl.textContent = window.MoveXUser.full_name || window.MoveXUser.email;
-                if (roleEl) roleEl.textContent = (window.MoveXUser.role || '').toUpperCase();
+                if (nameEl) {
+                    nameEl.textContent = (window.MoveXUser.role || 'Admin').replace(/^\w/, c => c.toUpperCase());
+                    nameEl.style.background = 'none';
+                    nameEl.style.textAlign = 'right';
+                    nameEl.style.color = 'var(--brand-primary)';
+                    nameEl.style.fontWeight = '800';
+                    nameEl.style.fontSize = '1.1rem';
+                    nameEl.style.letterSpacing = '0.5px';
+                }
+                if (roleEl) roleEl.style.display = 'none'; // Hide the secondary role text since main text is now the role
             } else {
                 setTimeout(update, 500);
             }
