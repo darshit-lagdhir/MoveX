@@ -1,8 +1,8 @@
 # MoveX Production Guide
 
-> **Last Updated:** January 2, 2026  
-> **Version:** 1.1.0  
-> **Status:** Production-Ready
+> **Last Updated:** January 3, 2026  
+> **Version:** 1.2.0  
+> **Status:** Production-Ready (Cloudflare Pages + Koyeb)
 
 This document provides a complete guide for running MoveX in a production environment. It covers database setup, security configuration, deployment options, and maintenance procedures.
 
@@ -292,7 +292,24 @@ CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token_ha
 ALTER TABLE users 
 ADD CONSTRAINT fk_users_organization 
 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE SET NULL;
+
+-- Sessions table (for DB-backed session storage)
+CREATE TABLE IF NOT EXISTS sessions (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id INTEGER,
+    role VARCHAR(255),
+    email VARCHAR(255),
+    created_at BIGINT,
+    expires_at BIGINT,
+    last_accessed_at BIGINT
+);
 ```
+
+3. Run RLS migrations (in `backend/sql/`):
+   - `009_enable_rls.sql` - Users, Organizations, Shipment Photos
+   - `010_enable_rls_password_resets.sql` - Password Resets
+   - `012_enable_rls_shipments.sql` - Shipments
+   - `013_enable_rls_sessions.sql` - Sessions
 
 ### Step 6: Test Connection Locally
 
@@ -667,19 +684,148 @@ await db.query(`SELECT * FROM users WHERE email = '${email}'`);
 
 ## Section 8: Deployment Notes
 
-### Option 1: Railway (Recommended for Beginners)
+### Production Architecture (Cloudflare Pages + Koyeb)
+
+MoveX uses a **split deployment** model:
+
+```
+┌─────────────────────────────────────┐      ┌─────────────────────────────────────┐
+│        CLOUDFLARE PAGES             │      │            KOYEB                     │
+│   (Static Frontend Hosting)         │      │   (Node.js Backend Hosting)          │
+│                                     │      │                                      │
+│  • index.html                       │      │  • Express Server (backend/)         │
+│  • admin/*.html                     │      │  • API Routes (/api/*)               │
+│  • dashboards/*.html                │◄────►│  • Authentication                    │
+│  • js/*.js                          │ API  │  • Database Connections              │
+│  • styles/*.css                     │Calls │  • Session Management                │
+│                                     │      │                                      │
+│  URL: movex.yourname.workers.dev    │      │  URL: movex-xxx.koyeb.app           │
+└─────────────────────────────────────┘      └─────────────────────────────────────┘
+                                                           │
+                                                           │ PostgreSQL
+                                                           ▼
+                                              ┌─────────────────────────────────────┐
+                                              │         SUPABASE                     │
+                                              │   (PostgreSQL Database)              │
+                                              └─────────────────────────────────────┘
+```
+
+### Option 1: Cloudflare Pages (Frontend) + Koyeb (Backend)
+
+**This is the recommended setup for MoveX.**
+
+#### Step 1: Deploy Frontend to Cloudflare Pages
+
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → Pages
+2. Click **Create a project** → Connect to Git
+3. Select your GitHub repository
+4. Configure build settings:
+   - **Build command:** Leave empty (static site)
+   - **Build output directory:** `/` or `.`
+   - **Deploy command:** `npx wrangler deploy`
+5. Click **Save and Deploy**
+
+The `wrangler.jsonc` file in the root configures the deployment:
+```json
+{
+    "name": "movex",
+    "compatibility_date": "2026-01-02",
+    "assets": {
+        "directory": "./"
+    }
+}
+```
+
+#### Step 2: Deploy Backend to Koyeb
+
+1. Go to [Koyeb Dashboard](https://app.koyeb.com) → Create Service
+2. Select **GitHub** as source
+3. Select your repository and `main` branch
+4. Configure build settings:
+   - **Builder:** Buildpack
+   - **Work directory:** `backend`
+   - **Build command:** `npm install`
+   - **Run command:** `node src/app.js`
+5. Configure instance:
+   - **Instance type:** Free (Nano)
+   - **Region:** Frankfurt (or closest to your users)
+   - **Port:** 8000
+6. Add environment variables (see below)
+7. Click **Deploy**
+
+#### Step 3: Configure Environment Variables on Koyeb
+
+Add these environment variables in Koyeb dashboard:
+
+```
+NODE_ENV=production
+PORT=8000
+DATABASE_URL=postgresql://postgres:PASSWORD@db.PROJECT.supabase.co:6543/postgres?sslmode=require
+JWT_SECRET=your-64-character-random-hex-string
+SESSION_SECRET=your-64-character-random-hex-string
+SESSION_MAX_AGE=3600000
+SESSION_SECURE=true
+SESSION_SAME_SITE=none
+FRONTEND_URL=https://your-site.pages.dev
+HEALTH_CHECK_KEY=your-secret-key
+LOG_LEVEL=info
+```
+
+**Important Notes:**
+- `SESSION_SAME_SITE=none` is required for cross-origin cookies
+- `SESSION_SECURE=true` is required when using `SameSite=None`
+- `FRONTEND_URL` must match your Cloudflare Pages URL exactly
+
+#### Step 4: Update Frontend API URLs
+
+The frontend automatically detects the environment and uses the correct API URL:
+
+```javascript
+// In js/auth-api.js, js/dashboard-guard.js, js/admin-core.js
+const API_BASE = window.location.hostname === 'localhost' 
+    ? '' 
+    : 'https://your-backend.koyeb.app';
+```
+
+Update the Koyeb URL in these files after deployment.
+
+### Cross-Origin Authentication
+
+MoveX uses a **dual authentication strategy** for cross-origin support:
+
+1. **Cookie-based (Primary):** HttpOnly cookies with `SameSite=None; Secure`
+2. **JWT Token (Fallback):** Stored in sessionStorage, sent as `Authorization: Bearer` header
+
+This ensures authentication works even when browsers block third-party cookies.
+
+```javascript
+// Frontend stores token after login
+sessionStorage.setItem('movexsecuresession', JSON.stringify({
+    data: { token, role, username, loginTime }
+}));
+
+// Frontend sends token in all API calls
+headers['Authorization'] = `Bearer ${token}`;
+
+// Backend validates both cookie AND JWT
+async function validateSession(req, res, next) {
+    // Try cookie first
+    const sid = req.cookies?.['movex.sid'];
+    if (sid && await validateCookieSession(sid)) return next();
+    
+    // Fallback to JWT
+    const token = req.headers.authorization?.substring(7);
+    if (token && jwt.verify(token, JWT_SECRET)) return next();
+    
+    return res.status(401).json({ error: 'Not authenticated' });
+}
+```
+
+### Option 2: Railway (Alternative)
 
 1. Connect GitHub repository
 2. Set environment variables in Railway dashboard
 3. Railway auto-detects Node.js and deploys
-
-### Option 2: Render
-
-1. Create new Web Service
-2. Connect repository
-3. Set build command: `cd backend && npm install`
-4. Set start command: `cd backend && npm start`
-5. Add environment variables
 
 ### Option 3: VPS (DigitalOcean, AWS EC2, etc.)
 
@@ -702,18 +848,21 @@ await db.query(`SELECT * FROM users WHERE email = '${email}'`);
 - [ ] `NODE_ENV=production` set
 - [ ] Database migrations run on Supabase
 - [ ] Admin user created
-- [ ] FRONTEND_URL set correctly
-- [ ] SSL/HTTPS configured
+- [ ] `FRONTEND_URL` set to Cloudflare Pages URL
+- [ ] `SESSION_SAME_SITE=none` for cross-origin
+- [ ] SSL/HTTPS configured on both frontend and backend
 - [ ] Rate limits reviewed
-- [ ] CORS origins updated
+- [ ] API_BASE updated in frontend JS files
 
 ### Post-Deployment Verification
 
-1. Check `/api/auth/login` works
-2. Check admin dashboard loads
-3. Check session persistence
-4. Check rate limiting is active
-5. Monitor error logs
+1. ✅ Check Cloudflare Pages site loads
+2. ✅ Check login works and redirects to dashboard
+3. ✅ Check session persists on page refresh
+4. ✅ Check shipments load in admin dashboard
+5. ✅ Check creating new shipment works
+6. ✅ Check logout clears session
+7. ✅ Monitor Koyeb logs for errors
 
 ---
 
@@ -882,6 +1031,55 @@ pm2 restart movex
 ---
 
 ## Appendix C: Changelog
+
+### v1.2.0 (January 3, 2026)
+
+#### New Features
+- **Cloudflare Pages Deployment**: Static frontend hosting on Cloudflare edge network
+  - Added `wrangler.jsonc` for Cloudflare configuration
+  - Zero-config static site deployment
+  - Global CDN distribution
+
+- **Koyeb Backend Deployment**: Node.js backend hosting on Koyeb
+  - Free tier with 24/7 uptime
+  - Auto-deploy from GitHub
+  - Health check monitoring
+
+- **Cross-Origin Authentication**: Full support for split frontend/backend deployment
+  - JWT token fallback when cookies are blocked
+  - `Authorization: Bearer` header support
+  - Auto-detection of environment (localhost vs production)
+
+#### Technical Changes
+- **Frontend API Configuration**:
+  - `js/auth-api.js`: Added `API_BASE` auto-detection
+  - `js/dashboard-guard.js`: Added `API_BASE` for `/api/me` calls
+  - `js/admin-core.js`: Added `API_BASE` for shipments API calls
+  - All fetch calls now include `credentials: 'include'`
+  - All fetch calls now send `Authorization: Bearer` header
+
+- **Backend Authentication Updates**:
+  - `auth.controller.js`: Login now returns JWT token in response
+  - `dashboard.js`: `validateSession` accepts both cookies and JWT tokens
+  - `profile.js`: `validateSession` accepts both cookies and JWT tokens
+  - `sessionMiddleware.js`: Cookie `SameSite` and `Secure` now use environment variables
+
+- **Environment Variables**:
+  - Added `SESSION_SAME_SITE` (default: `none` in production)
+  - Added `SESSION_SECURE` (default: `true` in production)
+  - `PORT=8000` required for Koyeb
+
+#### Files Modified
+- `wrangler.jsonc` (new)
+- `js/auth-api.js`
+- `js/dashboard-guard.js`
+- `js/admin-core.js`
+- `backend/src/controllers/auth.controller.js`
+- `backend/src/sessionMiddleware.js`
+- `backend/routes/dashboard.js`
+- `backend/routes/profile.js`
+
+---
 
 ### v1.1.0 (January 2, 2026)
 
