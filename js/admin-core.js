@@ -396,7 +396,17 @@ window.MoveXAdmin = (function () {
 
         'shipments': function () {
             showSkeletons('.data-table-container', 'table');
-            fetch(`${API_BASE}/api/dashboard/admin/shipments?limit=1000`, { credentials: 'include' })
+
+            // Get token from sessionStorage for cross-origin auth
+            const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+            const token = session.data?.token;
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            fetch(`${API_BASE}/api/dashboard/admin/shipments?limit=1000`, {
+                credentials: 'include',
+                headers: headers
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.shipments) {
@@ -1117,9 +1127,16 @@ window.MoveXAdmin = (function () {
                                 receiver_name, receiver_mobile, receiver_address, receiver_pincode,
                                 origin, destination, price, weight, date
                             };
+
+                            // Get token for cross-origin auth
+                            const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                            const token = session.data?.token;
+                            const headers = { 'Content-Type': 'application/json' };
+                            if (token) headers['Authorization'] = `Bearer ${token}`;
+
                             const res = await fetch(`${API_BASE}/api/dashboard/admin/shipments/create`, {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
+                                headers: headers,
                                 credentials: 'include',
                                 body: JSON.stringify(payload)
                             });
