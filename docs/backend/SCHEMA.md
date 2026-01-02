@@ -14,7 +14,7 @@ CREATE TYPE user_status AS ENUM ('active', 'disabled', 'suspended');
 -- Core users table
 CREATE TABLE IF NOT EXISTS users (
 id BIGSERIAL PRIMARY KEY,
-email CITEXT UNIQUE NOT NULL, -- login identifier, case-insensitive
+username CITEXT UNIQUE NOT NULL, -- login identifier, case-insensitive
 password_hash TEXT NOT NULL, -- bcrypt/argon2 hash only
 role user_role NOT NULL, -- enforced role set
 status user_status NOT NULL DEFAULT 'active',

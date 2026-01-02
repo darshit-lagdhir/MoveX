@@ -39,8 +39,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
             );
 
             if (result.rows.length === 0) {
-                result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-                
+                result = await db.query('SELECT * FROM users WHERE username = $1', [email]);
+
                 if (result.rows.length > 0) {
                     await db.query(
                         'UPDATE users SET oauth_provider = $1, oauth_provider_id = $2 WHERE id = $3',
@@ -48,7 +48,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                     );
                 } else {
                     result = await db.query(
-                        `INSERT INTO users (email, password_hash, role, status, oauth_provider, oauth_provider_id) 
+                        `INSERT INTO users (username, password_hash, role, status, oauth_provider, oauth_provider_id) 
                          VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
                         [email, 'oauth_google', 'user', 'active', 'google', providerId]
                     );
@@ -94,8 +94,8 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
             );
 
             if (result.rows.length === 0) {
-                result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-                
+                result = await db.query('SELECT * FROM users WHERE username = $1', [email]);
+
                 if (result.rows.length > 0) {
                     await db.query(
                         'UPDATE users SET oauth_provider = $1, oauth_provider_id = $2 WHERE id = $3',
@@ -103,7 +103,7 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
                     );
                 } else {
                     result = await db.query(
-                        `INSERT INTO users (email, password_hash, role, status, oauth_provider, oauth_provider_id) 
+                        `INSERT INTO users (username, password_hash, role, status, oauth_provider, oauth_provider_id) 
                          VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
                         [email, 'oauth_github', 'user', 'active', 'github', providerId]
                     );

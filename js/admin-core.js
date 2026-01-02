@@ -350,7 +350,7 @@ window.MoveXAdmin = (function () {
                     createModal('Add New User', `
                         <div style="display:flex; flex-direction:column; gap:1rem;">
                             <div><label style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Full Name</label><input type="text" id="new_name" placeholder="Enter name" style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);"></div>
-                            <div><label style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Email</label><input type="email" id="new_email" placeholder="email@movex.com" style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);"></div>
+                            <div><label style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Username</label><input type="text" id="new_email" placeholder="username@movex" style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);"></div>
                             <div><label style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Role</label>
                                 <select id="new_role" style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);">
                                     <option value="user">User</option>
@@ -377,7 +377,7 @@ window.MoveXAdmin = (function () {
             if (searchInput) {
                 searchInput.oninput = (e) => {
                     const val = (e.target.value || '').toLowerCase();
-                    const items = MOCK_DATA.users.filter(u => u.name.toLowerCase().includes(val) || u.email.toLowerCase().includes(val));
+                    const items = MOCK_DATA.users.filter(u => u.name.toLowerCase().includes(val) || u.username.toLowerCase().includes(val));
                     renderUserTable(items);
                 };
             }
@@ -511,7 +511,7 @@ window.MoveXAdmin = (function () {
                         </div>
                         <div>
                             <div style="font-weight: 600;">${u.name}</div>
-                            <div style="font-size: 0.85rem; color: var(--text-secondary);">${u.email}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">${u.username}</div>
                         </div>
                     </div>
                 </td>
@@ -539,7 +539,7 @@ window.MoveXAdmin = (function () {
     }
 
     function showUserActions(user) {
-        createModal(`User: ${user.name}`, `<p>Manage access for <strong>${user.email}</strong>.</p>`, [
+        createModal(`User: ${user.name}`, `<p>Manage access for <strong>${user.username}</strong>.</p>`, [
             { label: 'Close', onClick: close => close() },
             {
                 label: user.status === 'active' ? 'Disable' : 'Enable', primary: true, onClick: close => {
@@ -776,8 +776,8 @@ window.MoveXAdmin = (function () {
 
     function renderAuditLogs() {
         const logs = [
-            { timestamp: 'Oct 24, 14:32:01', user: 'admin@movex.com', action: 'Updated System Settings', ip: '192.168.1.1', status: 'Success' },
-            { timestamp: 'Oct 24, 14:05:22', user: 'john.doe@franchise.com', action: 'Login Attempt', ip: '10.0.0.52', status: 'Failed' },
+            { timestamp: 'Oct 24, 14:32:01', user: 'admin', action: 'Updated System Settings', ip: '192.168.1.1', status: 'Success' },
+            { timestamp: 'Oct 24, 14:05:22', user: 'john.doe', action: 'Login Attempt', ip: '10.0.0.52', status: 'Failed' },
             { timestamp: 'Oct 24, 13:55:00', user: 'system', action: 'Cron Job: Invoice Gen', ip: 'localhost', status: 'Success' }
         ];
         const tbody = document.querySelector('.data-table tbody');

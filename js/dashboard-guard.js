@@ -160,9 +160,9 @@ document.documentElement.classList.add('loading');
         const userNameEl = document.getElementById('userName');
         const orgNameEl = document.getElementById('orgName');
 
-        if (userEmailEl) userEmailEl.textContent = user.email;
+        if (userEmailEl) userEmailEl.textContent = user.username;
         if (userRoleEl) userRoleEl.textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
-        if (userNameEl) userNameEl.textContent = user.full_name || user.email.split('@')[0];
+        if (userNameEl) userNameEl.textContent = user.full_name || user.username;
         if (orgNameEl && result.organization) {
             orgNameEl.textContent = result.organization.name;
         }

@@ -10,10 +10,10 @@
 │ │ │
 │ 1. User submits form │ │
 │ POST /api/auth/login │ │
-│ { email, password, role } │ │
+│ { username, password, role } │ │
 ├───────────────────────────>│ │
 │ │ │
-│ │ 2. Query user by email │
+│ │ 2. Query user by username │
 │ ├─────────────────────────────>│
 │ │ │
 │ │ 3. Return user record │
@@ -65,16 +65,16 @@
 Frontend Backend Database
 │ │ │
 │ POST /api/auth/register│ │
-│ { email, password, │ │
+│ { username, password, │ │
 │ role, name } │ │
 ├───────────────────────>│ │
 │ │ │
 │ │ 1. Validate inputs: │
-│ │ - Email format │
+│ │ - Username format │
 │ │ - Password strength │
 │ │ - Role validity │
 │ │ │
-│ │ 2. Check email exists │
+│ │ 2. Check username exists │
 │ ├───────────────────────>│
 │ │<───────────────────────┤
 │ │ │
@@ -118,7 +118,7 @@ While frontend currently uses PBKDF2-600K (acceptable), Argon2id is superior bec
 
 {
 "sub": "user_uuid",
-"email": "admin@movex",
+"username": "admin@movex",
 "role": "admin",
 "iat": 1734249600,
 "exp": 1734250500,
@@ -135,7 +135,7 @@ While frontend currently uses PBKDF2-600K (acceptable), Argon2id is superior bec
 
 ## Forgot Password Flow
 
-User enters email
+User enters username
 
 Backend generates secure random token (32 bytes)
 

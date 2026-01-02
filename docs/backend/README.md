@@ -17,7 +17,7 @@ This backend will serve as the **ONLY trusted authority** for all security decis
 
 ### 👤 User Registration  
 - Accept registration data from frontend
-- Validate email uniqueness
+- Validate username uniqueness
 - Hash passwords before storage (NEVER store plaintext)
 - Create user records in PostgreSQL database
 - Return registration confirmation
