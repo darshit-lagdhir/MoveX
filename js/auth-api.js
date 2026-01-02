@@ -3,7 +3,10 @@
 (function () {
   'use strict';
 
-  const API_BASE = '';
+  // Auto-detect: localhost for dev, Koyeb for production
+  const API_BASE = window.location.hostname === 'localhost'
+    ? ''
+    : 'https://presidential-fly-movex-237428a4.koyeb.app';
 
   let isProcessing = false;
 
