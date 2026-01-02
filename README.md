@@ -1,334 +1,95 @@
-# MoveX - Next Generation Logistics Platform
+# MoveX - Logistics Platform
 
 <div align="center">
-  <h3>A modern, secure logistics and courier management system</h3>
-  <p>Built with Node.js, Express, PostgreSQL, and Vanilla JavaScript</p>
+  <h3>Modern, secure logistics and courier management system</h3>
+  <p>Node.js • Express • PostgreSQL • Vanilla JavaScript</p>
 </div>
 
 ---
 
 ## 🚀 Quick Start
 
-### Prerequisites
-
-- **Node.js** 18.x or higher
-- **PostgreSQL** 14+ (local) or Supabase account (cloud)
-- **npm** or **yarn**
-
-### Installation
-
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/movex.git
-cd movex
-
-# Install dependencies
-cd backend
+# Clone & Install
+git clone https://github.com/darshit-lagdhir/MoveX.git
+cd MoveX/backend
 npm install
 
-# Configure environment
-cp ../.env.example ../.env
-# Edit .env with your settings
-
-# Start the server
-npm start
+# Configure & Run
+cp ../.env.example ../.env   # Edit with your settings
+npm start                     # http://localhost:4000
 ```
-
-### Access the Application
-
-- **Main Application:** http://localhost:4000
-- **Health Check:** http://localhost:4000/api/health
-- **Admin Dashboard:** http://localhost:4000/admin/dashboard.html
 
 ---
 
-## 📁 Project Structure
+## 📁 Structure
 
 ```
 movex/
-├── admin/                  # Admin dashboard HTML pages
-│   ├── dashboard.html      # Main admin dashboard
-│   └── print_label.html    # Shipment label printing
-├── backend/               
-│   ├── db/                # Database connection (backward compat)
-│   ├── middleware/        # Express middleware (auth, rate-limit, etc.)
-│   ├── routes/            # API route handlers
-│   ├── src/
-│   │   ├── app.js         # Main Express server
-│   │   ├── config/        # Database configuration
-│   │   ├── controllers/   # Business logic
-│   │   ├── routes/        # Additional routes
-│   │   └── session.js     # Session management (DB-backed)
-│   ├── sql/               # Database migrations
-│   └── utils/             # Helper utilities
-├── dashboards/            # Role-based dashboard pages
-├── js/                    # Frontend JavaScript
-├── styles/                # CSS stylesheets
-├── .env.example           # Environment template
-├── index.html             # Landing page / Login
-└── PRODUCTION.md          # Production deployment guide
+├── admin/                 # Admin dashboard pages
+├── backend/               # Node.js Express server
+│   ├── src/app.js        # Main entry point
+│   ├── routes/           # API routes
+│   └── sql/              # Database migrations
+├── dashboards/           # Role-based dashboard pages
+├── js/                   # Frontend JavaScript
+├── styles/               # CSS stylesheets
+└── index.html            # Landing page / Login
 ```
 
 ---
 
 ## 🔐 User Roles
 
-| Role | Access Level | Dashboard |
-|------|--------------|-----------|
-| **Admin** | Full system access | `/admin/dashboard.html` |
-| **Franchisee** | Franchise management | `/dashboards/franchisee.html` |
-| **Staff** | Staff operations | `/dashboards/staff.html` |
-| **User** | Standard user access | `/dashboards/user.html` |
-| **Customer** | Customer portal | `/dashboards/customer.html` |
+| Role | Dashboard | Access |
+|------|-----------|--------|
+| Admin | `/admin/dashboard` | Full system |
+| Franchisee | `/dashboards/franchisee` | Franchise ops |
+| Staff | `/dashboards/staff` | Staff ops |
+| User | `/dashboards/user` | Standard |
+| Customer | `/dashboards/customer` | Customer portal |
 
 ---
 
-## 🛠️ Configuration
+## 🔒 Security
 
-### Environment Variables
-
-Copy `.env.example` to `.env` and configure:
-
-```env
-# Required
-NODE_ENV=development
-PORT=4000
-JWT_SECRET=your-32+-character-secret
-SESSION_SECRET=your-32+-character-secret
-HEALTH_CHECK_KEY=secret-key-for-health-check
-
-# Database (choose one)
-DATABASE_URL=postgresql://...  # Full connection URL
-# OR individual settings:
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=yourpassword
-DB_NAME=movex_auth
-```
-
-See `.env.example` for all available options.
-
----
-
-## 📖 API Endpoints
-
-### Authentication
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Create new account |
-| POST | `/api/auth/login` | User login |
-| POST | `/api/auth/logout` | User logout |
-| GET | `/api/auth/me` | Current user info |
-
-### Dashboard
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/dashboard/me` | User dashboard data |
-| GET | `/api/dashboard/admin` | Admin stats |
-| GET | `/api/dashboard/admin/stats` | System statistics |
-
-### Shipments (Admin)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/admin/shipments` | List all shipments |
-| POST | `/admin/shipments/create` | Create new shipment |
-
-### Health Check
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Basic health status |
-| GET | `/api/health/detailed` | Detailed health info |
-| GET | `/api/health/ready` | Readiness probe |
-| GET | `/api/health/live` | Liveness probe |
-
----
-
-## 🔒 Security Features
-
-- ✅ **Bcrypt** password hashing (cost factor 12)
-- ✅ **HttpOnly** secure session cookies
-- ✅ **DB-backed sessions** (PostgreSQL, 1-hour expiry)
-- ✅ **Rate limiting** on authentication endpoints
-- ✅ **CORS** with whitelist configuration
-- ✅ **CSP** Content Security Policy headers
-- ✅ **CSRF** token protection
-- ✅ **Input validation** on all endpoints
-- ✅ **SQL injection** prevention (parameterized queries)
-- ✅ **XSS** protection headers
-- ✅ **Enterprise-Grade Loading State** (Prevents UI flicker/jank)
-
----
-
-## 🗄️ Database
-
-### Supabase (Recommended for Production)
-
-See [PRODUCTION.md](./PRODUCTION.md) for complete Supabase setup guide.
-
-### Local PostgreSQL
-
-```bash
-# Create database
-createdb movex_auth
-
-# Run migrations
-psql -d movex_auth -f backend/sql/001_init_users.sql
-psql -d movex_auth -f backend/sql/002_shipment_photos.sql
-```
-
----
-
-## 📦 Shipment Management
-
-### Features
-- **Create Shipments** with complete sender/receiver details
-- **Full Address Support**: Name, Mobile, Address, Pincode for both parties
-- **Weight Tracking**: Package weight in KG
-- **Price Management**: Shipment cost tracking
-- **Status Workflow**: pending → in_transit → delivered / failed
-- **Estimated Delivery**: Auto-calculated delivery dates
-
-### Shipment Details Modal
-View comprehensive shipment information:
-- Status banner with live tracking badge
-- Sender details (name, phone, full address, pincode)
-- Receiver details (name, phone, full address, pincode)
-- Route visualization (origin → destination)
-- Financial info (amount, weight, booking date, delivery estimate)
-- Activity timeline
-
----
-
-## 🏷️ Label Printing
-
-### Print Label Feature (`admin/print_label.html`)
-- **One-click printing** from shipment details modal
-- **Dynamic data** - All fields populated from database
-- **Barcode generation** using JsBarcode (CODE128 format)
-- **Auto-print** - Browser print dialog opens automatically
-- **No storage** - Labels generated on-demand, not stored
-
-### Label Contents
-| Field | Source |
-|-------|--------|
-| Tracking ID | Database |
-| Barcode | Generated from Tracking ID |
-| Route | Origin → Destination cities |
-| Receiver | Name, Address, Phone, Pincode |
-| Sender | Name, Origin location |
-| Weight | Database (KG) |
-| Price | Database (₹) |
-| Return Address | Sender's full address |
-
----
-
-## 📸 Photo Storage
-
-MoveX uses Supabase Storage for shipment photos:
-
-- Photos organized by tracking ID
-- Private bucket with signed URL access
-- Supports: JPEG, PNG, WebP, HEIC
-- Max file size: 5MB
-
-See [PRODUCTION.md](./PRODUCTION.md#section-6-storage-strategy-for-photos) for details.
+- ✅ Bcrypt password hashing (cost 12)
+- ✅ HttpOnly secure session cookies
+- ✅ DB-backed sessions (PostgreSQL)
+- ✅ Rate limiting on auth endpoints
+- ✅ CORS whitelist • CSP headers • CSRF
+- ✅ SQL injection prevention
+- ✅ XSS protection
 
 ---
 
 ## 🚢 Deployment
 
-### Production Setup: Cloudflare Pages + Koyeb (Recommended)
+**Production Setup:** Cloudflare Pages (Frontend) + Koyeb (Backend)
 
-MoveX uses a **split deployment** model:
-- **Frontend** (HTML/CSS/JS) → Cloudflare Pages (free, global CDN)
-- **Backend** (Node.js/Express) → Koyeb (free tier, 24/7 uptime)
-
-#### Quick Deploy Steps
-
-1. **Deploy Frontend to Cloudflare Pages**
-   - Connect GitHub repo to Cloudflare Pages
-   - Build command: Leave empty
-   - Deploy command: `npx wrangler deploy`
-   - Build output: `/`
-
-2. **Deploy Backend to Koyeb**
-   - Connect GitHub repo to Koyeb
-   - Work directory: `backend`
-   - Run command: `node src/app.js`
-   - Port: `8000`
-
-3. **Configure Environment Variables** (Koyeb)
-   ```
-   NODE_ENV=production
-   PORT=8000
-   DATABASE_URL=your-supabase-connection-string
-   JWT_SECRET=your-64-char-secret
-   SESSION_SECRET=your-64-char-secret
-   SESSION_SAME_SITE=none
-   SESSION_SECURE=true
-   FRONTEND_URL=https://your-site.pages.dev
-   ```
-
-4. **Update Frontend API URLs**
-   - Update `API_BASE` in `js/auth-api.js`, `js/dashboard-guard.js`, `js/admin-core.js`
-   - Set to your Koyeb URL: `https://your-app.koyeb.app`
-
-### Alternative Platforms
-
-- **Railway** - Easy deployment with auto-detection
-- **Render** - Flexible hosting options
-- **DigitalOcean App Platform** - Scalable container hosting
-
-### Pre-Deployment Checklist
-
-- [ ] Set `NODE_ENV=production`
-- [ ] Configure strong secrets (32+ characters)
-- [ ] Set up Supabase database
-- [ ] Update `FRONTEND_URL` for CORS
-- [ ] Set `SESSION_SAME_SITE=none` for cross-origin
-- [ ] Enable `SESSION_SECURE=true` (requires HTTPS)
-- [ ] Update `API_BASE` in frontend JS files
+| Component | Platform | Config |
+|-----------|----------|--------|
+| Frontend | Cloudflare Pages | `npx wrangler deploy` |
+| Backend | Koyeb | `node src/app.js`, Port: 8000 |
+| Database | Supabase | PostgreSQL |
 
 See [PRODUCTION.md](./PRODUCTION.md) for complete deployment guide.
 
 ---
 
-## 🧪 Testing
+## 📖 Documentation
 
-```bash
-cd backend
-npm test
-```
-
----
-
-## 📄 Documentation
-
-- **[PRODUCTION.md](./PRODUCTION.md)** - Complete production deployment guide
-- **[.env.example](./.env.example)** - Environment variable reference
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📝 License
-
-MIT License - see [LICENSE](./LICENSE) for details.
+| Document | Description |
+|----------|-------------|
+| [PRODUCTION.md](./PRODUCTION.md) | Full production deployment guide |
+| [docs/API.md](./docs/API.md) | API endpoints reference |
+| [docs/CONTRIBUTING.md](./docs/CONTRIBUTING.md) | Contributing guidelines |
+| [.env.example](./.env.example) | Environment variables |
 
 ---
 
 ## 🆘 Support
 
-For issues or questions:
 1. Check [PRODUCTION.md](./PRODUCTION.md) troubleshooting section
 2. Open a GitHub issue
 3. Contact the development team
@@ -336,5 +97,5 @@ For issues or questions:
 ---
 
 <div align="center">
-  <p><strong>MoveX</strong> - Moving logistics forward</p>
+  <strong>MoveX</strong> - Moving logistics forward
 </div>
