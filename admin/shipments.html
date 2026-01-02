@@ -67,54 +67,12 @@
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="shipmentsTableBody">
+                                <!-- Data will be populated by JS -->
                                 <tr>
-                                    <td style="font-family: monospace; font-weight: 600;">MX88921</td>
-                                    <td><span class="status-badge status-active">In Transit</span></td>
-                                    <td>
-                                        <div>Anjali Gupta</div>
-                                        <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                                            anjali@example.com</div>
-                                    </td>
-                                    <td>Mumbai, MH</td>
-                                    <td>Delhi, NCR</td>
-                                    <td>Today</td>
-                                    <td>₹45.00</td>
-                                    <td><a href="#"
-                                            style="color: var(--brand-primary); text-decoration: none; font-weight: 500;">View</a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="font-family: monospace; font-weight: 600;">MX88922</td>
-                                    <td><span class="status-badge status-info">Delivered</span></td>
-                                    <td>
-                                        <div>Vikram Malhotra</div>
-                                        <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                                            vikram@example.com</div>
-                                    </td>
-                                    <td>Chennai, TN</td>
-                                    <td>Bangalore, KA</td>
-                                    <td>Yesterday</td>
-                                    <td>₹25.00</td>
-                                    <td><a href="#"
-                                            style="color: var(--brand-primary); text-decoration: none; font-weight: 500;">View</a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="font-family: monospace; font-weight: 600;">MX88923</td>
-                                    <td><span class="status-badge status-warn">Processing</span></td>
-                                    <td>
-                                        <div>Suresh Raina</div>
-                                        <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                                            suresh@example.com</div>
-                                    </td>
-                                    <td>Hyderabad, TS</td>
-                                    <td>Pune, MH</td>
-                                    <td>Today</td>
-                                    <td>₹60.00</td>
-                                    <td><a href="#"
-                                            style="color: var(--brand-primary); text-decoration: none; font-weight: 500;">View</a>
-                                    </td>
+                                    <td colspan="8"
+                                        style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading
+                                        shipments...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -129,6 +87,60 @@
     </div>
 
     <script src="../js/admin-layout.js?v=2"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const tbody = document.getElementById('shipmentsTableBody');
+
+            function getStatusClass(status) {
+                const s = status?.toLowerCase() || '';
+                if (s === 'delivered') return 'status-info'; // Greenish/Blue
+                if (s === 'in transit') return 'status-active'; // Purple/Active
+                if (s === 'pending') return 'status-warn'; // Yellow/Orange
+                if (s === 'failed') return 'status-error'; // Red (assuming class exists or falls back)
+                return 'status-default';
+            }
+
+            try {
+                const response = await fetch('/api/shipments');
+
+                if (response.status === 401) {
+                    window.location.href = '/login.html'; // Redirect if unauthorized
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+
+                const shipments = await response.json();
+
+                if (shipments.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 2rem;">No shipments found.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = shipments.map(shipment => `
+                    <tr>
+                        <td style="font-family: monospace; font-weight: 600;">${shipment.tracking_id}</td>
+                        <td><span class="status-badge ${getStatusClass(shipment.status)}">${shipment.status}</span></td>
+                        <td>
+                            <div>${shipment.receiver_name}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">Sender: ${shipment.sender_name}</div>
+                        </td>
+                        <td>${shipment.origin_address}</td>
+                        <td>${shipment.destination_address}</td>
+                        <td>${new Date(shipment.created_at).toLocaleDateString()}</td>
+                        <td>₹${shipment.price}</td>
+                        <td><a href="#" style="color: var(--brand-primary); text-decoration: none; font-weight: 500;">View</a></td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading shipments:', error);
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color: red; padding: 2rem;">Error loading data: ${error.message}</td></tr>`;
+            }
+        });
+    </script>
 </body>
 
 </html>

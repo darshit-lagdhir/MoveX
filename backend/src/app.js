@@ -15,12 +15,12 @@ require('../utils/validate-env');
 
 const express = require('express');
 const cors = require('cors');
-const session = require('express-session');
 const authRoutes = require('./routes/auth.routes');
 const protectedRoutes = require('./routes/protected.routes');
 const mfaRoutes = require('../routes/mfa');
 const dashboardRoutes = require('../routes/dashboard');
 const profileRoutes = require('../routes/profile');
+const shipmentRoutes = require('./routes/shipment.routes');
 // DISABLED: Photo storage not needed currently.
 // To enable: 1) Uncomment this line  2) Uncomment app.use below  3) Set up Supabase Storage
 // const photosRoutes = require('../routes/photos');
@@ -100,17 +100,7 @@ if (SESSION_SECRET.length < 32) {
   console.warn('⚠️ SECURITY WARNING: SESSION_SECRET is shorter than recommended (32+ characters).');
 }
 
-app.use(session({
-  secret: SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000,
-    sameSite: 'lax'
-  }
-}));
+
 
 /* ═══════════════════════════════════════════════════════════
    STATIC DASHBOARD PROTECTION (SERVER-SIDE)
@@ -171,6 +161,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/protected', protectedRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api', profileRoutes);
+app.use('/api', profileRoutes);
+app.use('/api/shipments', shipmentRoutes);
 app.use('/api/mfa', mfaRoutes);
 // DISABLED: Photo storage - uncomment when ready to use Supabase Storage
 // app.use('/api/photos', photosRoutes);
