@@ -1,7 +1,7 @@
 # MoveX Production Guide
 
-> **Last Updated:** December 23, 2025  
-> **Version:** 1.0.1  
+> **Last Updated:** January 2, 2026  
+> **Version:** 1.1.0  
 > **Status:** Production-Ready
 
 This document provides a complete guide for running MoveX in a production environment. It covers database setup, security configuration, deployment options, and maintenance procedures.
@@ -20,6 +20,9 @@ This document provides a complete guide for running MoveX in a production enviro
 8. [Deployment Notes](#section-8-deployment-notes)
 9. [Common Mistakes to Avoid](#section-9-common-mistakes-to-avoid)
 10. [How to Safely Make Future Changes](#section-10-how-to-safely-make-future-changes)
+11. [Appendix A: Useful Commands](#appendix-a-useful-commands)
+12. [Appendix B: Troubleshooting](#appendix-b-troubleshooting)
+13. [Appendix C: Changelog](#appendix-c-changelog)
 
 ---
 
@@ -96,7 +99,7 @@ This document provides a complete guide for running MoveX in a production enviro
 │                              │                               │
 │  ┌───────────────────────────────────────────────────────┐  │
 │  │                    SESSION STORE                       │  │
-│  │           backend/src/session.js (In-Memory)          │  │
+│  │           backend/src/session.js (DB-backed)           │  │
 │  └───────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
                               │
@@ -122,7 +125,7 @@ This document provides a complete guide for running MoveX in a production enviro
 |------|---------|
 | `backend/src/app.js` | Main Express server entry point |
 | `backend/src/config/db.js` | Database connection configuration |
-| `backend/src/session.js` | Session store (in-memory) |
+| `backend/src/session.js` | Session store (DB-backed PostgreSQL) |
 | `backend/src/controllers/auth.controller.js` | Authentication logic |
 | `backend/routes/*.js` | API route handlers |
 | `backend/middleware/*.js` | Security & validation middleware |
@@ -360,7 +363,7 @@ DB_SSL=true
 # Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 JWT_SECRET=your_64_character_random_hex_string_here
 SESSION_SECRET=another_64_character_random_hex_string_here
-SESSION_MAX_AGE=7200000                # 2 hours in milliseconds
+SESSION_MAX_AGE=3600000                # 1 hour in milliseconds
 
 # ═══════════════════════════════════════════════════════════
 # SECURITY
@@ -458,6 +461,43 @@ Secure password reset token storage.
 | used | BOOLEAN | Whether token was consumed |
 | created_at | TIMESTAMPTZ | Token creation time |
 
+#### `sessions`
+Database-backed session storage for persistent logins.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | VARCHAR(255) | Primary key (session token) |
+| user_id | INTEGER | FK to users |
+| role | VARCHAR(255) | User role at session creation |
+| email | VARCHAR(255) | User email |
+| created_at | BIGINT | Session creation timestamp (ms) |
+| expires_at | BIGINT | Session expiry timestamp (ms) |
+| last_accessed_at | BIGINT | Last activity timestamp (ms) |
+
+#### `shipments`
+Shipment/parcel tracking data.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | BIGSERIAL | Primary key |
+| tracking_id | VARCHAR(50) | Unique tracking number |
+| sender_name | VARCHAR(100) | Sender's name |
+| sender_mobile | VARCHAR(20) | Sender's phone |
+| sender_address | TEXT | Sender's full address |
+| sender_pincode | VARCHAR(10) | Sender's PIN code |
+| receiver_name | VARCHAR(100) | Receiver's name |
+| receiver_mobile | VARCHAR(20) | Receiver's phone |
+| receiver_address | TEXT | Receiver's full address |
+| receiver_pincode | VARCHAR(10) | Receiver's PIN code |
+| origin_address | TEXT | Origin city/location |
+| destination_address | TEXT | Destination city/location |
+| status | VARCHAR(50) | pending, in_transit, delivered, failed |
+| price | DECIMAL(10,2) | Shipment cost |
+| weight | DECIMAL(10,2) | Package weight in KG |
+| estimated_delivery | TIMESTAMPTZ | Expected delivery date |
+| created_at | TIMESTAMPTZ | Booking timestamp |
+| updated_at | TIMESTAMPTZ | Last status update |
+
 ### Indexes
 
 - `idx_users_email` - Fast email lookups (login)
@@ -465,6 +505,8 @@ Secure password reset token storage.
 - `idx_users_status` - Active user filtering
 - `idx_password_resets_user` - User's reset tokens
 - `idx_password_resets_token` - Token validation
+- `idx_shipments_tracking` - Fast tracking ID lookups
+- `idx_shipments_status` - Status-based filtering
 
 ---
 
@@ -558,7 +600,7 @@ CREATE INDEX idx_shipment_photos_tracking ON shipment_photos(tracking_id);
 | Password Hashing | bcrypt, cost factor 12 | `auth.controller.js` |
 | Session Cookies | HttpOnly, Secure, SameSite=Lax | `sessionMiddleware.js` |
 | JWT Validation | Secret length check, expiry | `auth.controller.js` |
-| Session Timeout | 2 hours sliding window | `session.js` |
+| Session Timeout | 1 hour sliding window | `session.js` |
 
 ### HTTP Security Headers
 
@@ -827,13 +869,54 @@ pm2 restart movex
 - Or set `DB_SSL=true` in .env
 
 ### Sessions not persisting
-- Check `SESSION_SECRET` is set
-- Verify cookies are being set (browser dev tools)
-- Check `sameSite` and `secure` cookie settings
+- Sessions are now stored in PostgreSQL `sessions` table
+- Check database connection is working
+- Verify `SESSION_SECRET` is set
+- Check cookies are being set (browser dev tools)
+- Session expiry is 1 hour (sliding window)
 
 ### CORS errors
 - Add your frontend URL to `FRONTEND_URL` in .env
 - Verify the origin exactly matches (including protocol)
+
+---
+
+## Appendix C: Changelog
+
+### v1.1.0 (January 2, 2026)
+
+#### New Features
+- **Print Label**: One-click label printing from shipment details
+  - Dynamic data population via URL parameters
+  - JsBarcode integration for CODE128 barcodes
+  - Auto-print on page load
+  - Return address uses sender's address from database
+  
+- **Weight Tracking**: Added weight field to shipments
+  - Database column: `weight DECIMAL(10,2)`
+  - Displayed in shipment details modal
+  - Included in print labels
+
+- **Complete Address Support**:
+  - Added `sender_address`, `sender_pincode` fields
+  - Added `receiver_address`, `receiver_pincode` fields
+  - Full address display in shipment details modal
+
+#### Improvements
+- **Shipment Details Modal**: Redesigned with comprehensive information
+  - Sender/Receiver cards with full details
+  - Route visualization
+  - Amount, Weight, Dates in grid layout
+  
+- **Session Management**: Migrated to PostgreSQL
+  - Sessions now persist across server restarts
+  - New `sessions` table in database
+  - Session expiry reduced to 1 hour
+
+#### Technical Changes
+- All session methods now async/await
+- Backend routes updated for new fields
+- Label design finalized (Delhivery V2 style)
 
 ---
 

@@ -8,16 +8,16 @@ const sessionStore = require('../src/session');
 const pendingMfaChallenges = new Map();
 
 // SECURITY: Helper to get session from cookie
-function getSessionFromRequest(req) {
+async function getSessionFromRequest(req) {
     const sid = req.cookies?.['movex.sid'];
-    return sessionStore.getSession(sid);
+    return await sessionStore.getSession(sid);
 }
 
 // SECURITY: Require valid session for MFA initiation
 router.post('/initiate', async (req, res) => {
     try {
         // Get userId from authenticated session, NOT from request body
-        const session = getSessionFromRequest(req);
+        const session = await getSessionFromRequest(req);
 
         if (!session || !session.userId) {
             return res.status(401).json({ message: 'Authentication required' });
@@ -57,7 +57,7 @@ router.post('/verify', async (req, res) => {
         const { code } = req.body;
 
         // Get userId from authenticated session, NOT from request body
-        const session = getSessionFromRequest(req);
+        const session = await getSessionFromRequest(req);
 
         if (!session || !session.userId) {
             return res.status(401).json({ message: 'Authentication required' });

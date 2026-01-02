@@ -108,7 +108,7 @@ if (SESSION_SECRET.length < 32) {
    ═══════════════════════════════════════════════════════════ */
 const sessionStore = require('./session');
 
-const protectStaticDashboards = (req, res, next) => {
+const protectStaticDashboards = async (req, res, next) => {
   // Normalize path: Remove .html if present
   const normalizedPath = req.path.endsWith('.html') ? req.path.slice(0, -5) : req.path;
   const target = normalizedPath.substring(1); // remove leading slash
@@ -126,7 +126,7 @@ const protectStaticDashboards = (req, res, next) => {
   if (dashboardMap[target]) {
     // 1. Check for session cookie (Strict Server-Side Validation)
     const sid = req.cookies?.['movex.sid'];
-    const session = sessionStore.getSession(sid);
+    const session = await sessionStore.getSession(sid);
 
     if (!session) {
       // No valid session -> Redirect to Login

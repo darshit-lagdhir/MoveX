@@ -36,8 +36,8 @@ setInterval(() => {
 const sessionStore = require('../src/session');
 const { setSessionCookie } = require('../src/sessionMiddleware');
 
-function createSessionAndRedirect(user, req, res) {
-    const session = sessionStore.createSession({
+async function createSessionAndRedirect(user, req, res) {
+    const session = await sessionStore.createSession({
         id: user.id,
         email: user.email,
         role: user.role
@@ -92,7 +92,7 @@ router.get('/google/callback', (req, res, next) => {
         return res.redirect('/?error=invalid_state');
     }
 
-    passport.authenticate('google', { session: false }, (err, user, info) => {
+    passport.authenticate('google', { session: false }, async (err, user, info) => {
         if (err) {
             console.error('Google auth error:', err);
             return res.redirect('/?error=oauth_failed');
@@ -102,7 +102,7 @@ router.get('/google/callback', (req, res, next) => {
             return res.redirect('/?error=oauth_no_user');
         }
 
-        createSessionAndRedirect(user, req, res);
+        await createSessionAndRedirect(user, req, res);
     })(req, res, next);
 });
 
@@ -131,7 +131,7 @@ router.get('/github/callback', (req, res, next) => {
         return res.redirect('/?error=invalid_state');
     }
 
-    passport.authenticate('github', { session: false }, (err, user, info) => {
+    passport.authenticate('github', { session: false }, async (err, user, info) => {
         if (err) {
             console.error('GitHub auth error:', err);
             return res.redirect('/?error=oauth_failed');
@@ -141,7 +141,7 @@ router.get('/github/callback', (req, res, next) => {
             return res.redirect('/?error=oauth_no_user');
         }
 
-        createSessionAndRedirect(user, req, res);
+        await createSessionAndRedirect(user, req, res);
     })(req, res, next);
 });
 

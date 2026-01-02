@@ -128,7 +128,7 @@ exports.login = async (req, res) => {
     await pool.query('UPDATE users SET last_login_at = NOW() WHERE id = $1', [user.id]);
 
     // Create server-side session and set HttpOnly cookie
-    const session = sessionStore.createSession({
+    const session = await sessionStore.createSession({
       id: user.id,
       username: user.username,
       role: user.role
@@ -149,10 +149,10 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.logout = (req, res) => {
+exports.logout = async (req, res) => {
   const sid = req.cookies?.['movex.sid'];
   if (sid) {
-    sessionStore.destroySession(sid);
+    await sessionStore.destroySession(sid);
   }
   clearSessionCookie(res);
   return res.status(200).json({ message: 'Logged out.' });
@@ -313,7 +313,7 @@ exports.resetPassword = async (req, res) => {
     await pool.query('COMMIT');
 
     // Invalidate all sessions for this user
-    sessionStore.destroySessionsForUser(reset.user_id);
+    await sessionStore.destroySessionsForUser(reset.user_id);
 
     return res.status(200).json({ message: 'Password has been reset. Please log in.' });
   } catch (err) {

@@ -23,9 +23,9 @@ const sessionStore = require('../src/session');
 /**
  * Validate user session for photo operations
  */
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
     const sid = req.cookies?.['movex.sid'];
-    const session = sessionStore.getSession(sid);
+    const session = await sessionStore.getSession(sid);
 
     if (!session) {
         return res.status(401).json({
