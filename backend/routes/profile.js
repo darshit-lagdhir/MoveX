@@ -12,7 +12,7 @@ async function validateSession(req, res, next) {
         return res.status(401).json({ error: 'Not authenticated', code: 'NO_SESSION' });
     }
 
-    const session = sessionStore.getSession(sid);
+    const session = await sessionStore.getSession(sid);
     if (!session) {
         return res.status(401).json({ error: 'Session expired', code: 'SESSION_EXPIRED' });
     }

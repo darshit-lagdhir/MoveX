@@ -47,6 +47,8 @@ npm start
 ```
 movex/
 ├── admin/                  # Admin dashboard HTML pages
+│   ├── dashboard.html      # Main admin dashboard
+│   └── print_label.html    # Shipment label printing
 ├── backend/               
 │   ├── db/                # Database connection (backward compat)
 │   ├── middleware/        # Express middleware (auth, rate-limit, etc.)
@@ -56,7 +58,7 @@ movex/
 │   │   ├── config/        # Database configuration
 │   │   ├── controllers/   # Business logic
 │   │   ├── routes/        # Additional routes
-│   │   └── session.js     # Session management
+│   │   └── session.js     # Session management (DB-backed)
 │   ├── sql/               # Database migrations
 │   └── utils/             # Helper utilities
 ├── dashboards/            # Role-based dashboard pages
@@ -126,6 +128,12 @@ See `.env.example` for all available options.
 | GET | `/api/dashboard/admin` | Admin stats |
 | GET | `/api/dashboard/admin/stats` | System statistics |
 
+### Shipments (Admin)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/admin/shipments` | List all shipments |
+| POST | `/admin/shipments/create` | Create new shipment |
+
 ### Health Check
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -140,6 +148,7 @@ See `.env.example` for all available options.
 
 - ✅ **Bcrypt** password hashing (cost factor 12)
 - ✅ **HttpOnly** secure session cookies
+- ✅ **DB-backed sessions** (PostgreSQL, 1-hour expiry)
 - ✅ **Rate limiting** on authentication endpoints
 - ✅ **CORS** with whitelist configuration
 - ✅ **CSP** Content Security Policy headers
@@ -167,6 +176,50 @@ createdb movex_auth
 psql -d movex_auth -f backend/sql/001_init_users.sql
 psql -d movex_auth -f backend/sql/002_shipment_photos.sql
 ```
+
+---
+
+## 📦 Shipment Management
+
+### Features
+- **Create Shipments** with complete sender/receiver details
+- **Full Address Support**: Name, Mobile, Address, Pincode for both parties
+- **Weight Tracking**: Package weight in KG
+- **Price Management**: Shipment cost tracking
+- **Status Workflow**: pending → in_transit → delivered / failed
+- **Estimated Delivery**: Auto-calculated delivery dates
+
+### Shipment Details Modal
+View comprehensive shipment information:
+- Status banner with live tracking badge
+- Sender details (name, phone, full address, pincode)
+- Receiver details (name, phone, full address, pincode)
+- Route visualization (origin → destination)
+- Financial info (amount, weight, booking date, delivery estimate)
+- Activity timeline
+
+---
+
+## 🏷️ Label Printing
+
+### Print Label Feature (`admin/print_label.html`)
+- **One-click printing** from shipment details modal
+- **Dynamic data** - All fields populated from database
+- **Barcode generation** using JsBarcode (CODE128 format)
+- **Auto-print** - Browser print dialog opens automatically
+- **No storage** - Labels generated on-demand, not stored
+
+### Label Contents
+| Field | Source |
+|-------|--------|
+| Tracking ID | Database |
+| Barcode | Generated from Tracking ID |
+| Route | Origin → Destination cities |
+| Receiver | Name, Address, Phone, Pincode |
+| Sender | Name, Origin location |
+| Weight | Database (KG) |
+| Price | Database (₹) |
+| Return Address | Sender's full address |
 
 ---
 

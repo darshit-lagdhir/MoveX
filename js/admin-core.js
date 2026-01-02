@@ -553,65 +553,168 @@ window.MoveXAdmin = (function () {
     }
 
     function showShipmentDetails(s) {
+        // defined inside or outside? Lets define a helper here
+        const formatDate = (dateStr) => {
+            if (!dateStr) return 'N/A';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+        };
+
+        // Generate Timeline Events based on Status
+        const timelineEvents = [];
+        const createdDate = new Date(s.created_at);
+
+        // 1. Order Placed (Always)
+        timelineEvents.push({
+            title: 'Order Placed',
+            time: formatDate(s.created_at),
+            status: 'completed',
+            icon: 'var(--brand-primary)'
+        });
+
+        // 2. Processing (If not pending)
+        if (s.status !== 'Pending') {
+            timelineEvents.push({
+                title: 'Order Processed',
+                time: formatDate(new Date(createdDate.getTime() + 1000 * 60 * 30)), // Mock +30mins
+                status: 'completed',
+                icon: 'var(--brand-primary)'
+            });
+        }
+
+        // 3. Dispatched / In Transit
+        if (s.status === 'In Transit' || s.status === 'Delivered') {
+            timelineEvents.push({
+                title: 'Shipment Dispatched',
+                time: formatDate(s.updated_at),
+                status: 'completed',
+                icon: 'var(--info)'
+            });
+            timelineEvents.push({
+                title: 'In Transit',
+                time: 'In Progress',
+                status: s.status === 'In Transit' ? 'active' : 'completed',
+                icon: 'var(--warning)'
+            });
+        }
+
+        // 4. Delivered
+        if (s.status === 'Delivered') {
+            timelineEvents.pop(); // Remove "In Transit" active
+            timelineEvents.push({
+                title: 'Delivered',
+                time: formatDate(s.updated_at),
+                status: 'completed',
+                icon: 'var(--success)'
+            });
+        }
+
+        const eventsHTML = timelineEvents.reverse().map((e, index) => `
+             <div style="position: relative; padding-bottom: 1.5rem;">
+                <div style="position: absolute; left: -21px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: ${e.status === 'completed' || e.status === 'active' ? e.icon : 'var(--text-tertiary)'}; border: 3px solid var(--surface-primary);"></div>
+                <div style="font-size: 0.875rem; font-weight: 600; color: ${e.status === 'active' ? 'var(--brand-primary)' : 'var(--text-primary)'}">${e.title}</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">${e.time}</div>
+            </div>
+        `).join('');
+
         createModal(`Shipment: ${s.id}`, `
-            <div style="display: flex; flex-direction: column; gap: 2rem;">
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 <!-- Status Banner -->
-                <div style="background: var(--brand-primary-soft); padding: 1.5rem; border-radius: var(--radius-lg); display: flex; justify-content: space-between; align-items: center;">
+                <div style="background: var(--brand-primary-soft); padding: 1.25rem; border-radius: var(--radius-lg); display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <div style="font-size: 0.85rem; color: var(--brand-primary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Current Status</div>
-                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--brand-primary);">${s.status}</div>
+                        <div style="font-size: 0.8rem; color: var(--brand-primary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Current Status</div>
+                        <div style="font-size: 1.4rem; font-weight: 800; color: var(--brand-primary);">${s.status}</div>
                     </div>
-                    <div class="status-badge status-${s.status.toLowerCase().replace(' ', '-')}" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                    <div class="status-badge status-${s.status.toLowerCase().replace(' ', '-')}" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
                         Live Tracking
                     </div>
                 </div>
 
-                <!-- Info Grid -->
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+                <!-- Sender & Receiver Details -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                    <!-- Sender -->
+                    <div style="background: var(--surface-secondary); padding: 1rem; border-radius: var(--radius-md);">
+                        <label style="display: block; font-size: 0.7rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.5rem; font-weight: 700;">Sender Details</label>
+                        <div style="font-weight: 600; font-size: 1rem;">${s.sender_name || 'N/A'}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">${s.sender_mobile || 'N/A'}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem; line-height: 1.4;">${s.sender_address || 'N/A'}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 0.25rem;">PIN: ${s.sender_pincode || 'N/A'}</div>
+                    </div>
+                    <!-- Receiver -->
+                    <div style="background: var(--surface-secondary); padding: 1rem; border-radius: var(--radius-md);">
+                        <label style="display: block; font-size: 0.7rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.5rem; font-weight: 700;">Receiver Details</label>
+                        <div style="font-weight: 600; font-size: 1rem;">${s.receiver_name || 'N/A'}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">${s.receiver_mobile || 'N/A'}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem; line-height: 1.4;">${s.receiver_address || 'N/A'}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-tertiary); margin-top: 0.25rem;">PIN: ${s.receiver_pincode || 'N/A'}</div>
+                    </div>
+                </div>
+
+                <!-- Route -->
+                <div style="padding: 1rem; background: var(--surface-secondary); border-radius: var(--radius-md); display: flex; align-items: center; gap: 1rem;">
+                    <div style="flex: 1;">
+                        <label style="display: block; font-size: 0.65rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.2rem;">Origin City</label>
+                        <div style="font-weight: 600; font-size: 0.9rem;">${s.full_origin || s.origin || 'N/A'}</div>
+                    </div>
+                    <svg width="24" height="24" fill="none" stroke="var(--text-tertiary)" stroke-width="2" viewBox="0 0 24 24"><path d="M13 5l7 7-7 7M5 12h15"/></svg>
+                    <div style="flex: 1; text-align: right;">
+                        <label style="display: block; font-size: 0.65rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.2rem;">Destination City</label>
+                        <div style="font-weight: 600; font-size: 0.9rem;">${s.full_destination || s.destination || 'N/A'}</div>
+                    </div>
+                </div>
+
+                <!-- Shipment Info Grid -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
                     <div>
-                        <label style="display: block; font-size: 0.75rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.4rem; font-weight: 700;">Customer Details</label>
-                        <div style="font-weight: 600; font-size: 1rem;">${s.customer}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">+${s.mobile}</div>
+                        <label style="display: block; font-size: 0.65rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.3rem; font-weight: 700;">Amount</label>
+                        <div style="font-weight: 700; font-size: 1rem; color: var(--success);">₹${typeof s.amount === 'number' ? s.amount.toFixed(2) : s.amount}</div>
                     </div>
                     <div>
-                        <label style="display: block; font-size: 0.75rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.4rem; font-weight: 700;">Financials</label>
-                        <div style="font-weight: 600; font-size: 1rem; color: var(--success);">₹${typeof s.amount === 'number' ? s.amount.toFixed(2) : s.amount}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Paid via Razorpay</div>
+                        <label style="display: block; font-size: 0.65rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.3rem; font-weight: 700;">Weight</label>
+                        <div style="font-weight: 600; font-size: 1rem;">${s.weight || 1.0} KG</div>
                     </div>
-                    <div style="grid-column: span 2; padding: 1rem; background: var(--surface-secondary); border-radius: var(--radius-md); display: flex; align-items: center; gap: 1rem;">
-                        <div style="flex: 1;">
-                            <label style="display: block; font-size: 0.7rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.2rem;">Origin</label>
-                            <div style="font-weight: 600;">${s.origin}</div>
-                        </div>
-                        <svg width="24" height="24" fill="none" stroke="var(--text-tertiary)" stroke-width="2" viewBox="0 0 24 24"><path d="M13 5l7 7-7 7M5 12h15"/></svg>
-                        <div style="flex: 1; text-align: right;">
-                            <label style="display: block; font-size: 0.7rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.2rem;">Destination</label>
-                            <div style="font-weight: 600;">${s.destination}</div>
-                        </div>
+                    <div>
+                        <label style="display: block; font-size: 0.65rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.3rem; font-weight: 700;">Booked On</label>
+                        <div style="font-weight: 600; font-size: 0.9rem;">${new Date(s.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.65rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.3rem; font-weight: 700;">Est. Delivery</label>
+                        <div style="font-weight: 600; font-size: 0.9rem;">${s.estimated_delivery ? new Date(s.estimated_delivery).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}</div>
                     </div>
                 </div>
 
                 <!-- Simple Timeline -->
                 <div>
-                    <label style="display: block; font-size: 0.75rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 1rem; font-weight: 700;">Activity Timeline</label>
-                    <div style="display: flex; flex-direction: column; gap: 1rem; position: relative; padding-left: 1.5rem;">
+                    <label style="display: block; font-size: 0.7rem; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 0.75rem; font-weight: 700;">Activity Timeline</label>
+                    <div style="display: flex; flex-direction: column; position: relative; padding-left: 1.5rem;">
                         <div style="position: absolute; left: 4px; top: 0; bottom: 0; width: 2px; background: var(--border-default);"></div>
-                        
-                        <div style="position: relative;">
-                            <div style="position: absolute; left: -21px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--success); border: 3px solid var(--surface-primary);"></div>
-                            <div style="font-size: 0.875rem; font-weight: 600;">Shipment Dispatched</div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary);">${s.date} • 10:30 AM</div>
-                        </div>
-                        <div style="position: relative;">
-                            <div style="position: absolute; left: -21px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--brand-primary); border: 3px solid var(--surface-primary);"></div>
-                            <div style="font-size: 0.875rem; font-weight: 600;">Order Processed</div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary);">${s.date} • 09:15 AM</div>
-                        </div>
+                        ${eventsHTML}
                     </div>
                 </div>
             </div>
         `, [
-            { label: 'Print Label', onClick: close => { showToast('Generating label...', 'info'); close(); } },
+            {
+                label: 'Print Label',
+                onClick: close => {
+                    const params = new URLSearchParams({
+                        id: s.id,
+                        sender: s.sender_name || 'N/A',
+                        receiver: s.receiver_name || 'N/A',
+                        r_addr: s.full_destination || s.destination,
+                        r_phone: s.receiver_mobile || '',
+                        origin: s.origin,
+                        dest: s.destination,
+                        price: s.amount,
+                        weight: s.weight || '1.0',
+                        r_pincode: s.receiver_pincode || '',
+                        s_addr: s.sender_address || ''
+                    });
+
+                    window.open(`print_label.html?${params.toString()}`, '_blank');
+                    // close(); // Optional: keep modal open or close it? User said "preview comes, i print and thats it". 
+                    // Keeping modal open might be better user experience so they can print again if failed.
+                }
+            },
             { label: 'Update Status', primary: true, onClick: close => { showToast('Status update module opened', 'info'); close(); } }
         ]);
     }
@@ -952,6 +1055,10 @@ window.MoveXAdmin = (function () {
                         <input type="number" id="ship_amount" placeholder="0.00" style="width:100%;" autocomplete="off">
                     </div>
                     <div>
+                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Weight (Kg) <span style="color:red">*</span></label>
+                        <input type="number" id="ship_weight" placeholder="1.0" step="0.1" style="width:100%;" autocomplete="off">
+                    </div>
+                    <div style="grid-column: span 2;">
                         <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Ship Date <span style="color:red">*</span></label>
                         <input type="date" id="ship_date" style="width:100%;">
                     </div>
@@ -971,15 +1078,16 @@ window.MoveXAdmin = (function () {
                         const receiver_address = document.getElementById('ship_receiver_address').value.trim();
                         const receiver_pincode = document.getElementById('ship_receiver_pincode').value.trim();
 
-                        const origin = document.getElementById('loc_origin_val').value.trim();
-                        const destination = document.getElementById('loc_dest_val').value.trim();
+                        const origin = document.getElementById('loc_origin_val').dataset.value || document.getElementById('loc_origin_val').value;
+                        const destination = document.getElementById('loc_dest_val').dataset.value || document.getElementById('loc_dest_val').value;
                         const price = document.getElementById('ship_amount').value.trim();
+                        const weight = document.getElementById('ship_weight').value.trim();
                         const date = document.getElementById('ship_date').value;
 
                         // Mandatory Check
                         if (!sender_name || !sender_mobile || !sender_address || !sender_pincode ||
                             !receiver_name || !receiver_mobile || !receiver_address || !receiver_pincode ||
-                            !origin || !destination || !price || !date) {
+                            !origin || !destination || !price || !weight || !date) {
                             return showToast('All fields are mandatory', 'error');
                         }
 
@@ -999,14 +1107,15 @@ window.MoveXAdmin = (function () {
                         }
 
                         try {
+                            const payload = {
+                                sender_name, sender_mobile, sender_address, sender_pincode,
+                                receiver_name, receiver_mobile, receiver_address, receiver_pincode,
+                                origin, destination, price, weight, date
+                            };
                             const res = await fetch('/api/dashboard/admin/shipments/create', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    sender_name, sender_mobile, sender_address, sender_pincode,
-                                    receiver_name, receiver_mobile, receiver_address, receiver_pincode,
-                                    origin, destination, price, date
-                                })
+                                body: JSON.stringify(payload)
                             });
 
                             const data = await res.json();

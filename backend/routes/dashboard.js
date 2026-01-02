@@ -12,7 +12,7 @@ async function validateSession(req, res, next) {
         return res.status(401).json({ error: 'Not authenticated', code: 'NO_SESSION' });
     }
 
-    const session = sessionStore.getSession(sid);
+    const session = await sessionStore.getSession(sid);
     if (!session) {
         return res.status(401).json({ error: 'Session expired', code: 'SESSION_EXPIRED' });
     }
@@ -160,14 +160,17 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
         const limit = req.query.limit === 'all' ? null : (parseInt(req.query.limit) || 10);
 
         let queryText = `
-            SELECT id, tracking_id, status, sender_name, sender_mobile, receiver_name, 
-                   origin_address, destination_address, price, created_at
+            SELECT id, tracking_id, status, 
+                   sender_name, sender_mobile, sender_address, sender_pincode,
+                   receiver_name, receiver_mobile, receiver_address, receiver_pincode,
+                   origin_address, destination_address, 
+                   price, weight, created_at, updated_at, estimated_delivery
             FROM shipments 
             ORDER BY created_at DESC 
         `;
 
         if (limit) {
-            queryText += ` LIMIT ${limit}`;
+            queryText += ` LIMIT ${limit} `;
         }
 
         const result = await db.query(queryText);
@@ -175,13 +178,28 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
         // Format for frontend
         const shipments = result.rows.map(row => ({
             id: row.tracking_id,
-            status: row.status.charAt(0).toUpperCase() + row.status.slice(1).replace('_', ' '), // Clean status format
-            origin: row.origin_address ? row.origin_address.split(',')[0].trim() : 'N/A',     // Show city only
+            status: row.status.charAt(0).toUpperCase() + row.status.slice(1).replace('_', ' '),
+            origin: row.origin_address ? row.origin_address.split(',')[0].trim() : 'N/A',
             destination: row.destination_address ? row.destination_address.split(',')[0].trim() : 'N/A',
             date: new Date(row.created_at).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }),
             amount: parseFloat(row.price),
             customer: row.sender_name || 'N/A',
-            mobile: row.sender_mobile || 'N/A'
+            mobile: row.sender_mobile || 'N/A',
+            // Detailed Data for Modal
+            sender_name: row.sender_name,
+            sender_mobile: row.sender_mobile,
+            sender_address: row.sender_address,
+            sender_pincode: row.sender_pincode,
+            receiver_name: row.receiver_name,
+            receiver_mobile: row.receiver_mobile,
+            receiver_address: row.receiver_address,
+            receiver_pincode: row.receiver_pincode,
+            full_origin: row.origin_address,
+            full_destination: row.destination_address,
+            weight: parseFloat(row.weight || 1.0),
+            created_at: row.created_at,
+            updated_at: row.updated_at || row.created_at,
+            estimated_delivery: row.estimated_delivery
         }));
 
         res.json({ success: true, shipments });
@@ -200,7 +218,7 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
         const {
             sender_name, sender_mobile, sender_address, sender_pincode,
             receiver_name, receiver_mobile, receiver_address, receiver_pincode,
-            origin, destination, price, date
+            origin, destination, price, weight, date
         } = req.body;
 
         // Mandatory Field Check
@@ -244,7 +262,7 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
             }
         }
 
-        const trackingId = `MX${String(nextNum).padStart(5, '0')}`;
+        const trackingId = `MX${String(nextNum).padStart(5, '0')} `;
 
         // Calculate estimated delivery
         const createdAt = date ? new Date(date) : new Date();
@@ -252,22 +270,22 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
         deliveryDate.setDate(deliveryDate.getDate() + Math.floor(Math.random() * 4) + 2);
 
         const queryText = `
-            INSERT INTO shipments (
-                tracking_id, 
+            INSERT INTO shipments(
+                tracking_id,
                 sender_name, sender_mobile, sender_address, sender_pincode,
                 receiver_name, receiver_mobile, receiver_address, receiver_pincode,
-                origin_address, destination_address, 
-                price, status, created_at, estimated_delivery
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'pending', $13, $14)
+                origin_address, destination_address,
+                price, weight, status, created_at, estimated_delivery
+            ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending', $14, $15)
             RETURNING id, tracking_id
-        `;
+            `;
 
         const values = [
             trackingId,
             sender_name, sender_mobile, sender_address, sender_pincode,
             receiver_name, receiver_mobile, receiver_address, receiver_pincode,
             origin, destination,
-            parseFloat(price), createdAt, deliveryDate
+            parseFloat(price), parseFloat(weight || 1.0), createdAt, deliveryDate
         ];
 
         const result = await db.query(queryText, values);
@@ -294,7 +312,7 @@ router.post('/logout', async (req, res) => {
     // 2. Destroy Server Session and Cookie
     const sid = req.cookies?.['movex.sid'];
     if (sid) {
-        sessionStore.destroySession(sid);
+        await sessionStore.destroySession(sid);
         res.clearCookie('movex.sid', { path: '/' });
     }
 

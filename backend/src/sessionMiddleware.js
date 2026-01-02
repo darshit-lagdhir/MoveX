@@ -9,7 +9,7 @@ function setSessionCookie(res, sessionId) {
     sameSite: 'lax',
     secure: isProd,
     path: '/',
-    maxAge: 1000 * 60 * 60 * 2 // 2 hours
+    maxAge: 1000 * 60 * 60 * 1 // 1 hour
   });
 }
 
@@ -22,9 +22,9 @@ function clearSessionCookie(res) {
   });
 }
 
-function requireSession(req, res, next) {
+async function requireSession(req, res, next) {
   const sid = req.cookies?.[COOKIE_NAME];
-  const session = sessionStore.getSession(sid);
+  const session = await sessionStore.getSession(sid);
   if (!session) {
     return res.status(401).json({ message: 'Unauthorized' });
   }

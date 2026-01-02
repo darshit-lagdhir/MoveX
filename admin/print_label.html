@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoveX Label - Modern Grid</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #1f2937;
+        }
+
+        .label-card {
+            width: 380px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: #fff;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .brand {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #4f46e5;
+            /* Indigo */
+            letter-spacing: -0.5px;
+        }
+
+        .date-badge {
+            background: #f3f4f6;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        /* Hero Barcode */
+        .hero-barcode {
+            padding: 20px;
+            text-align: center;
+            background: white;
+        }
+
+        .track-code {
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #374151;
+            margin-top: 5px;
+            letter-spacing: 2px;
+        }
+
+        /* Route Strip */
+        .route-strip {
+            background: #4f46e5;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .route-code {
+            font-size: 1.2rem;
+        }
+
+        /* Grid Content */
+        .grid-row {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .grid-col {
+            padding: 15px;
+            flex: 1;
+        }
+
+        .grid-col:first-child {
+            border-right: 1px solid #e5e7eb;
+        }
+
+        .label-sm {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: #9ca3af;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .text-md {
+            font-size: 0.9rem;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .text-lg {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: #dcfce7;
+            color: #166534;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 10px 15px;
+            background: #f9fafb;
+            font-size: 0.7rem;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="label-card">
+        <!-- Header -->
+        <div class="header">
+            <div class="brand">MoveX</div>
+            <div class="date-badge" id="service_type">STANDARD</div>
+        </div>
+
+        <!-- Barcode -->
+        <div class="hero-barcode">
+            <svg id="mainBarcode"></svg>
+            <div class="track-code" id="tracking_id"></div>
+        </div>
+
+        <!-- Route -->
+        <div class="route-strip">
+            <span id="pincode"></span>
+            <span class="route-code" id="route_text"></span>
+        </div>
+
+        <!-- Address Info -->
+        <div class="grid-row">
+            <div class="grid-col" style="flex: 2;">
+                <div class="label-sm">Deliver To</div>
+                <div class="text-md" id="receiver_name"></div>
+                <div style="font-size: 0.8rem; color: #4b5563; margin-top: 2px;" id="receiver_addr"></div>
+                <div style="font-size: 0.8rem; font-weight: 600; margin-top: 4px;" id="receiver_phone"></div>
+            </div>
+            <div class="grid-col"
+                style="flex: 1; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                <div class="label-sm">Payment</div>
+                <div class="status-badge">PAID</div>
+                <div style="margin-top: 8px; font-weight: bold; color: #4b5563;" id="price_text"></div>
+            </div>
+        </div>
+
+        <!-- Sender -->
+        <div class="grid-row">
+            <div class="grid-col">
+                <div class="label-sm">Send By</div>
+                <div style="font-size: 0.8rem;" id="sender_info"></div>
+            </div>
+            <div class="grid-col">
+                <div class="label-sm">Weight</div>
+                <div style="font-size: 0.8rem; font-weight: bold;" id="weight_text">1.2 KG</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div style="width: 100%; text-align: center;" id="return_address">
+                Return: MoveX Hub, Okhla Ph-3, New Delhi
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL params
+        const params = new URLSearchParams(window.location.search);
+
+        // Data Mapping
+        const data = {
+            id: params.get('id') || 'MX00000',
+            sender: params.get('sender') || 'Unknown Sender',
+            receiver: params.get('receiver') || 'Unknown Receiver',
+            r_addr: params.get('r_addr') || '',
+            r_phone: params.get('r_phone') || '',
+            origin: params.get('origin') || 'ORG',
+            dest: params.get('dest') || 'DST',
+            price: params.get('price') || '0.00',
+            weight: params.get('weight') || '1.0',
+            r_pincode: params.get('r_pincode') || '',
+            s_addr: params.get('s_addr') || ''
+        };
+
+        // Populate DOM
+        document.getElementById('tracking_id').innerText = data.id;
+        document.getElementById('route_text').innerHTML = `${data.origin.substring(0, 3).toUpperCase()} &rarr; ${data.dest.substring(0, 3).toUpperCase()}`;
+        document.getElementById('receiver_name').innerText = data.receiver;
+        document.getElementById('receiver_addr').innerHTML = data.r_addr.replace(/,/g, ',<br>');
+        document.getElementById('receiver_phone').innerText = `+${data.r_phone}`;
+        document.getElementById('price_text').innerText = `₹${data.price}`;
+        document.getElementById('sender_info').innerText = `${data.sender}, ${data.origin}`;
+        document.getElementById('weight_text').innerText = `${data.weight} KG`;
+        document.getElementById('pincode').innerText = data.r_pincode || '';
+        document.getElementById('return_address').innerText = data.s_addr ? `Return: ${data.s_addr}` : 'Return: MoveX Hub, Okhla Ph-3, New Delhi';
+
+        JsBarcode("#mainBarcode", data.id, {
+            format: "CODE128",
+            width: 2.5,
+            height: 50,
+            displayValue: false,
+            margin: 0,
+            lineColor: "#1f2937"
+        });
+
+
+        window.onload = () => window.print();
+    </script>
+</body>
+
+</html>
