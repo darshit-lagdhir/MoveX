@@ -244,7 +244,7 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
             }
         }
 
-        const trackingId = `MX${String(nextNum).padStart(6, '0')}`;
+        const trackingId = `MX${String(nextNum).padStart(5, '0')}`;
 
         // Calculate estimated delivery
         const createdAt = date ? new Date(date) : new Date();
