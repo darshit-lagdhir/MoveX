@@ -82,8 +82,8 @@ See [PRODUCTION.md](./PRODUCTION.md) for complete deployment guide.
 | Document | Description |
 |----------|-------------|
 | [PRODUCTION.md](./PRODUCTION.md) | Full production deployment guide |
-| [docs/API.md](./docs/API.md) | API endpoints reference |
-| [docs/CONTRIBUTING.md](./docs/CONTRIBUTING.md) | Contributing guidelines |
+| [API.md](./API.md) | API endpoints reference |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Contributing guidelines |
 | [.env.example](./.env.example) | Environment variables |
 
 ---
