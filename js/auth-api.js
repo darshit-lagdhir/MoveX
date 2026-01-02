@@ -339,6 +339,8 @@
       if (isProcessing) return;
 
       const usernameInput = document.getElementById('register-username');
+      const nameInput = document.getElementById('register-name');
+      const phoneInput = document.getElementById('register-phone');
       const passwordInput = document.getElementById('register-password');
       const confirmInput = document.getElementById('register-confirm-password');
       const roleInput = document.querySelector('input[name="register-role"]:checked');
@@ -348,6 +350,8 @@
       const q3Input = document.getElementById('reg-q3');
 
       const username = usernameInput?.value.trim();
+      const fullName = nameInput?.value.trim();
+      const phone = phoneInput?.value.trim();
       const password = passwordInput?.value;
       const confirmPassword = confirmInput?.value;
       const role = roleInput?.value;
@@ -356,10 +360,18 @@
       const q3 = q3Input?.value.trim();
 
       // UI-only validation
-      if (!username || !password || !confirmPassword || !role || !q1 || !q2 || !q3) {
+      if (!username || !fullName || !phone || !password || !confirmPassword || !role || !q1 || !q2 || !q3) {
         showNotification('Please fill all fields, including security questions.', 'error');
         return;
       }
+
+      // Indian Phone Validation (+91 optional, 10 digits starting 6-9)
+      const phoneRegex = /^(\+91[\-\s]?)?[6-9]\d{9}$/;
+      if (!phoneRegex.test(phone)) {
+        showNotification('Please enter a valid Indian phone number.', 'error');
+        return;
+      }
+
       if (password !== confirmPassword) {
         showNotification('Passwords do not match.', 'error');
         return;
@@ -376,7 +388,13 @@
         const res = await fetch(`${API_BASE}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password, securityAnswers: { q1, q2, q3 } })   // backend decides final role
+          body: JSON.stringify({
+            username,
+            full_name: fullName,
+            phone,
+            password,
+            securityAnswers: { q1, q2, q3 }
+          })   // backend decides final role
         });
 
         const data = await res.json().catch(() => ({}));

@@ -19,7 +19,7 @@ if (JWT_SECRET.length < 32) {
   console.warn('⚠️ SECURITY WARNING: JWT_SECRET is shorter than recommended (32+ characters).');
 }
 const ALLOWED_LOGIN_FIELDS = ['username', 'password', 'role'];
-const ALLOWED_REGISTER_FIELDS = ['username', 'password', 'securityAnswers'];
+const ALLOWED_REGISTER_FIELDS = ['username', 'password', 'securityAnswers', 'full_name', 'phone'];
 const ALLOWED_FORGOT_FIELDS = ['username'];
 const ALLOWED_VERIFY_FIELDS = ['username', 'securityAnswers'];
 const ALLOWED_RESET_FIELDS = ['token', 'password'];
@@ -35,7 +35,7 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: 'Registration failed. Please check your input.' });
     }
 
-    const { username, password } = body;
+    const { username, password, full_name, phone } = body;
 
     if (!username || !password || typeof username !== 'string' || typeof password !== 'string') {
       return res.status(400).json({ message: 'Registration failed. Please check your input.' });
@@ -62,9 +62,9 @@ exports.register = async (req, res) => {
     const status = 'active';
 
     await pool.query(
-      `INSERT INTO users (username, password_hash, role, status, security_answers)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [normalizedUsername, hash, defaultRole, status, JSON.stringify(body.securityAnswers || {})]
+      `INSERT INTO users (username, password_hash, role, status, security_answers, full_name, phone)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [normalizedUsername, hash, defaultRole, status, JSON.stringify(body.securityAnswers || {}), full_name, phone]
     );
 
     return res.status(201).json({
