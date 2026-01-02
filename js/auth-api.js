@@ -310,8 +310,19 @@
         showNotification('Login successful!', 'success');
         triggerConfetti();
 
+        // Store session for cross-origin token auth fallback
+        const user = data.user || {};
+        const token = data.token || '';
+        const session = {
+          isLoggedIn: true,
+          role: user.role,
+          username: user.username,
+          token,
+          loginTime: Date.now()
+        };
+        sessionStorage.setItem('movexsecuresession', JSON.stringify({ data: session }));
+
         setTimeout(() => {
-          const user = data.user || {};
           const dashboards = {
             admin: 'admin/dashboard',
             franchisee: 'dashboards/franchisee',
