@@ -135,8 +135,16 @@ exports.login = async (req, res) => {
     });
     setSessionCookie(res, session.id);
 
+    // Generate JWT for cross-origin fallback (when cookies blocked)
+    const token = jwt.sign(
+      { userId: user.id, username: user.username, role: user.role },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
+
     return res.status(200).json({
       message: 'Login successful.',
+      token, // For cross-origin auth
       user: {
         id: user.id,
         username: user.username,

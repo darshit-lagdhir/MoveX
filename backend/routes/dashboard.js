@@ -8,37 +8,48 @@ const sessionStore = require('../src/session');
 async function validateSession(req, res, next) {
     const sid = req.cookies?.['movex.sid'];
 
-    if (!sid) {
-        return res.status(401).json({ error: 'Not authenticated', code: 'NO_SESSION' });
-    }
+    // Try cookie-based session first
+    if (sid) {
+        const session = await sessionStore.getSession(sid);
+        if (session) {
+            try {
+                const result = await db.query(
+                    'SELECT id, username, role, status FROM users WHERE id = $1',
+                    [session.userId]
+                );
 
-    const session = await sessionStore.getSession(sid);
-    if (!session) {
-        return res.status(401).json({ error: 'Session expired', code: 'SESSION_EXPIRED' });
-    }
-
-    try {
-        const result = await db.query(
-            'SELECT id, username, role, status FROM users WHERE id = $1',
-            [session.userId]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(401).json({ error: 'User not found', code: 'USER_NOT_FOUND' });
+                if (result.rows.length > 0 && result.rows[0].status === 'active') {
+                    req.user = result.rows[0];
+                    return next();
+                }
+            } catch (err) {
+                console.error('Session lookup error:', err);
+            }
         }
-
-        const user = result.rows[0];
-
-        if (user.status !== 'active') {
-            return res.status(403).json({ error: 'Account is disabled', code: 'ACCOUNT_DISABLED' });
-        }
-
-        req.user = user;
-        next();
-    } catch (err) {
-        console.error('Dashboard auth error:', err);
-        return res.status(401).json({ error: 'Auth failed', code: 'INVALID_SESSION' });
     }
+
+    // Fallback: Try JWT token from Authorization header (for cross-origin)
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const result = await db.query(
+                'SELECT id, username, role, status FROM users WHERE id = $1',
+                [decoded.userId || decoded.id]
+            );
+
+            if (result.rows.length > 0 && result.rows[0].status === 'active') {
+                req.user = result.rows[0];
+                return next();
+            }
+        } catch (err) {
+            console.error('JWT validation error:', err.message);
+        }
+    }
+
+    // No valid auth found
+    return res.status(401).json({ error: 'Not authenticated', code: 'NO_SESSION' });
 }
 
 function requireRole(...allowedRoles) {
