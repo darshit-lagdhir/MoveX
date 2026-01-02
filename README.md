@@ -238,7 +238,43 @@ See [PRODUCTION.md](./PRODUCTION.md#section-6-storage-strategy-for-photos) for d
 
 ## 🚢 Deployment
 
-### Recommended Platforms
+### Production Setup: Cloudflare Pages + Koyeb (Recommended)
+
+MoveX uses a **split deployment** model:
+- **Frontend** (HTML/CSS/JS) → Cloudflare Pages (free, global CDN)
+- **Backend** (Node.js/Express) → Koyeb (free tier, 24/7 uptime)
+
+#### Quick Deploy Steps
+
+1. **Deploy Frontend to Cloudflare Pages**
+   - Connect GitHub repo to Cloudflare Pages
+   - Build command: Leave empty
+   - Deploy command: `npx wrangler deploy`
+   - Build output: `/`
+
+2. **Deploy Backend to Koyeb**
+   - Connect GitHub repo to Koyeb
+   - Work directory: `backend`
+   - Run command: `node src/app.js`
+   - Port: `8000`
+
+3. **Configure Environment Variables** (Koyeb)
+   ```
+   NODE_ENV=production
+   PORT=8000
+   DATABASE_URL=your-supabase-connection-string
+   JWT_SECRET=your-64-char-secret
+   SESSION_SECRET=your-64-char-secret
+   SESSION_SAME_SITE=none
+   SESSION_SECURE=true
+   FRONTEND_URL=https://your-site.pages.dev
+   ```
+
+4. **Update Frontend API URLs**
+   - Update `API_BASE` in `js/auth-api.js`, `js/dashboard-guard.js`, `js/admin-core.js`
+   - Set to your Koyeb URL: `https://your-app.koyeb.app`
+
+### Alternative Platforms
 
 - **Railway** - Easy deployment with auto-detection
 - **Render** - Flexible hosting options
@@ -250,7 +286,9 @@ See [PRODUCTION.md](./PRODUCTION.md#section-6-storage-strategy-for-photos) for d
 - [ ] Configure strong secrets (32+ characters)
 - [ ] Set up Supabase database
 - [ ] Update `FRONTEND_URL` for CORS
+- [ ] Set `SESSION_SAME_SITE=none` for cross-origin
 - [ ] Enable `SESSION_SECURE=true` (requires HTTPS)
+- [ ] Update `API_BASE` in frontend JS files
 
 See [PRODUCTION.md](./PRODUCTION.md) for complete deployment guide.
 
