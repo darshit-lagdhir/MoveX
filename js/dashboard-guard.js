@@ -4,6 +4,11 @@ document.documentElement.classList.add('loading');
 (function () {
     'use strict';
 
+    // Auto-detect: localhost for dev, Koyeb for production
+    const API_BASE = window.location.hostname === 'localhost'
+        ? ''
+        : 'https://presidential-fly-movex-237428a4.koyeb.app';
+
     const DASHBOARDS = {
         admin: '/admin/dashboard',
         franchisee: '/dashboards/franchisee',
@@ -73,7 +78,7 @@ document.documentElement.classList.add('loading');
                 headers['Authorization'] = `Bearer ${token}`;
             }
 
-            const response = await fetch('/api/me', {
+            const response = await fetch(`${API_BASE}/api/me`, {
                 method: 'GET',
                 credentials: 'include', // Important: sends cookies
                 headers: headers
@@ -175,7 +180,7 @@ document.documentElement.classList.add('loading');
         const token = getToken();
 
         try {
-            await fetch('/api/dashboard/logout', {
+            await fetch(`${API_BASE}/api/dashboard/logout`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
