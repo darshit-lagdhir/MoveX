@@ -295,7 +295,7 @@
         const res = await fetch(`${API_BASE}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          // Send credentials AND role to enforce check
+          credentials: 'include', // Required for cross-origin cookies
           body: JSON.stringify({ username, password, role })
         });
 
@@ -391,6 +391,7 @@
         const res = await fetch(`${API_BASE}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             username,
             full_name: fullName,
@@ -465,6 +466,7 @@
         const res = await fetch(`${API_BASE}/api/auth/forgot-password-check`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ username })
         });
 
@@ -515,6 +517,7 @@
         const res = await fetch(`${API_BASE}/api/auth/reset-password-security`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
             username,
             securityAnswers: { q1, q2, q3 }
@@ -600,6 +603,7 @@
         const res = await fetch(`${API_BASE}/api/auth/reset-password`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ token, password })
         });
         const data = await res.json().catch(() => ({}));
@@ -669,6 +673,7 @@
           const res = await fetch(`${API_BASE}/api/mfa/verify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ userId: pendingUserId, code })
           });
 
