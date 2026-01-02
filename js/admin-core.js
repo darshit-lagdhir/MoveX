@@ -7,6 +7,11 @@
 window.MoveXAdmin = (function () {
     'use strict';
 
+    // Auto-detect: localhost for dev, Koyeb for production
+    const API_BASE = window.location.hostname === 'localhost'
+        ? ''
+        : 'https://presidential-fly-movex-237428a4.koyeb.app';
+
     // Pagination State
     let SHIP_PAGE = 1;
     const SHIP_LIMIT = 10;
@@ -391,7 +396,7 @@ window.MoveXAdmin = (function () {
 
         'shipments': function () {
             showSkeletons('.data-table-container', 'table');
-            fetch('/api/dashboard/admin/shipments?limit=1000')
+            fetch(`${API_BASE}/api/dashboard/admin/shipments?limit=1000`, { credentials: 'include' })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.shipments) {
@@ -1112,9 +1117,10 @@ window.MoveXAdmin = (function () {
                                 receiver_name, receiver_mobile, receiver_address, receiver_pincode,
                                 origin, destination, price, weight, date
                             };
-                            const res = await fetch('/api/dashboard/admin/shipments/create', {
+                            const res = await fetch(`${API_BASE}/api/dashboard/admin/shipments/create`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
+                                credentials: 'include',
                                 body: JSON.stringify(payload)
                             });
 
