@@ -4,6 +4,11 @@ function validateUsername(username) {
 	return username && typeof username === 'string' && username.trim().length >= 3;
 }
 
+function validatePhone(phone) {
+	const phoneRegex = /^(\+91[\-\s]?)?[6-9]\d{9}$/;
+	return phone && phoneRegex.test(phone);
+}
+
 // SECURITY: Password requirements - must match auth.controller.js MIN_PASSWORD_LENGTH
 // Minimum 8 characters, at least one letter and one number
 function validatePassword(password) {
@@ -49,6 +54,16 @@ function validateRegisterPayload(req, res, next) {
 	}
 	if (!validatePassword(password)) {
 		return res.status(400).json({ message: 'Password does not meet requirements.' });
+	}
+	// Check phone if provided (or make it mandatory as per user request flow implied mandatory input)
+	// User said "made the column of it... same thing for phone number" -> imply these are now part of registration
+	// The frontend enforces it, so backend should too.
+	const { phone, full_name } = req.body;
+	if (!full_name || full_name.trim().length === 0) {
+		return res.status(400).json({ message: 'Name is required.' });
+	}
+	if (!phone || !validatePhone(phone)) {
+		return res.status(400).json({ message: 'Valid Indian phone number is required.' });
 	}
 	const validRoles = ['user', 'admin', 'franchisee', 'staff'];
 	if (!role || !validRoles.includes(role)) {
