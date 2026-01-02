@@ -8,65 +8,78 @@ const sessionStore = require('../src/session');
 async function validateSession(req, res, next) {
     const sid = req.cookies?.['movex.sid'];
 
-    if (!sid) {
-        return res.status(401).json({ error: 'Not authenticated', code: 'NO_SESSION' });
-    }
+    // Try cookie-based session first
+    if (sid) {
+        const session = await sessionStore.getSession(sid);
+        if (session) {
+            try {
+                const result = await db.query(`
+                    SELECT u.id, u.username, u.full_name, u.phone, u.role, u.status, 
+                           u.mfa_enabled, u.created_at, u.last_login_at,
+                           u.organization_id,
+                           o.name as org_name, o.type as org_type, o.service_area, o.status as org_status
+                    FROM users u
+                    LEFT JOIN organizations o ON u.organization_id = o.id
+                    WHERE u.id = $1
+                `, [session.userId]);
 
-    const session = await sessionStore.getSession(sid);
-    if (!session) {
-        return res.status(401).json({ error: 'Session expired', code: 'SESSION_EXPIRED' });
-    }
-
-    try {
-        const result = await db.query(`
-            SELECT u.id, u.username, u.full_name, u.phone, u.role, u.status, 
-                   u.mfa_enabled, u.created_at, u.last_login_at,
-                   u.organization_id,
-                   o.name as org_name, o.type as org_type, o.service_area, o.status as org_status
-            FROM users u
-            LEFT JOIN organizations o ON u.organization_id = o.id
-            WHERE u.id = $1
-        `, [session.userId]);
-
-        if (result.rows.length === 0) {
-            return res.status(401).json({ error: 'User not found', code: 'USER_NOT_FOUND' });
+                if (result.rows.length > 0 && result.rows[0].status === 'active') {
+                    const row = result.rows[0];
+                    req.user = {
+                        id: row.id, username: row.username, full_name: row.full_name,
+                        phone: row.phone, role: row.role, status: row.status,
+                        mfa_enabled: row.mfa_enabled, created_at: row.created_at,
+                        last_login_at: row.last_login_at, organization_id: row.organization_id
+                    };
+                    req.organization = row.organization_id ? {
+                        id: row.organization_id, name: row.org_name, type: row.org_type,
+                        service_area: row.service_area, status: row.org_status
+                    } : null;
+                    return next();
+                }
+            } catch (err) {
+                console.error('Session lookup error:', err);
+            }
         }
-
-        const row = result.rows[0];
-
-        const user = {
-            id: row.id,
-            username: row.username,
-            full_name: row.full_name,
-            phone: row.phone,
-            role: row.role,
-            status: row.status,
-            mfa_enabled: row.mfa_enabled,
-            mfa_enabled: row.mfa_enabled,
-            created_at: row.created_at,
-            last_login_at: row.last_login_at,
-            organization_id: row.organization_id
-        };
-
-        const organization = row.organization_id ? {
-            id: row.organization_id,
-            name: row.org_name,
-            type: row.org_type,
-            service_area: row.service_area,
-            status: row.org_status
-        } : null;
-
-        if (user.status !== 'active') {
-            return res.status(403).json({ error: 'Account is disabled', code: 'ACCOUNT_DISABLED' });
-        }
-
-        req.user = user;
-        req.organization = organization;
-        next();
-    } catch (err) {
-        console.error('Profile auth error:', err);
-        return res.status(401).json({ error: 'Auth failed', code: 'INVALID_SESSION' });
     }
+
+    // Fallback: Try JWT token from Authorization header (for cross-origin)
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const result = await db.query(`
+                SELECT u.id, u.username, u.full_name, u.phone, u.role, u.status, 
+                       u.mfa_enabled, u.created_at, u.last_login_at,
+                       u.organization_id,
+                       o.name as org_name, o.type as org_type, o.service_area, o.status as org_status
+                FROM users u
+                LEFT JOIN organizations o ON u.organization_id = o.id
+                WHERE u.id = $1
+            `, [decoded.userId || decoded.id]);
+
+            if (result.rows.length > 0 && result.rows[0].status === 'active') {
+                const row = result.rows[0];
+                req.user = {
+                    id: row.id, username: row.username, full_name: row.full_name,
+                    phone: row.phone, role: row.role, status: row.status,
+                    mfa_enabled: row.mfa_enabled, created_at: row.created_at,
+                    last_login_at: row.last_login_at, organization_id: row.organization_id
+                };
+                req.organization = row.organization_id ? {
+                    id: row.organization_id, name: row.org_name, type: row.org_type,
+                    service_area: row.service_area, status: row.org_status
+                } : null;
+                return next();
+            }
+        } catch (err) {
+            console.error('JWT validation error:', err.message);
+        }
+    }
+
+    // No valid auth found
+    return res.status(401).json({ error: 'Not authenticated', code: 'NO_SESSION' });
 }
 
 function requireRole(...allowedRoles) {
