@@ -20,7 +20,7 @@ if (JWT_SECRET.length < 32) {
 }
 const ALLOWED_LOGIN_FIELDS = ['username', 'password', 'role'];
 const ALLOWED_REGISTER_FIELDS = ['username', 'password', 'securityAnswers'];
-const ALLOWED_FORGOT_FIELDS = ['email', 'username']; // accept username (mapped to email column)
+const ALLOWED_FORGOT_FIELDS = ['username'];
 const ALLOWED_VERIFY_FIELDS = ['username', 'securityAnswers'];
 const ALLOWED_RESET_FIELDS = ['token', 'password'];
 const RESET_TOKEN_TTL_MINUTES = 15;
@@ -62,7 +62,7 @@ exports.register = async (req, res) => {
     const status = 'active';
 
     await pool.query(
-      `INSERT INTO users (email, password_hash, role, status, security_answers)
+      `INSERT INTO users (username, password_hash, role, status, security_answers)
        VALUES ($1, $2, $3, $4, $5)`,
       [normalizedUsername, hash, defaultRole, status, JSON.stringify(body.securityAnswers || {})]
     );
@@ -99,7 +99,7 @@ exports.login = async (req, res) => {
 
     const normalizedUsername = username.trim().toLowerCase();
     const { rows } = await pool.query(
-      'SELECT id, email, password_hash, role, status FROM users WHERE email = $1',
+      'SELECT id, username, password_hash, role, status FROM users WHERE username = $1',
       [normalizedUsername]
     );
 
@@ -130,7 +130,7 @@ exports.login = async (req, res) => {
     // Create server-side session and set HttpOnly cookie
     const session = sessionStore.createSession({
       id: user.id,
-      email: user.email,
+      username: user.username,
       role: user.role
     });
     setSessionCookie(res, session.id);
@@ -139,7 +139,7 @@ exports.login = async (req, res) => {
       message: 'Login successful.',
       user: {
         id: user.id,
-        email: user.email,
+        username: user.username,
         role: user.role
       }
     });
@@ -175,7 +175,7 @@ exports.verifyQuestions = async (req, res) => {
 
     // Get user and stored answers
     const { rows } = await pool.query(
-      'SELECT id, role, security_answers FROM users WHERE email = $1',
+      'SELECT id, role, security_answers FROM users WHERE username = $1',
       [normalizedUsername]
     );
     const user = rows[0];
@@ -247,7 +247,7 @@ exports.checkRecoveryEligibility = async (req, res) => {
     const normalizedUsername = username.trim().toLowerCase();
 
     const { rows } = await pool.query(
-      'SELECT id, role FROM users WHERE email = $1',
+      'SELECT id, role FROM users WHERE username = $1',
       [normalizedUsername]
     );
     const user = rows[0];
@@ -292,7 +292,7 @@ exports.resetPassword = async (req, res) => {
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
     const { rows } = await pool.query(
-      `SELECT pr.id, pr.user_id, pr.expires_at, pr.used, u.email
+      `SELECT pr.id, pr.user_id, pr.expires_at, pr.used, u.username
        FROM password_resets pr
        JOIN users u ON u.id = pr.user_id
        WHERE pr.token_hash = $1`,

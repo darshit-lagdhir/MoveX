@@ -19,7 +19,7 @@ async function validateSession(req, res, next) {
 
     try {
         const result = await db.query(
-            'SELECT id, email, role, status FROM users WHERE id = $1',
+            'SELECT id, username, role, status FROM users WHERE id = $1',
             [session.userId]
         );
 
@@ -77,7 +77,7 @@ router.get('/me', validateSession, (req, res) => {
         success: true,
         user: {
             id: req.user.id,
-            email: req.user.email,
+            username: req.user.username,
             role: req.user.role,
             mfa_enabled: req.user.mfa_enabled,
             mfa_enabled: req.user.mfa_enabled,
@@ -91,7 +91,7 @@ router.get('/profile', validateSession, (req, res) => {
         success: true,
         user: {
             id: req.user.id,
-            email: req.user.email,
+            username: req.user.username,
             role: req.user.role,
             mfa_enabled: req.user.mfa_enabled,
             mfa_enabled: req.user.mfa_enabled,

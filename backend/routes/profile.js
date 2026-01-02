@@ -19,7 +19,7 @@ async function validateSession(req, res, next) {
 
     try {
         const result = await db.query(`
-            SELECT u.id, u.email, u.full_name, u.phone, u.role, u.status, 
+            SELECT u.id, u.username, u.full_name, u.phone, u.role, u.status, 
                    u.mfa_enabled, u.created_at, u.last_login_at,
                    u.organization_id,
                    o.name as org_name, o.type as org_type, o.service_area, o.status as org_status
@@ -36,7 +36,7 @@ async function validateSession(req, res, next) {
 
         const user = {
             id: row.id,
-            email: row.email,
+            username: row.username,
             full_name: row.full_name,
             phone: row.phone,
             role: row.role,
@@ -103,7 +103,7 @@ router.get('/me', validateSession, (req, res) => {
 
     const profile = {
         id: user.id,
-        email: user.email,
+        username: user.username,
         full_name: user.full_name,
         phone: user.phone,
         role: user.role,
@@ -154,7 +154,7 @@ router.put('/me', validateSession, async (req, res) => {
         );
 
         const result = await db.query(`
-            SELECT id, email, full_name, phone, role, status, mfa_enabled, 
+            SELECT id, username, full_name, phone, role, status, mfa_enabled, 
                    organization_id, created_at, last_login_at
             FROM users WHERE id = $1
         `, [userId]);
@@ -209,7 +209,7 @@ router.get('/organization/users', validateSession, requireRole('admin', 'franchi
 
         if (user.role === 'admin') {
             query = `
-                SELECT u.id, u.email, u.full_name, u.phone, u.role, u.status, 
+                SELECT u.id, u.username, u.full_name, u.phone, u.role, u.status, 
                        u.created_at, u.last_login_at, o.name as org_name
                 FROM users u
                 LEFT JOIN organizations o ON u.organization_id = o.id
@@ -222,7 +222,7 @@ router.get('/organization/users', validateSession, requireRole('admin', 'franchi
             }
 
             query = `
-                SELECT u.id, u.email, u.full_name, u.phone, u.role, u.status, 
+                SELECT u.id, u.username, u.full_name, u.phone, u.role, u.status, 
                        u.created_at, u.last_login_at
                 FROM users u
                 WHERE u.organization_id = $1

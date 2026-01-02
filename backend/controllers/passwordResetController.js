@@ -24,14 +24,14 @@ module.exports = {
 	// POST /forgot-password
 	async forgotPassword(req, res) {
 		try {
-			const { email } = req.body || {};
+			const { username } = req.body || {};
 			// generic 200 response path
 			const genericResponse = { message: 'If the account exists, you will receive a reset link.' };
 
-			if (!email) return res.status(200).json(genericResponse);
+			if (!username) return res.status(200).json(genericResponse);
 
-			// find user by email (do not reveal existence)
-			const u = await db.query('SELECT id, email FROM users WHERE email = $1 LIMIT 1', [email]);
+			// find user by username (do not reveal existence)
+			const u = await db.query('SELECT id, username FROM users WHERE username = $1 LIMIT 1', [username]);
 			if (!u.rows || u.rows.length === 0) {
 				// still respond generic
 				return res.status(200).json(genericResponse);
@@ -50,7 +50,7 @@ module.exports = {
 
 			// send email (best-effort; failures should not reveal anything)
 			try {
-				await sendPasswordResetEmail(user.email, resetLink);
+				await sendPasswordResetEmail(user.username, resetLink);
 			} catch (err) {
 				// log but do not reveal to client
 				console.error('sendPasswordResetEmail error', { err: err && err.message, userId: user.id });

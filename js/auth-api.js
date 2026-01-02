@@ -235,7 +235,7 @@
     const session = {
       isLoggedIn: true,
       role: user.role,
-      email: user.email,
+      username: user.username,
       token,
       loginTime: Date.now()
     };

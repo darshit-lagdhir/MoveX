@@ -13,22 +13,29 @@ const isProduction = process.env.NODE_ENV === 'production';
  * Mask email for privacy in logs
  * user@example.com -> u***r@e****e.com
  */
-function maskEmail(email) {
-	if (!email || !isProduction) return email;
+/**
+ * Mask identity (email or username) for privacy in logs
+ */
+function maskIdentity(identity) {
+	if (!identity || !isProduction) return identity;
 
-	const [local, domain] = email.split('@');
-	if (!domain) return '***@***.***';
-
-	const maskedLocal = local.length > 2
-		? local[0] + '***' + local[local.length - 1]
-		: '***';
-
-	const domainParts = domain.split('.');
-	const maskedDomain = domainParts[0].length > 2
-		? domainParts[0][0] + '****' + domainParts[0][domainParts[0].length - 1]
-		: '****';
-
-	return `${maskedLocal}@${maskedDomain}.${domainParts.slice(1).join('.')}`;
+	if (identity.includes('@')) {
+		// Email masking
+		const [local, domain] = identity.split('@');
+		const maskedLocal = local.length > 2
+			? local[0] + '***' + local[local.length - 1]
+			: '***';
+		const domainParts = domain.split('.');
+		const maskedDomain = domainParts[0].length > 2
+			? domainParts[0][0] + '****' + domainParts[0][domainParts[0].length - 1]
+			: '****';
+		return `${maskedLocal}@${maskedDomain}.${domainParts.slice(1).join('.')}`;
+	} else {
+		// Simple username masking
+		return identity.length > 2
+			? identity[0] + '***' + identity[identity.length - 1]
+			: '***';
+	}
 }
 
 /**
@@ -69,7 +76,7 @@ function logAuthAttempt(event, details = {}) {
 		timestamp,
 		event,
 		ip: maskIP(details.ip),
-		email: maskEmail(details.email),
+		username: maskIdentity(details.username || details.email),
 		userId: details.userId,
 		reason: details.reason
 		// NEVER include: passwords, tokens, hashes, session data
@@ -117,6 +124,6 @@ function logSecurityEvent(event, details = {}) {
 module.exports = {
 	logAuthAttempt,
 	logSecurityEvent,
-	maskEmail,
+	maskIdentity,
 	maskIP
 };

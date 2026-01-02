@@ -1,8 +1,7 @@
 const MAX_PAYLOAD_SIZE = 1e5; // 100KB
 
-function validateEmail(email) {
-	const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-	return regex.test(email) && email.length <= 255;
+function validateUsername(username) {
+	return username && typeof username === 'string' && username.trim().length >= 3;
 }
 
 // SECURITY: Password requirements - must match auth.controller.js MIN_PASSWORD_LENGTH
@@ -32,8 +31,8 @@ function enforceJsonContentType(req, res, next) {
 
 // Middleware: validate login payload
 function validateLoginPayload(req, res, next) {
-	const { email, password } = req.body || {};
-	if (!email || !validateEmail(email)) {
+	const { username, password } = req.body || {};
+	if (!username || !validateUsername(username)) {
 		return res.status(400).json({ message: 'Invalid request.' });
 	}
 	if (!password || typeof password !== 'string' || password.length < 1) {
@@ -44,8 +43,8 @@ function validateLoginPayload(req, res, next) {
 
 // Middleware: validate register payload
 function validateRegisterPayload(req, res, next) {
-	const { email, password, role } = req.body || {};
-	if (!email || !validateEmail(email)) {
+	const { username, password, role } = req.body || {};
+	if (!username || !validateUsername(username)) {
 		return res.status(400).json({ message: 'Invalid request.' });
 	}
 	if (!validatePassword(password)) {
@@ -76,6 +75,7 @@ module.exports = {
 	validateLoginPayload,
 	validateRegisterPayload,
 	validatePasswordResetPayload,
-	validateEmail,
+	validatePasswordResetPayload,
+	validateUsername,
 	validatePassword,
 };
