@@ -34,6 +34,23 @@
 </head>
 
 <body>
+    <!-- Maintenance Mode Check - Checks backend before showing page -->
+    <script>
+        (async function checkMaintenance() {
+            const API_BASE = window.location.hostname === 'localhost' ? '' : 'https://presidential-fly-movex-237428a4.koyeb.app';
+            try {
+                const res = await fetch(`${API_BASE}/api/maintenance`);
+                const data = await res.json();
+                if (data.maintenance === true && !window.location.pathname.includes('maintenance')) {
+                    window.location.href = '/maintenance/maintenance.html';
+                }
+            } catch (e) {
+                // If API fails, continue showing the site
+                console.log('Maintenance check skipped');
+            }
+        })();
+    </script>
+
     <!-- Shared SVG Defs -->
     <svg style="width:0; height:0; position:absolute;" aria-hidden="true" focusable="false">
         <defs>
