@@ -408,8 +408,9 @@
             full_name: fullName,
             phone,
             password,
+            role,  // Send selected role to backend
             securityAnswers: { q1, q2, q3 }
-          })   // backend decides final role
+          })
         });
 
         const data = await res.json().catch(() => ({}));
