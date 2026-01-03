@@ -173,6 +173,10 @@ document.documentElement.classList.add('loading');
         }
 
         document.body.classList.add('authenticated');
+
+        // SECURITY: Only show content after auth is verified
+        document.documentElement.classList.remove('loading');
+
         document.dispatchEvent(new CustomEvent('movex:authenticated', { detail: { user, organization: result.organization } }));
     }
 
