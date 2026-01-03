@@ -293,10 +293,10 @@ window.MoveXAdmin = (function () {
             if (btn) btn.onclick = () => {
                 btn.innerHTML = 'Processing...';
                 btn.disabled = true;
-                a.onClick(() => {
+                a.onClick((keepOpen = false) => {
                     btn.innerHTML = a.label;
                     btn.disabled = false;
-                    close();
+                    if (!keepOpen) close();
                 });
             };
         });
@@ -347,45 +347,112 @@ window.MoveXAdmin = (function () {
             };
         },
 
-        'users': function () {
-            renderUserTable();
+        'users': async () => {
+            const tBody = document.getElementById('users-table-body');
+            if (!tBody) return;
+
+            const fetchUsers = async () => {
+                try {
+                    const res = await fetch('/api/dashboard/admin/users');
+                    const data = await res.json();
+                    if (data.success) {
+                        MOCK_DATA.users = data.users; // Cache for basic filtering
+                        renderUserTable(MOCK_DATA.users);
+                    } else {
+                        throw new Error(data.error);
+                    }
+                } catch (err) {
+                    console.error("Fetch Users Error:", err);
+                    tBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--danger);">Failed to load users.</td></tr>`;
+                }
+            };
+
+            // Initial Fetch
+            await fetchUsers();
+
             const addBtn = document.querySelector('.page-header button');
             if (addBtn) {
                 addBtn.onclick = () => {
                     createModal('Add New User', `
                         <div style="display:flex; flex-direction:column; gap:1rem;">
                             <div><label style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Full Name</label><input type="text" id="new_name" placeholder="Enter name" style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);"></div>
-                            <div><label style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Username</label><input type="text" id="new_email" placeholder="username@movex" style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);"></div>
+                            <div><label style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Username</label><input type="text" id="new_username" placeholder="username" style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);"></div>
+                            <div>
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Password</label>
+                                <input type="password" id="new_password" placeholder="Min 6 characters" style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);">
+                            </div>
                             <div><label style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Role</label>
                                 <select id="new_role" style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);">
-                                    <option value="user">User</option>
                                     <option value="staff">Staff</option>
                                     <option value="franchisee">Franchisee</option>
                                     <option value="admin">Admin</option>
                                 </select>
                             </div>
+                             <div>
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Phone (Optional)</label>
+                                <input type="tel" id="new_phone" placeholder="+91..." style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);">
+                            </div>
                         </div>
                     `, [
                         { label: 'Cancel', onClick: (close) => close() },
                         {
-                            label: 'Create User', primary: true, onClick: (close) => {
-                                const name = document.getElementById('new_name').value;
-                                if (!name) return showToast('Name is required', 'error');
-                                showToast(`User ${name} created successfully!`, 'success');
-                                close();
+                            label: 'Create User', primary: true, onClick: async (close) => {
+                                const full_name = document.getElementById('new_name').value;
+                                const username = document.getElementById('new_username').value;
+                                const password = document.getElementById('new_password').value;
+                                const role = document.getElementById('new_role').value;
+                                const phone = document.getElementById('new_phone').value;
+
+                                if (!full_name || !username || !password) return showToast('All fields required', 'error');
+                                if (password.length < 6) return showToast('Password must be at least 6 chars', 'error');
+
+                                try {
+                                    const res = await fetch('/api/dashboard/admin/users/create', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ full_name, username, password, role, phone })
+                                    });
+                                    const data = await res.json();
+
+                                    if (data.success) {
+                                        showToast(`User ${username} created successfully!`, 'success');
+                                        fetchUsers(); // Refresh table
+                                        close();
+                                    } else {
+                                        showToast(data.error || 'Failed to create', 'error');
+                                        // Re-enable button logic is handled by modal wrapper but we want to stay open if error? 
+                                        // Modal currently closes on click. We might need to handle this better but standard flow is ok.
+                                    }
+                                } catch (err) {
+                                    console.error(err);
+                                    showToast('Network Error', 'error');
+                                }
                             }
                         }
                     ]);
                 };
             }
             const searchInput = document.querySelector('input[placeholder*="Search"]');
-            if (searchInput) {
-                searchInput.oninput = (e) => {
-                    const val = (e.target.value || '').toLowerCase();
-                    const items = MOCK_DATA.users.filter(u => u.name.toLowerCase().includes(val) || u.username.toLowerCase().includes(val));
-                    renderUserTable(items);
-                };
-            }
+            const roleFilter = document.getElementById('userRoleFilter');
+            const statusFilter = document.getElementById('userStatusFilter');
+
+            const filterUsers = () => {
+                const query = (searchInput?.value || '').toLowerCase();
+                const role = (roleFilter?.value || '').toLowerCase();
+                const status = (statusFilter?.value || '').toLowerCase();
+
+                const filtered = MOCK_DATA.users.filter(u => {
+                    const matchQuery = !query || u.name.toLowerCase().includes(query) || u.username.toLowerCase().includes(query);
+                    const matchRole = !role || u.role.toLowerCase() === role;
+                    const matchStatus = !status || u.status.toLowerCase() === status;
+                    return matchQuery && matchRole && matchStatus;
+                });
+                renderUserTable(filtered);
+            };
+
+            if (searchInput) searchInput.oninput = filterUsers;
+            if (roleFilter) roleFilter.onchange = filterUsers;
+            if (statusFilter) statusFilter.onchange = filterUsers;
         },
 
         'franchises': function () {
@@ -498,6 +565,75 @@ window.MoveXAdmin = (function () {
                 `;
             }
         },
+        'bookings': async () => {
+            const tBody = document.getElementById('bookings-table-body');
+            if (!tBody) return;
+
+            try {
+                const res = await fetch('/api/dashboard/admin/bookings');
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.error);
+
+                // Update KPIs
+                const kpiNew = document.getElementById('kpi-new-requests');
+                const kpiScheduled = document.getElementById('kpi-scheduled');
+                if (kpiNew) kpiNew.textContent = data.stats.newRequests;
+                if (kpiScheduled) kpiScheduled.textContent = data.stats.scheduledToday;
+
+                if (data.bookings.length === 0) {
+                    tBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-secondary);">No pending requests found.</td></tr>`;
+                    return;
+                }
+
+                tBody.innerHTML = data.bookings.map(row => `
+                     <tr>
+                        <td style="font-family: monospace; font-weight: 600;">${row.id}</td>
+                        <td>
+                            <div>${row.customer}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">${row.customer_type}</div>
+                        </td>
+                        <td>
+                            <div>${row.type}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">${row.weight} KG</div>
+                        </td>
+                        <td>${row.location ? row.location.split(',')[0] : 'N/A'}</td>
+                        <td>
+                             <div>${new Date(row.created_at).toLocaleDateString()}</div>
+                             <div style="font-size: 0.75rem; color: var(--text-secondary);">Requested</div>
+                        </td>
+                        <td>
+                            <button class="action-btn process-booking-btn" data-id="${row.id}" data-model='${JSON.stringify(row)}'
+                                style="background: var(--brand-primary); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 0.85rem;">
+                                Process
+                            </button>
+                        </td>
+                     </tr>
+                `).join('');
+
+                // Bind click events
+                document.querySelectorAll('.process-booking-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        // Find the button (target might be inner text)
+                        const button = e.target.closest('button');
+                        if (!button) return;
+
+                        const raw = button.getAttribute('data-model');
+                        const booking = JSON.parse(raw);
+                        // Convert booking model to shipment model for the update modal
+                        const shipmentModel = {
+                            id: booking.id,
+                            status: 'Pending'
+                        };
+                        showUpdateStatusModal(shipmentModel);
+                    });
+                });
+
+            } catch (err) {
+                console.error(err);
+                tBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--danger);">Failed to load bookings.</td></tr>`;
+            }
+        },
 
         'settings': function () {
             const saveBtn = document.querySelector('button[style*="background: var(--brand-primary)"]');
@@ -516,13 +652,20 @@ window.MoveXAdmin = (function () {
 
     function renderUserTable(data = MOCK_DATA.users) {
         const tbody = document.querySelector('.data-table tbody');
-        if (!tbody) return;
+        if (!tbody) return; // Happens if not on users page
+
+        // If data is empty?
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-secondary);">No users found.</td></tr>`;
+            return;
+        }
+
         tbody.innerHTML = data.map(u => `
             <tr>
                 <td>
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <div style="width: 40px; height: 40px; background: var(--brand-primary-soft); color: var(--brand-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
-                            ${u.name.split(' ').map(n => n[0]).join('')}
+                            ${(u.name || 'U').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                         </div>
                         <div>
                             <div style="font-weight: 600;">${u.name}</div>
@@ -530,8 +673,8 @@ window.MoveXAdmin = (function () {
                         </div>
                     </div>
                 </td>
-                <td><span class="status-badge" style="background: ${getRoleBg(u.role)}; color: white; opacity: 0.9;">${u.role}</span></td>
-                <td>${u.org}</td>
+                <td><span class="status-badge" style="background: ${getRoleBg(u.role)}; color: white; opacity: 0.9; text-transform:capitalize;">${u.role}</span></td>
+                <td>${u.org || 'N/A'}</td>
                 <td><span class="status-badge status-${u.status}">${u.status}</span></td>
                 <td>${u.joined}</td>
                 <td>
@@ -554,17 +697,80 @@ window.MoveXAdmin = (function () {
     }
 
     function showUserActions(user) {
-        createModal(`User: ${user.name}`, `<p>Manage access for <strong>${user.username}</strong>.</p>`, [
+
+        const actions = [
             { label: 'Close', onClick: close => close() },
             {
-                label: user.status === 'active' ? 'Disable' : 'Enable', primary: true, onClick: close => {
-                    user.status = user.status === 'active' ? 'disabled' : 'active';
-                    showToast(`User ${user.status}`, 'success');
-                    renderUserTable();
-                    close();
+                label: 'Reset Password',
+                onClick: (done) => {
+                    done(true); // Reset button text immediately, keep main modal open
+                    // Open sub-modal for password reset
+                    createModal(`Reset Password: ${user.name}`, `
+                        <div>
+                            <p style="margin-bottom:1rem; font-size:0.9rem;">Set a new password for <strong>${user.username}</strong>.</p>
+                            <input type="password" id="reset_pwd" placeholder="New Password (min 6 chars)" 
+                                style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px;">
+                        </div>
+                    `, [
+                        { label: 'Cancel', onClick: c => c() },
+                        {
+                            label: 'Set Password', primary: true, onClick: async (closeSub) => {
+                                const newPwd = document.getElementById('reset_pwd').value;
+                                if (!newPwd || newPwd.length < 6) return showToast('Password too short', 'error');
+
+                                try {
+                                    const res = await fetch('/api/dashboard/admin/users/reset-password', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ id: user.id, password: newPwd })
+                                    });
+                                    const data = await res.json();
+                                    if (data.success) {
+                                        showToast('Password reset successfully', 'success');
+                                        closeSub();
+                                        closeMain();
+                                    } else {
+                                        showToast(data.error, 'error');
+                                    }
+                                } catch (e) { showToast('Network error', 'error'); }
+                            }
+                        }
+                    ]);
+                }
+            },
+            {
+                label: user.status === 'active' ? 'Disable Account' : 'Enable Account',
+                // Primary if enabling, secondary/danger if disabling (but distinct styling not implemented, so just primary logic toggle)
+                primary: user.status !== 'active',
+                onClick: async (close) => {
+                    const newStatus = user.status === 'active' ? 'disabled' : 'active';
+
+                    try {
+                        const res = await fetch('/api/dashboard/admin/users/status', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: user.id, status: newStatus })
+                        });
+                        const data = await res.json();
+
+                        if (data.success) {
+                            showToast(`User ${newStatus} successfully`, 'success');
+
+                            // Update local state and redraw (or re-fetch, but redraw is faster)
+                            user.status = newStatus;
+                            renderUserTable();
+                            close();
+                        } else {
+                            showToast(data.error || 'Failed to update status', 'error');
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        showToast('Network error', 'error');
+                    }
                 }
             }
-        ]);
+        ];
+        createModal(`User: ${user.name}`, `<p>Manage access for <strong>${user.username}</strong>.</p>`, actions);
     }
 
     function showShipmentDetails(s) {
@@ -730,7 +936,14 @@ window.MoveXAdmin = (function () {
                     // Keeping modal open might be better user experience so they can print again if failed.
                 }
             },
-            { label: 'Update Status', primary: true, onClick: close => { showToast('Status update module opened', 'info'); close(); } }
+            {
+                label: 'Update Status',
+                primary: true,
+                onClick: close => {
+                    close();
+                    showUpdateStatusModal(s);
+                }
+            }
         ]);
     }
 
@@ -1175,5 +1388,103 @@ window.MoveXAdmin = (function () {
         }
     };
 
+
+
+    // --- Update Status Modal ---
+    function showUpdateStatusModal(s) {
+        const statusOptions = ['Pending', 'In Transit', 'Delivered', 'Failed', 'Returned'];
+        const currentStatus = s.status ? s.status.toLowerCase().replace('_', ' ') : 'pending';
+
+        // Helper to check selected status (case-insensitive)
+        const isSelected = (opt) => opt.toLowerCase() === currentStatus;
+
+        const optionsHTML = statusOptions.map(opt =>
+            `<option value="${opt}" ${isSelected(opt) ? 'selected' : ''}>${opt}</option>`
+        ).join('');
+
+        createModal(`Update Status: ${s.id}`, `
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="background: var(--surface-secondary); padding: 1rem; border-radius: var(--radius-md); border-left: 4px solid var(--brand-primary);">
+                    <div style="font-size: 0.8rem; color: var(--text-tertiary); text-transform: uppercase; font-weight: 700;">Current Status</div>
+                    <div style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin-top: 0.25rem;">${s.status}</div>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.8rem; margin-bottom: 0.5rem; font-weight: 600;">New Status</label>
+                    <select id="update-status-select" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-sm); background: var(--surface-primary); color: var(--text-primary); font-size: 1rem;">
+                        ${optionsHTML}
+                    </select>
+                </div>
+                
+                <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5;">
+                    <strong style="color: var(--brand-primary);">Note:</strong> Updating the status will immediately reflect on the customer tracking page and send an update notification (if enabled).
+                </p>
+            </div>
+        `, [
+            { label: 'Cancel', onClick: close => close() },
+            {
+                label: 'Update Status',
+                primary: true,
+                onClick: async (close) => {
+                    const newStatus = document.getElementById('update-status-select').value;
+                    if (!newStatus) return;
+
+                    const btn = document.querySelector('.modal-actions button.btn-primary');
+                    if (btn) {
+                        btn.textContent = 'Updating...';
+                        btn.disabled = true;
+                        btn.style.opacity = '0.7';
+                    }
+
+                    try {
+                        const response = await fetch('/api/dashboard/admin/shipments/update-status', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ tracking_id: s.id, status: newStatus })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            showToast('Status updated successfully', 'success');
+                            close();
+
+                            // Context-Aware Refresh
+                            const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
+
+                            // Check manually created 'active' link logic usually managed by layout.js
+                            const activeLink = document.querySelector('.nav-link.active');
+                            const activeHref = activeLink ? activeLink.getAttribute('href') : '';
+
+                            if (activeHref === 'bookings' || currentPage === 'bookings') {
+                                // Refresh Bookings Table
+                                if (initializers['bookings']) initializers['bookings']();
+                            } else if (typeof renderShipmentTable === 'function') {
+                                // Refresh Shipments Table (Default)
+                                renderShipmentTable();
+                            } else if (activeHref === 'shipments') {
+                                activeLink.click();
+                            }
+                        } else {
+                            showToast(result.error || 'Update failed', 'error');
+                            if (btn) {
+                                btn.textContent = 'Update Status';
+                                btn.disabled = false;
+                                btn.style.opacity = '1';
+                            }
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        showToast('Network error', 'error');
+                        if (btn) {
+                            btn.textContent = 'Update Status';
+                            btn.disabled = false;
+                            btn.style.opacity = '1';
+                        }
+                    }
+                }
+            }
+        ]);
+    }
 
 })();
