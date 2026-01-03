@@ -7,7 +7,7 @@
   'use strict';
 
   window.IdentityManager = (function () {
-    const ALLOWED_ROLES = ['user', 'customer'];
+    const ALLOWED_ROLES = ['user'];
     const REGISTRATION_TIME_MIN = 1500;
     const REGISTRATION_TIME_MAX = 2000;
 
@@ -54,13 +54,11 @@
       if (password !== confirmPassword) {
         return { success: false, message: 'Passwords do not match' };
       }
-      if (!role) {
-        return { success: false, message: 'Please select a role' };
-      }
+      // Role is now hardcoded to 'user' - no need to validate
 
       try {
         // Send to backend; backend decides final role (user)
-        const res = await fetch('http://localhost:4000/api/auth/register', {
+        const res = await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -117,9 +115,7 @@
         return { valid: false, message: 'Passwords do not match' };
       }
 
-      if (!role) {
-        return { valid: false, message: 'Please select a role' };
-      }
+      // Role is now hardcoded to 'user' - no need to validate
 
       return { valid: true };
     }
@@ -127,10 +123,9 @@
     // Get dashboard for role
     function getDashboardForRole(role) {
       const dashboards = {
-        user: 'user-dashboard.html',
-        customer: 'customer-dashboard.html'
+        user: 'dashboards/user.html'
       };
-      return dashboards[role] || 'user-dashboard.html';
+      return dashboards[role] || 'dashboards/user.html';
     }
 
     // Enforce minimum timing (timing attack mitigation)

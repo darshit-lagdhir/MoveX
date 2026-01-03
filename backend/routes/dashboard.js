@@ -76,7 +76,7 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
             destination: row.destination_address ? row.destination_address.split(',')[0].trim() : 'N/A',
             date: new Date(row.created_at).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }),
             amount: parseFloat(row.price),
-            customer: row.sender_name || 'N/A',
+            sender: row.sender_name || 'N/A',
             mobile: row.sender_mobile || 'N/A',
             // Detailed Data for Modal
             sender_name: row.sender_name,
@@ -257,8 +257,8 @@ router.get('/admin/bookings', validateSession, requireRole('admin'), async (req,
             },
             bookings: pendingRes.rows.map(row => ({
                 id: row.tracking_id,
-                customer: row.sender_name,
-                customer_type: 'Member', // Placeholder or derive if user_id existed
+                sender: row.sender_name,
+                sender_type: 'Member', // Placeholder or derive if user_id existed
                 type: parseFloat(row.weight) < 1.0 ? 'Document' : 'Parcel',
                 location: row.origin_address,
                 time_slot: 'Standard Pickup', // Placeholder

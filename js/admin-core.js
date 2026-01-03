@@ -505,7 +505,7 @@ window.MoveXAdmin = (function () {
                     const dateVal = dateInput?.value || '';
 
                     const filtered = MOCK_DATA.shipments.filter(s => {
-                        const mQuery = !query || String(s.id).toLowerCase().includes(query) || String(s.customer).toLowerCase().includes(query) || String(s.mobile).toLowerCase().includes(query);
+                        const mQuery = !query || String(s.id).toLowerCase().includes(query) || String(s.sender).toLowerCase().includes(query) || String(s.mobile).toLowerCase().includes(query);
                         const mStatus = status === 'all status' || s.status.toLowerCase() === status;
                         let mDate = true;
                         if (dateVal) {
@@ -543,7 +543,7 @@ window.MoveXAdmin = (function () {
             const tbody = document.querySelector('.data-table tbody');
             if (tbody) {
                 tbody.innerHTML = `
-                    <tr><td style="font-family: monospace;">TX-9901</td><td>Oct 24, 10:30 AM</td><td>Shipment Payment</td><td>Customer: Alice</td><td style="color: var(--success);">+₹45.00</td><td><span class="status-badge status-active">Paid</span></td></tr>
+                    <tr><td style="font-family: monospace;">TX-9901</td><td>Oct 24, 10:30 AM</td><td>Shipment Payment</td><td>Client: Alice</td><td style="color: var(--success);">+₹45.00</td><td><span class="status-badge status-active">Paid</span></td></tr>
                     <tr><td style="font-family: monospace;">TX-9902</td><td>Oct 24, 09:15 AM</td><td>Franchise Payout</td><td>Mumbai Hub</td><td style="color: var(--text-primary);">-₹1,250.00</td><td><span class="status-badge status-warn">Processing</span></td></tr>
                 `;
             }
@@ -590,8 +590,8 @@ window.MoveXAdmin = (function () {
                      <tr>
                         <td style="font-family: monospace; font-weight: 600;">${row.id}</td>
                         <td>
-                            <div>${row.customer}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary);">${row.customer_type}</div>
+                            <div>${row.sender}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">${row.sender_type}</div>
                         </td>
                         <td>
                             <div>${row.type}</div>
@@ -1003,7 +1003,7 @@ window.MoveXAdmin = (function () {
                 <td style="padding: 1rem; font-family: monospace; font-weight: 600; color: var(--brand-primary);">${s.id}</td>
                 <td style="padding: 1rem;"><span class="status-badge status-${s.status.toLowerCase().replace(' ', '-')}">${s.status}</span></td>
                 <td style="padding: 1rem;">
-                    <div style="font-weight: 600; color: var(--text-primary);">${s.customer}</div>
+                    <div style="font-weight: 600; color: var(--text-primary);">${s.sender}</div>
                     <div style="font-size: 0.75rem; color: var(--text-secondary);">${s.mobile}</div>
                 </td>
                 <td style="padding: 1rem; color: var(--text-primary);">${s.origin}</td>
@@ -1091,7 +1091,7 @@ window.MoveXAdmin = (function () {
         tbody.innerHTML = MOCK_DATA.shipments.map(s => `
             <tr>
                 <td>${s.id.replace('MX', 'BK')}</td>
-                <td>${s.customer}</td>
+                <td>${s.sender}</td>
                 <td>${s.origin}</td>
                 <td>${s.date}</td>
                 <td><span class="status-badge status-warn">Pending</span></td>
@@ -1417,7 +1417,7 @@ window.MoveXAdmin = (function () {
                 </div>
                 
                 <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5;">
-                    <strong style="color: var(--brand-primary);">Note:</strong> Updating the status will immediately reflect on the customer tracking page and send an update notification (if enabled).
+                    <strong style="color: var(--brand-primary);">Note:</strong> Updating the status will immediately reflect on the user tracking page and send an update notification (if enabled).
                 </p>
             </div>
         `, [

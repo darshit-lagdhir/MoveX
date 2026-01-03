@@ -4,7 +4,7 @@
 
 -- 1) Create Enums
 DO $$ BEGIN
-    CREATE TYPE user_role AS ENUM ('admin', 'franchisee', 'staff', 'user', 'customer');
+    CREATE TYPE user_role AS ENUM ('admin', 'franchisee', 'staff', 'user');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;

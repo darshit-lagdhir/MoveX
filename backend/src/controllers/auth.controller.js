@@ -58,8 +58,8 @@ exports.register = async (req, res) => {
     // SECURITY: Use bcrypt cost factor 12 (industry standard)
     const hash = await bcrypt.hash(password, 12);
 
-    // Only allow customer or user role for self-registration (admin/franchisee/staff must be created by admin)
-    const allowedSelfRegisterRoles = ['customer', 'user'];
+    // Only allow user role for self-registration (admin/franchisee/staff must be created by admin)
+    const allowedSelfRegisterRoles = ['user'];
     const userRole = (role && allowedSelfRegisterRoles.includes(role.toLowerCase())) ? role.toLowerCase() : 'user';
     const status = 'active';
 
@@ -191,7 +191,7 @@ exports.verifyQuestions = async (req, res) => {
     const user = rows[0];
 
     // Security: Don't reveal user doesn't exist, just error generally?
-    // User requested: "forgot password will only work for ROLE - User & Customer"
+    // User requested: "forgot password will only work for ROLE - User"
     if (!user) {
       return res.status(400).json({ message: 'Verification failed.' });
     }

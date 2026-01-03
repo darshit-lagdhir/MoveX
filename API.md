@@ -10,7 +10,7 @@
 |--------|----------|-------------|
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/auth/register` | Create new account (supports `role`: user/customer) |
+| POST | `/api/auth/register` | Create new account (supports `role`: user) |
 | POST | `/api/auth/login` | User login |
 | POST | `/api/auth/logout` | User logout |
 | GET | `/api/auth/me` | Current user info |

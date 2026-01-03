@@ -13,8 +13,7 @@ document.documentElement.classList.add('loading');
         admin: '/admin/dashboard',
         franchisee: '/dashboards/franchisee',
         staff: '/dashboards/staff',
-        user: '/dashboards/user',
-        customer: '/dashboards/customer'
+        user: '/dashboards/user'
     };
 
     const ROLE_HIERARCHY = {
@@ -29,8 +28,7 @@ document.documentElement.classList.add('loading');
         'settings': ['admin'],
         'audit-logs': ['admin'],
         'franchisee': ['admin', 'franchisee'],
-        'user': ['admin', 'franchisee', 'staff', 'user'],
-        'customer': ['admin', 'franchisee', 'staff', 'user', 'customer']
+        'user': ['admin', 'franchisee', 'staff', 'user']
     };
 
     function getCurrentPage() {

@@ -126,13 +126,12 @@ const protectStaticDashboards = async (req, res, next) => {
   const target = normalizedPath.substring(1); // remove leading slash
 
   // Simple mapping of who can see what
-  // Hierarchy: admin > franchisee > staff > user > customer
+  // Hierarchy: admin > franchisee > staff > user
   const dashboardMap = {
     'admin/dashboard': ['admin'],
     'dashboards/franchisee': ['admin', 'franchisee'],
     'dashboards/staff': ['admin', 'franchisee', 'staff'],
-    'dashboards/user': ['admin', 'franchisee', 'staff', 'user'],
-    'dashboards/customer': ['admin', 'franchisee', 'staff', 'user', 'customer']
+    'dashboards/user': ['admin', 'franchisee', 'staff', 'user']
   };
 
   if (dashboardMap[target]) {
@@ -153,8 +152,7 @@ const protectStaticDashboards = async (req, res, next) => {
         admin: 'admin/dashboard',
         franchisee: 'dashboards/franchisee',
         staff: 'dashboards/staff',
-        user: 'dashboards/user',
-        customer: 'dashboards/customer'
+        user: 'dashboards/user'
       };
       const correctDashboard = correctDashboardMap[role] || 'dashboards/user';
       return res.redirect(`/${correctDashboard}?error=role_mismatch`);
