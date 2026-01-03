@@ -56,8 +56,7 @@ async function createSessionAndRedirect(user, req, res) {
         admin: '/admin/dashboard.html',
         franchisee: '/dashboards/franchisee.html',
         staff: '/dashboards/staff.html',
-        user: '/dashboards/user.html',
-        customer: '/dashboards/customer.html'
+        user: '/dashboards/user.html'
     };
 
     const dashboard = dashboards[user.role] || '/dashboards/user.html';

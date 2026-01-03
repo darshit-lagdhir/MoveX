@@ -253,8 +253,7 @@
       admin: 'admin/dashboard',
       franchisee: 'dashboards/franchisee',
       staff: 'dashboards/staff',
-      user: 'dashboards/user',
-      customer: 'dashboards/customer'
+      user: 'dashboards/user'
     };
 
     const target = dashboards[user.role] || 'dashboards/user';
@@ -327,8 +326,7 @@
             admin: 'admin/dashboard',
             franchisee: 'dashboards/franchisee',
             staff: 'dashboards/staff',
-            user: 'dashboards/user',
-            customer: 'dashboards/customer'
+            user: 'dashboards/user'
           };
           const target = dashboards[user.role] || 'dashboards/user';
           window.location.href = target;
@@ -357,7 +355,6 @@
       const phoneInput = document.getElementById('register-phone');
       const passwordInput = document.getElementById('register-password');
       const confirmInput = document.getElementById('register-confirm-password');
-      const roleInput = document.querySelector('input[name="register-role"]:checked');
 
       const q1Input = document.getElementById('reg-q1');
       const q2Input = document.getElementById('reg-q2');
@@ -368,13 +365,12 @@
       const phone = phoneInput?.value.trim();
       const password = passwordInput?.value;
       const confirmPassword = confirmInput?.value;
-      const role = roleInput?.value;
       const q1 = q1Input?.value.trim();
       const q2 = q2Input?.value.trim();
       const q3 = q3Input?.value.trim();
 
-      // UI-only validation
-      if (!username || !fullName || !phone || !password || !confirmPassword || !role || !q1 || !q2 || !q3) {
+      // UI-only validation (role removed - hardcoded to 'user')
+      if (!username || !fullName || !phone || !password || !confirmPassword || !q1 || !q2 || !q3) {
         showNotification('Please fill all fields, including security questions.', 'error');
         return;
       }
@@ -408,7 +404,7 @@
             full_name: fullName,
             phone,
             password,
-            role,  // Send selected role to backend
+            role: 'user', // FORCE ROLE TO 'USER' - REMOVED SELECTION
             securityAnswers: { q1, q2, q3 }
           })
         });
@@ -708,8 +704,7 @@
             admin: 'admin/dashboard',
             franchisee: 'dashboards/franchisee',
             staff: 'dashboards/staff',
-            user: 'dashboards/user',
-            customer: 'dashboards/customer'
+            user: 'dashboards/user'
           };
           const target = dashboards[pendingSession.role] || 'dashboards/user';
           setTimeout(() => window.location.href = target, 800);

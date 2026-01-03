@@ -2,22 +2,22 @@
    OFFLINE PROTOTYPE - AUTH ORCHESTRATOR (OPTIMIZED UX)
    ═══════════════════════════════════════════════════════════ */
 
-(function() {
+(function () {
     'use strict';
 
     // Reduced timing window for better UX
     const FIXED_AUTH_TIME_MIN = 200;   // was 1000
     const FIXED_AUTH_TIME_MAX = 400;   // was 1500
 
-    window.SecureAuth = (function() {
-        let cryptoEngine   = null;
-        let vaultManager   = null;
+    window.SecureAuth = (function () {
+        let cryptoEngine = null;
+        let vaultManager = null;
         let sessionManager = null;
-        let deviceBinding  = null;
-        let challengeAuth  = null;
-        let antiTamper     = null;
-        let initialized    = false;
-        let initPromise    = null; // ensure single init
+        let deviceBinding = null;
+        let challengeAuth = null;
+        let antiTamper = null;
+        let initialized = false;
+        let initPromise = null; // ensure single init
 
         // Initialize security system ONCE
         async function initialize() {
@@ -37,8 +37,8 @@
                 await vaultManager.initialize();
 
                 sessionManager = new window.SessionManager(deviceBinding);
-                challengeAuth  = new window.ChallengeAuth(cryptoEngine);
-                antiTamper     = new window.AntiTamper();
+                challengeAuth = new window.ChallengeAuth(cryptoEngine);
+                antiTamper = new window.AntiTamper();
                 antiTamper.initialize();
 
                 initialized = true;
@@ -158,7 +158,7 @@
         async function enforceFixedTiming(startTime) {
             const elapsed = performance.now() - startTime;
             const targetTime = FIXED_AUTH_TIME_MIN +
-                Math.random() * ( FIXED_AUTH_TIME_MAX - FIXED_AUTH_TIME_MIN );
+                Math.random() * (FIXED_AUTH_TIME_MAX - FIXED_AUTH_TIME_MIN);
 
             if (elapsed < targetTime) {
                 await new Promise(resolve =>
@@ -214,11 +214,10 @@
 
         function getDashboardUrl(role) {
             const dashboards = {
-                admin:      'admin-dashboard.html',
-                franchisee: 'franchisee-dashboard.html',
-                staff:      'staff-dashboard.html',
-                user:       'user-dashboard.html',
-                customer:   'customer-dashboard.html'
+                admin: 'admin/dashboard.html',
+                franchisee: 'dashboards/franchisee.html',
+                staff: 'dashboards/staff.html',
+                user: 'dashboards/user.html'
             };
             return dashboards[role] || 'index.html';
         }

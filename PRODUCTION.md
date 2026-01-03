@@ -233,7 +233,7 @@ DB_SSL=true
 ```sql
 -- Create enums (if not exists)
 DO $$ BEGIN
-    CREATE TYPE user_role AS ENUM ('admin', 'franchisee', 'staff', 'user', 'customer');
+    CREATE TYPE user_role AS ENUM ('admin', 'franchisee', 'staff', 'user');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
@@ -448,7 +448,7 @@ Primary user table for authentication and authorization.
 | password_hash | TEXT | bcrypt hashed password |
 | full_name | VARCHAR(255) | Display name |
 | phone | VARCHAR(50) | Contact number |
-| role | user_role | ENUM: admin, franchisee, staff, user, customer |
+| role | user_role | ENUM: admin, franchisee, staff, user |
 | status | user_status | ENUM: active, disabled, suspended |
 | mfa_enabled | BOOLEAN | MFA status |
 | oauth_provider | VARCHAR(50) | OAuth provider if applicable |

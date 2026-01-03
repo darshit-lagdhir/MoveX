@@ -47,7 +47,7 @@ movex/
 | Franchisee | `/dashboards/franchisee` | Franchise ops |
 | Staff | `/dashboards/staff` | Staff ops |
 | User | `/dashboards/user` | Standard |
-| Customer | `/dashboards/customer` | Customer portal |
+
 
 ---
 
@@ -73,7 +73,7 @@ Toggle maintenance mode via environment variable without redeploying code.
 - **Features:**
   - Auto-redirects all traffic to `/maintenance/`
   - Allows Analytics tracking on maintenance page
-  - Admin API remains accessible for authorized users [TODO]
+  - Admin API remains accessible for authenticated admins
 
 ### Analytics
 Integrated **Cloudflare Web Analytics** for privacy-first traffic tracking.
