@@ -76,6 +76,18 @@ app.use((req, res, next) => {
 });
 
 /* ═══════════════════════════════════════════════════════════
+   MAINTENANCE MODE ENDPOINT
+   Toggle by setting MAINTENANCE_MODE=true in Koyeb Dashboard
+   ═══════════════════════════════════════════════════════════ */
+app.get('/api/maintenance', (req, res) => {
+  const isMaintenanceMode = process.env.MAINTENANCE_MODE === 'true';
+  res.json({
+    maintenance: isMaintenanceMode,
+    message: isMaintenanceMode ? 'Site is under maintenance' : 'Site is live'
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════
    COOKIE PARSING (MUST BE BEFORE AUTH MIDDLEWARE)
    ═══════════════════════════════════════════════════════════ */
 app.use((req, _res, next) => {
