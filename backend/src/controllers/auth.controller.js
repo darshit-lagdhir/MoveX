@@ -48,7 +48,7 @@ exports.register = async (req, res) => {
     }
 
     const existing = await pool.query(
-      'SELECT id FROM users WHERE email = $1',
+      'SELECT id FROM users WHERE username = $1',
       [normalizedUsername]
     );
     if (existing.rows.length > 0) {
