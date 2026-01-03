@@ -360,6 +360,24 @@
 </head>
 
 <body>
+    <!-- Check if maintenance is actually ON, otherwise redirect to home -->
+    <script>
+        (async function checkMaintenanceStatus() {
+            const API_BASE = window.location.hostname === 'localhost' ? '' : 'https://presidential-fly-movex-237428a4.koyeb.app';
+            try {
+                const res = await fetch(`${API_BASE}/api/maintenance`);
+                const data = await res.json();
+                if (data.maintenance !== true) {
+                    // Maintenance is OFF, redirect to home
+                    window.location.href = '/';
+                }
+            } catch (e) {
+                // If API fails, redirect to home (assume site is live)
+                window.location.href = '/';
+            }
+        })();
+    </script>
+
     <div class="background">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
