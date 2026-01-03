@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../src/config/db');
-const { validateSession, requireRole } = require('../src/sessionMiddleware');
+const { validateSession, requireRole, clearSessionCookie } = require('../src/sessionMiddleware');
 const sessionStore = require('../src/session'); // Needed for logout
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 // Dashboard Stats
 router.get('/admin/stats', validateSession, requireRole('admin'), async (req, res) => {
@@ -381,15 +382,38 @@ router.post('/logout', async (req, res) => {
     // 1. Destroy JWT Cookie (if any)
     res.clearCookie('movex_session', { path: '/' });
 
-    // 2. Destroy Server Session and Cookie
-    const sid = req.cookies?.['movex.sid'];
-    if (sid) {
-        console.log(`[Logout] Destroying session: ${sid}`);
-        await sessionStore.destroySession(sid);
-        res.clearCookie('movex.sid', { path: '/' });
-    } else {
-        console.log('[Logout] No session cookie found to destroy');
+    try {
+        // 2. Destroy Server Session via Cookie (Primary method)
+        const sid = req.cookies?.['movex.sid'];
+        if (sid) {
+            console.log(`[Logout] Destroying session: ${sid}`);
+            await sessionStore.destroySession(sid);
+        } else {
+            // 3. FALLBACK: Destroy sessions by User ID if Bearer token is provided
+            // This is critical for Production environments (Koyeb/Cloudflare)
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                const token = authHeader.substring(7);
+                try {
+                    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                    const userId = decoded.userId || decoded.id;
+                    if (userId) {
+                        console.log(`[Logout] Fallback: Destroying sessions for User ID: ${userId}`);
+                        await sessionStore.destroySessionsForUser(userId);
+                    }
+                } catch (jwtErr) {
+                    console.log('[Logout] Fallback JWT verification failed or expired');
+                }
+            } else {
+                console.log('[Logout] No session cookie or Bearer token found to destroy');
+            }
+        }
+    } catch (err) {
+        console.error("[Logout] Error during session destruction:", err);
     }
+
+    // 4. Always clear the cookie with matching options
+    clearSessionCookie(res);
 
     res.json({ success: true, message: 'Logged out successfully' });
 });

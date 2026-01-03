@@ -135,6 +135,11 @@ const protectStaticDashboards = async (req, res, next) => {
   };
 
   if (dashboardMap[target]) {
+    // SECURITY: Prevent caching of sensitive dashboard pages
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     // 1. Check for session cookie (Strict Server-Side Validation)
     const sid = req.cookies?.['movex.sid'];
     const session = await sessionStore.getSession(sid);
