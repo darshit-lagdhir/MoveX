@@ -15,6 +15,22 @@
    ═══════════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════════
+   SECURITY: LOADING PROTECTION
+   Hides page content until authentication is verified
+   Prevents "flash of unauthenticated content" exploit
+   ═══════════════════════════════════════════════════════════ */
+html.loading body {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+html.loading * {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
    MOVEX PROFESSIONAL COLOR SYSTEM - 2025
    ═══════════════════════════════════════════════════════════ */
 
