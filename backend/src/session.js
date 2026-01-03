@@ -92,6 +92,38 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
       console.error("Destroy user sessions failed", err);
     }
   }
+
+  // Cleanup expired sessions from database
+  async cleanupExpiredSessions() {
+    try {
+      const now = Date.now();
+      const result = await db.query('DELETE FROM sessions WHERE expires_at <= $1', [now]);
+      if (result.rowCount > 0) {
+        console.log(`[Sessions] Cleaned up ${result.rowCount} expired session(s)`);
+      }
+    } catch (err) {
+      console.error("Session cleanup failed", err);
+    }
+  }
+
+  // Start periodic cleanup (call once on app start)
+  startCleanupInterval() {
+    // Run cleanup every 15 minutes
+    const CLEANUP_INTERVAL = 1000 * 60 * 15; // 15 minutes
+
+    // Initial cleanup after 1 minute of server start
+    setTimeout(() => this.cleanupExpiredSessions(), 60000);
+
+    // Then every 15 minutes
+    setInterval(() => this.cleanupExpiredSessions(), CLEANUP_INTERVAL);
+
+    console.log('[Sessions] Automatic cleanup scheduled (every 15 min)');
+  }
 }
 
-module.exports = new SessionStore();
+const sessionStore = new SessionStore();
+
+// Start cleanup on module load
+sessionStore.startCleanupInterval();
+
+module.exports = sessionStore;
