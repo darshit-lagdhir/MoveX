@@ -48,13 +48,15 @@
                             <input type="text" placeholder="Search by username, name, or ID..."
                                 style="width: 100%; padding-left: 3rem;">
                         </div>
-                        <select>
+                        <select id="userRoleFilter">
                             <option value="">All Roles</option>
-                            <option value="admin">Admin</option>
-                            <option value="franchisee">Franchisee</option>
+                            <option value="user">User</option>
+                            <option value="customer">Customer</option>
                             <option value="staff">Staff</option>
+                            <option value="franchisee">Franchisee</option>
+                            <option value="admin">Admin</option>
                         </select>
-                        <select>
+                        <select id="userStatusFilter">
                             <option value="">All Status</option>
                             <option value="active">Active</option>
                             <option value="disabled">Disabled</option>
@@ -73,66 +75,11 @@
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="users-table-body">
                                 <tr>
-                                    <td>
-                                        <div style="display: flex; align-items: center; gap: 1rem;">
-                                            <div
-                                                style="width: 40px; height: 40px; background: var(--brand-primary-soft); color: var(--brand-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
-                                                SA</div>
-                                            <div>
-                                                <div style="font-weight: 600;">System Administrator</div>
-                                                <div style="font-size: 0.85rem; color: var(--text-secondary);">
-                                                    admin@movex.com</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><span class="status-badge"
-                                            style="background: var(--accent-purple); color: white; opacity: 0.9;">Admin</span>
-                                    </td>
-                                    <td>MoveX HQ</td>
-                                    <td><span class="status-badge status-active">Active</span></td>
-                                    <td>Oct 15, 2023</td>
-                                    <td>
-                                        <button
-                                            style="border: none; background: none; color: var(--text-secondary); cursor: pointer;"><svg
-                                                width="20" height="20" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z">
-                                                </path>
-                                            </svg></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div style="display: flex; align-items: center; gap: 1rem;">
-                                            <div
-                                                style="width: 40px; height: 40px; background: var(--warning-soft); color: var(--warning); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
-                                                JD</div>
-                                            <div>
-                                                <div style="font-weight: 600;">John Doe</div>
-                                                <div style="font-size: 0.85rem; color: var(--text-secondary);">
-                                                    john.doe@franchise1.com</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><span class="status-badge"
-                                            style="background: var(--info-soft); color: var(--info);">Franchisee</span>
-                                    </td>
-                                    <td>Delhi Hub</td>
-                                    <td><span class="status-badge status-active">Active</span></td>
-                                    <td>Jan 10, 2024</td>
-                                    <td>
-                                        <button
-                                            style="border: none; background: none; color: var(--text-secondary); cursor: pointer;"><svg
-                                                width="20" height="20" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z">
-                                                </path>
-                                            </svg></button>
-                                    </td>
+                                    <td colspan="6"
+                                        style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading
+                                        users...</td>
                                 </tr>
                             </tbody>
                         </table>
