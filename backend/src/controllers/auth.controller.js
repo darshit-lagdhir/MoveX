@@ -160,12 +160,31 @@ exports.login = async (req, res) => {
 };
 
 exports.logout = async (req, res) => {
-  const sid = req.cookies?.['movex.sid'];
-  if (sid) {
-    await sessionStore.destroySession(sid);
+  try {
+    const sid = req.cookies?.['movex.sid'];
+    if (sid) {
+      await sessionStore.destroySession(sid);
+    } else {
+      // Fallback for production: destroy all sessions for user if Bearer token present
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        try {
+          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          const userId = decoded.userId || decoded.id;
+          if (userId) {
+            await sessionStore.destroySessionsForUser(userId);
+          }
+        } catch (e) {
+          // Ignore token errors on logout
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Logout cleanup error:', err);
   }
   clearSessionCookie(res);
-  return res.status(200).json({ message: 'Logged out.' });
+  return res.status(200).json({ message: 'Logged out successfully.' });
 };
 
 // Forgot password (generic response, anti-enumeration)
