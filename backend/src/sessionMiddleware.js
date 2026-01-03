@@ -44,11 +44,22 @@ function whoami(req, res) {
   });
 }
 
+function requireRole(role) {
+  return (req, res, next) => {
+    if (!req.session || req.session.role !== role) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    next();
+  }
+}
+
 module.exports = {
   setSessionCookie,
   clearSessionCookie,
   requireSession,
-  whoami
+  validateSession: requireSession,
+  whoami,
+  requireRole
 };
 
 

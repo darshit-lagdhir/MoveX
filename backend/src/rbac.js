@@ -4,7 +4,8 @@ const Roles = Object.freeze({
   ADMIN: 'admin',
   FRANCHISEE: 'franchisee',
   STAFF: 'staff',
-  USER: 'user'
+  USER: 'user',
+  CUSTOMER: 'customer'
 });
 
 function requireRole(...allowed) {
