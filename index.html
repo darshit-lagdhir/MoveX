@@ -4,56 +4,366 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoveX - Next Generation Logistics Platform</title>
-
-    <link rel="icon" type="image/png" href="logo-images/logo1.png">
-    <link rel="stylesheet" href="styles/base.css?v=4">
-    <link rel="stylesheet" href="styles/components.css?v=4">
-    <link rel="stylesheet" href="styles/animations.css?v=4">
-
-
+    <title>MoveX - Under Maintenance</title>
+    <link rel="icon" type="image/png" href="../logo-images/logo1.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        html,
-        body {
+        * {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            /* Prevent default scrolling */
-            height: 100%;
+            box-sizing: border-box;
         }
 
-        main.container {
-            /* Styles for the main container */
+        :root {
+            --brand-primary: #4F46E5;
+            --brand-primary-hover: #4338CA;
+            --brand-primary-glow: rgba(79, 70, 229, 0.15);
+            --app-background: #FAFAFA;
+            --surface-primary: #FFFFFF;
+            --surface-secondary: #F5F5F5;
+            --text-primary: #171717;
+            --text-secondary: #737373;
+            --text-tertiary: #A3A3A3;
+            --accent-purple: #7C3AED;
+            --accent-cyan: #06B6D4;
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+        }
+
+        [data-theme="dark"] {
+            --brand-primary: #6366F1;
+            --brand-primary-glow: rgba(99, 102, 241, 0.20);
+            --app-background: #0A0A0A;
+            --surface-primary: #171717;
+            --surface-secondary: #262626;
+            --text-primary: #FAFAFA;
+            --text-secondary: #D4D4D4;
+            --text-tertiary: #A3A3A3;
+            --accent-purple: #8B5CF6;
+            --accent-cyan: #22D3EE;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--app-background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Animated Background - Matching MoveX */
+        .background {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+            mix-blend-mode: multiply;
+            animation: float 25s ease-in-out infinite;
+        }
+
+        [data-theme="dark"] .blob {
+            mix-blend-mode: screen;
+            opacity: 0.2;
+        }
+
+        .blob-1 {
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(135deg, #4F46E5, #7C3AED);
+            top: -15%;
+            left: -15%;
+        }
+
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, #EC4899, #F43F5E);
+            bottom: -15%;
+            right: -15%;
+            animation-delay: -10s;
+        }
+
+        .blob-3 {
+            width: 550px;
+            height: 550px;
+            background: linear-gradient(135deg, #06B6D4, #4F46E5);
+            top: 40%;
+            left: 40%;
+            animation-delay: -20s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            25% {
+                transform: translate(30px, -30px) scale(1.05);
+            }
+
+            50% {
+                transform: translate(-20px, 20px) scale(0.95);
+            }
+
+            75% {
+                transform: translate(20px, 30px) scale(1.02);
+            }
+        }
+
+        /* Theme Toggle - Matching MoveX */
+        .theme-toggle {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 1000;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--surface-primary);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        .moon-icon {
+            display: none;
+        }
+
+        [data-theme="dark"] .sun-icon {
+            display: none;
+        }
+
+        [data-theme="dark"] .moon-icon {
+            display: block;
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
             padding: 2rem;
+            max-width: 550px;
+        }
+
+        /* Card - Matching MoveX Login Card */
+        .maintenance-card {
+            background: var(--surface-primary);
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-shine {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shine 3s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+
+            0%,
+            100% {
+                transform: translateX(-50%);
+            }
+
+            50% {
+                transform: translateX(50%);
+            }
+        }
+
+        /* Logo - Matching MoveX */
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            filter: drop-shadow(0 4px 12px var(--brand-primary-glow));
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--brand-primary);
+            letter-spacing: -0.03em;
+        }
+
+        /* Animated Icon */
+        .maintenance-icon {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        .gear-main {
+            width: 100px;
+            height: 100px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            stroke: var(--brand-primary);
+            animation: spin 8s linear infinite;
+        }
+
+        .gear-small {
+            position: absolute;
+            width: 55px;
+            height: 55px;
+            top: 0;
+            right: 0;
+            stroke: var(--accent-purple);
+            animation: spin 5s linear infinite reverse;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Text */
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: var(--surface-secondary);
+            border-radius: 100px;
+            height: 6px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 40%;
+            background: linear-gradient(90deg, var(--brand-primary), var(--accent-cyan));
+            border-radius: 100px;
+            animation: slideProgress 2s ease-in-out infinite;
+        }
+
+        @keyframes slideProgress {
+            0% {
+                transform: translateX(0);
+            }
+
+            50% {
+                transform: translateX(150%);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--surface-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22C55E;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2);
+            }
+        }
+
+        /* Contact */
+        .contact {
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+        }
+
+        .contact a {
+            color: var(--brand-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .contact a:hover {
+            color: var(--accent-purple);
         }
     </style>
 </head>
 
 <body>
-    <!-- Shared SVG Defs -->
-    <svg style="width:0; height:0; position:absolute;" aria-hidden="true" focusable="false">
-        <defs>
-            <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
-                <stop offset="0%" stop-color="#5B52E5"></stop>
-                <stop offset="100%" stop-color="#4F46E5"></stop>
-            </linearGradient>
-        </defs>
-    </svg>
-
-    <!-- Particle Canvas Background -->
-    <canvas id="particleCanvas" class="particle-canvas"></canvas>
-
-    <!-- Animated Background -->
     <div class="background">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
         <div class="blob blob-3"></div>
-        <div class="gradient-overlay"></div>
-        <div class="mesh-gradient"></div>
     </div>
 
     <!-- Theme Toggle -->
@@ -76,578 +386,65 @@
         </svg>
     </button>
 
+    <div class="container">
+        <div class="maintenance-card">
+            <div class="card-shine"></div>
 
-    <!-- Main Container -->
-    <main class="container">
-        <!-- Card Flip Container -->
-        <div class="login-card-wrapper" id="cardWrapper">
-            <div class="card-flip-container">
-                <div class="card-flipper" id="cardFlipper">
-
-                    <!-- FRONT SIDE - CONTAINS VERTICAL FLIPPER -->
-                    <div class="card-face card-front">
-                        <div class="vertical-flipper" id="verticalFlipper">
-
-                            <!-- VERTICAL FRONT: LOGIN -->
-                            <div class="vertical-face vertical-front">
-                                <div class="login-card" id="loginCard">
-                                    <div class="card-shine"></div>
-                                    <div class="brand-header">
-                                        <a href="/" class="nav-logo"
-                                            style="justify-content: center; margin-bottom: 0.5rem;">
-                                            <img src="logo-images/logo2.png" alt="MoveX Logo" class="logo-icon">
-                                            <span class="logo-text">MoveX</span>
-                                        </a>
-                                        <p class="tagline">Next-Gen Logistics Management</p>
-                                    </div>
-                                    <div class="welcome-section" id="loginWelcome">
-                                        <h2 class="welcome-title">Welcome back</h2>
-                                        <p class="welcome-subtitle">Sign in to access your dashboard</p>
-                                    </div>
-
-                                    <form class="login-form" id="loginForm" novalidate>
-                                        <div class="input-group" style="margin-bottom:14px;">
-                                            <div class="modern-input">
-                                                <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24"
-                                                    fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                                    <circle cx="12" cy="7" r="4" />
-                                                </svg>
-                                                <input type="text" id="login-username" class="input-field"
-                                                    placeholder="Enter your username">
-                                                <label for="login-username" class="floating-label">Username</label>
-                                            </div>
-                                        </div>
-                                        <div class="input-group" style="margin-bottom:18px;">
-                                            <div class="modern-input">
-                                                <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24"
-                                                    fill="none" stroke="currentColor" stroke-width="2">
-                                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                                </svg>
-                                                <input type="password" id="login-password" class="input-field"
-                                                    placeholder="Enter your password">
-                                                <label for="login-password" class="floating-label">Password</label>
-                                                <button type="button" class="password-toggle"
-                                                    data-target="login-password">
-                                                    <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24"
-                                                        fill="none" stroke="currentColor" stroke-width="2">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                                        <circle cx="12" cy="12" r="3" />
-                                                    </svg>
-                                                    <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24"
-                                                        fill="none" stroke="currentColor" stroke-width="2">
-                                                        <path
-                                                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                                                        <line x1="1" y1="1" x2="23" y2="23" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Role Selection -->
-                                        <div class="input-group" style="margin-bottom:12px;">
-                                            <label class="section-label">Select Your Role</label>
-                                            <div class="role-selector">
-                                                <input type="radio" id="loginRoleAdmin" name="login-role" value="admin"
-                                                    class="role-input">
-                                                <label for="loginRoleAdmin" class="role-card">
-                                                    <div class="role-icon"><svg width="20" height="20"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2">
-                                                            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                                                            <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
-                                                        </svg></div><span class="role-name">Admin</span>
-                                                </label>
-                                                <input type="radio" id="loginRoleFranchisee" name="login-role"
-                                                    value="franchisee" class="role-input">
-                                                <label for="loginRoleFranchisee" class="role-card">
-                                                    <div class="role-icon"><svg width="20" height="20"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2">
-                                                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                                                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                                                        </svg></div><span class="role-name">Franchisee</span>
-                                                </label>
-                                                <input type="radio" id="loginRoleStaff" name="login-role" value="staff"
-                                                    class="role-input">
-                                                <label for="loginRoleStaff" class="role-card">
-                                                    <div class="role-icon"><svg width="20" height="20"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2">
-                                                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                                                            <circle cx="9" cy="7" r="4" />
-                                                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                                                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                                                        </svg></div><span class="role-name">Staff</span>
-                                                </label>
-                                                <input type="radio" id="loginRoleUser" name="login-role" value="user"
-                                                    class="role-input">
-                                                <label for="loginRoleUser" class="role-card">
-                                                    <div class="role-icon"><svg width="20" height="20"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2">
-                                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                                            <circle cx="12" cy="7" r="4" />
-                                                        </svg></div><span class="role-name">User</span>
-                                                </label>
-                                                <input type="radio" id="loginRoleCustomer" name="login-role"
-                                                    value="customer" class="role-input">
-                                                <label for="loginRoleCustomer" class="role-card">
-                                                    <div class="role-icon"><svg width="20" height="20"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="2">
-                                                            <circle cx="9" cy="21" r="1" />
-                                                            <circle cx="20" cy="21" r="1" />
-                                                            <path
-                                                                d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                                                        </svg></div><span class="role-name">Customer</span>
-                                                </label>
-                                            </div>
-                                        </div>
-
-                                        <button type="submit" class="btn-login magnetic-btn" id="loginBtn"
-                                            style="margin-top:6px;">
-                                            <span class="btn-content"><span class="btn-text">Sign In</span><svg
-                                                    class="btn-icon" width="20" height="20" viewBox="0 0 24 24"
-                                                    fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M5 12h14M12 5l7 7-7 7" />
-                                                </svg></span>
-                                            <span class="btn-loader"><svg class="spinner" width="24" height="24"
-                                                    viewBox="0 0 24 24">
-                                                    <circle cx="12" cy="12" r="10" stroke="currentColor"
-                                                        stroke-width="3" fill="none" opacity="0.25" />
-                                                    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor"
-                                                        stroke-width="3" fill="none" stroke-linecap="round" />
-                                                </svg></span>
-                                            <div class="btn-ripple"></div>
-                                        </button>
-
-                                        <div class="form-footer"><span>Don't have an account?</span><a href="#"
-                                                class="footer-link" id="show-register">Register Here</a></div>
-                                        <div class="form-footer" style="margin-top:8px;"><a href="#" class="footer-link"
-                                                id="show-forgot">Forgot password?</a></div>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <!-- VERTICAL BACK: FORGOT PASSWORD -->
-                            <div class="vertical-face vertical-back">
-                                <div class="login-card" id="forgotCard">
-                                    <div class="card-shine"></div>
-                                    <div class="brand-header">
-                                        <a href="/" class="nav-logo"
-                                            style="justify-content: center; margin-bottom: 0.5rem;">
-                                            <img src="logo-images/logo2.png" alt="MoveX Logo" class="logo-icon">
-                                            <span class="logo-text">MoveX</span>
-                                        </a>
-                                        <p class="tagline">Account Recovery</p>
-                                    </div>
-                                    <div class="welcome-section" id="forgotWelcome">
-                                        <h2 class="welcome-title">Recover Account</h2>
-                                        <p class="welcome-subtitle">Verify identity to reset password</p>
-                                    </div>
-
-                                    <form class="login-form" id="forgotForm" novalidate style="margin-top:12px;">
-                                        <div class="input-group">
-                                            <div class="modern-input">
-                                                <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24"
-                                                    fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M4 4h16v16H4z" />
-                                                    <polyline points="22,6 12,13 2,6" />
-                                                </svg>
-                                                <input type="text" id="forgot-username" class="input-field"
-                                                    placeholder="Enter your username" required>
-                                                <label for="forgot-username" class="floating-label">Username</label>
-                                            </div>
-                                        </div>
-
-                                        <div id="forgot-security-questions" style="display:none;">
-                                            <p class="section-subtitle"
-                                                style="text-align:center; margin-bottom:12px; font-size:0.9em; opacity:0.8;">
-                                                Answer your security questions</p>
-                                            <div class="input-group" style="margin-bottom:12px;">
-                                                <label class="section-label"
-                                                    style="font-size:0.85em; margin-bottom:4px; display:block;">Q1: What
-                                                    is your childhood nickname?</label>
-                                                <div class="modern-input"><input type="text" id="forgot-a1"
-                                                        class="input-field" placeholder="Answer 1"></div>
-                                            </div>
-                                            <div class="input-group" style="margin-bottom:12px;">
-                                                <label class="section-label"
-                                                    style="font-size:0.85em; margin-bottom:4px; display:block;">Q2: What
-                                                    is the name of your favorite pet?</label>
-                                                <div class="modern-input"><input type="text" id="forgot-a2"
-                                                        class="input-field" placeholder="Answer 2"></div>
-                                            </div>
-                                            <div class="input-group" style="margin-bottom:12px;">
-                                                <label class="section-label"
-                                                    style="font-size:0.85em; margin-bottom:4px; display:block;">Q3: In
-                                                    what city were you born?</label>
-                                                <div class="modern-input"><input type="text" id="forgot-a3"
-                                                        class="input-field" placeholder="Answer 3"></div>
-                                            </div>
-                                        </div>
-
-                                        <button type="button" class="btn-login magnetic-btn" id="forgotNextBtn">
-                                            <span class="btn-content"><span class="btn-text">Next</span></span>
-                                            <div class="btn-ripple"></div>
-                                        </button>
-                                        <button type="submit" class="btn-login magnetic-btn" id="forgotBtn"
-                                            style="display:none;">
-                                            <span class="btn-content"><span class="btn-text">Verify &
-                                                    Reset</span></span>
-                                            <span class="btn-loader"><svg class="spinner" width="24" height="24"
-                                                    viewBox="0 0 24 24">
-                                                    <circle cx="12" cy="12" r="10" stroke="currentColor"
-                                                        stroke-width="3" fill="none" opacity="0.25" />
-                                                    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor"
-                                                        stroke-width="3" fill="none" stroke-linecap="round" />
-                                                </svg></span>
-                                            <div class="btn-ripple"></div>
-                                        </button>
-                                        <div class="form-footer" style="margin-top:8px;"><a href="#" class="footer-link"
-                                                id="back-to-login">Back to login</a></div>
-                                    </form>
-
-                                    <!-- Reset Password Panel (hidden by default) -->
-                                    <form class="login-form" id="resetForm" novalidate
-                                        style="display:none; margin-top:12px;">
-                                        <div class="input-group">
-                                            <div class="modern-input">
-                                                <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24"
-                                                    fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M4 4h16v16H4z" />
-                                                    <polyline points="22,6 12,13 2,6" />
-                                                </svg>
-                                                <input type="text" id="reset-token" class="input-field"
-                                                    placeholder="Reset token">
-                                                <label for="reset-token" class="floating-label">Reset token</label>
-                                            </div>
-                                        </div>
-                                        <div class="input-group">
-                                            <div class="modern-input">
-                                                <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24"
-                                                    fill="none" stroke="currentColor" stroke-width="2">
-                                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                                </svg>
-                                                <input type="password" id="reset-password" class="input-field"
-                                                    placeholder="New password">
-                                                <label for="reset-password" class="floating-label">New password</label>
-                                                <button type="button" class="password-toggle"
-                                                    data-target="reset-password">
-                                                    <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24"
-                                                        fill="none" stroke="currentColor" stroke-width="2">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                                        <circle cx="12" cy="12" r="3" />
-                                                    </svg>
-                                                    <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24"
-                                                        fill="none" stroke="currentColor" stroke-width="2">
-                                                        <path
-                                                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                                                        <line x1="1" y1="1" x2="23" y2="23" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <button type="submit" class="btn-login magnetic-btn" id="resetBtn">
-                                            <span class="btn-content"><span class="btn-text">Reset
-                                                    Password</span></span>
-                                            <span class="btn-loader"><svg class="spinner" width="24" height="24"
-                                                    viewBox="0 0 24 24">
-                                                    <circle cx="12" cy="12" r="10" stroke="currentColor"
-                                                        stroke-width="3" fill="none" opacity="0.25" />
-                                                    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor"
-                                                        stroke-width="3" fill="none" stroke-linecap="round" />
-                                                </svg></span>
-                                            <div class="btn-ripple"></div>
-                                        </button>
-                                        <div class="form-footer" style="margin-top:8px;"><a href="#" class="footer-link"
-                                                id="back-to-login-2">Back to login</a></div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- BACK SIDE - REGISTRATION CARD -->
-                    <div class="card-face card-back">
-                        <div class="login-card" id="registerCard">
-                            <!-- Shine Effect Overlay -->
-                            <div class="card-shine"></div>
-
-                            <!-- Brand Header -->
-                            <div class="brand-header">
-                                <a href="/" class="nav-logo" style="justify-content: center; margin-bottom: 0.5rem;">
-                                    <img src="logo-images/logo2.png" alt="MoveX Logo" class="logo-icon">
-                                    <span class="logo-text">MoveX</span>
-                                </a>
-                                <p class="tagline">Next-Gen Logistics Management</p>
-                            </div>
-
-                            <!-- Welcome Section -->
-                            <div class="welcome-section">
-                                <h2 class="welcome-title">Create Account</h2>
-                                <p class="welcome-subtitle">Register to get started with MoveX</p>
-                            </div>
-
-                            <!-- Registration Form -->
-                            <form class="login-form" id="registerForm" novalidate>
-                                <!-- Full Name Input -->
-                                <div class="input-group">
-                                    <div class="modern-input">
-                                        <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                            <circle cx="12" cy="7" r="4" />
-                                        </svg>
-                                        <input type="text" id="register-name" class="input-field"
-                                            placeholder="Enter your full name">
-                                        <label for="register-name" class="floating-label">Full Name</label>
-                                    </div>
-                                </div>
-
-                                <!-- Phone Input -->
-                                <div class="input-group">
-                                    <div class="modern-input">
-                                        <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <path
-                                                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                                        </svg>
-                                        <input type="tel" id="register-phone" class="input-field"
-                                            placeholder="Enter phone number (+91)">
-                                        <label for="register-phone" class="floating-label">Phone Number</label>
-                                    </div>
-                                </div>
-                                <!-- Username Input -->
-                                <div class="input-group">
-                                    <div class="modern-input">
-                                        <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                            <circle cx="12" cy="7" r="4" />
-                                        </svg>
-                                        <input type="text" id="register-username" class="input-field"
-                                            placeholder="Choose a username">
-                                        <label for="register-username" class="floating-label">Username</label>
-                                    </div>
-                                </div>
-
-                                <!-- Password Input -->
-                                <div class="input-group">
-                                    <div class="modern-input">
-                                        <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                        </svg>
-                                        <input type="password" id="register-password" class="input-field"
-                                            placeholder="Create a password">
-                                        <label for="register-password" class="floating-label">Password</label>
-                                        <button type="button" class="password-toggle" data-target="register-password">
-                                            <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2">
-                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                                <circle cx="12" cy="12" r="3" />
-                                            </svg>
-                                            <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24"
-                                                fill="none" stroke="currentColor" stroke-width="2">
-                                                <path
-                                                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                                                <line x1="1" y1="1" x2="23" y2="23" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Confirm Password Input -->
-                                <div class="input-group">
-                                    <div class="modern-input">
-                                        <svg class="label-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                        </svg>
-                                        <input type="password" id="register-confirm-password" class="input-field"
-                                            placeholder="Re-enter your password">
-                                        <label for="register-confirm-password" class="floating-label">Confirm
-                                            Password</label>
-                                        <button type="button" class="password-toggle"
-                                            data-target="register-confirm-password">
-                                            <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2">
-                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                                <circle cx="12" cy="12" r="3" />
-                                            </svg>
-                                            <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24"
-                                                fill="none" stroke="currentColor" stroke-width="2">
-                                                <path
-                                                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                                                <line x1="1" y1="1" x2="23" y2="23" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-
-
-
-                                <!-- Security Questions -->
-                                <div class="input-group" style="margin-top:20px;">
-                                    <label class="section-label"
-                                        style="margin-bottom:8px; display:block; font-weight:600;">Security Questions
-                                        (Required)</label>
-
-                                    <!-- Q1 -->
-                                    <div class="security-q-block" style="margin-bottom:12px;">
-                                        <p class="security-q-text"
-                                            style="font-size:0.9em; margin-bottom:4px; opacity:0.9;">1. What is your
-                                            childhood nickname?</p>
-                                        <div class="modern-input">
-                                            <input type="text" id="reg-q1" class="input-field"
-                                                placeholder="Enter answer here">
-                                        </div>
-                                    </div>
-
-                                    <!-- Q2 -->
-                                    <div class="security-q-block" style="margin-bottom:12px;">
-                                        <p class="security-q-text"
-                                            style="font-size:0.9em; margin-bottom:4px; opacity:0.9;">2. What is the name
-                                            of your favorite pet?</p>
-                                        <div class="modern-input">
-                                            <input type="text" id="reg-q2" class="input-field"
-                                                placeholder="Enter answer here">
-                                        </div>
-                                    </div>
-
-                                    <!-- Q3 -->
-                                    <div class="security-q-block" style="margin-bottom:12px;">
-                                        <p class="security-q-text"
-                                            style="font-size:0.9em; margin-bottom:4px; opacity:0.9;">3. In what city
-                                            were you born?</p>
-                                        <div class="modern-input">
-                                            <input type="text" id="reg-q3" class="input-field"
-                                                placeholder="Enter answer here">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Role Selection (User & Customer only) -->
-                                <div class="input-group">
-                                    <label class="section-label">Select Your Role</label>
-                                    <div class="role-selector">
-                                        <input type="radio" id="registerRoleUser" name="register-role" value="user"
-                                            class="role-input" checked>
-                                        <label for="registerRoleUser" class="role-card">
-                                            <div class="role-icon">
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2">
-                                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                                    <circle cx="12" cy="7" r="4" />
-                                                </svg>
-                                            </div>
-                                            <span class="role-name">User</span>
-                                        </label>
-
-                                        <input type="radio" id="registerRoleCustomer" name="register-role"
-                                            value="customer" class="role-input">
-                                        <label for="registerRoleCustomer" class="role-card">
-                                            <div class="role-icon">
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2">
-                                                    <circle cx="9" cy="21" r="1" />
-                                                    <circle cx="20" cy="21" r="1" />
-                                                    <path
-                                                        d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                                                </svg>
-                                            </div>
-                                            <span class="role-name">Customer</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <!-- Magnetic Sign Up Button -->
-                                <button type="submit" class="btn-login magnetic-btn" id="registerBtn">
-                                    <span class="btn-content">
-                                        <span class="btn-text">Sign Up</span>
-                                        <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2">
-                                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                                            <circle cx="8.5" cy="7" r="4" />
-                                            <line x1="20" y1="8" x2="20" y2="14" />
-                                            <line x1="23" y1="11" x2="17" y2="11" />
-                                        </svg>
-                                    </span>
-                                    <span class="btn-loader">
-                                        <svg class="spinner" width="24" height="24" viewBox="0 0 24 24">
-                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"
-                                                fill="none" opacity="0.25" />
-                                            <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3"
-                                                fill="none" stroke-linecap="round" />
-                                        </svg>
-                                    </span>
-                                    <div class="btn-ripple"></div>
-                                </button>
-
-                                <!-- Footer Links -->
-                                <div class="form-footer">
-                                    <span>Already have an account?</span>
-                                    <a href="#" class="footer-link" id="show-login">Back to Login</a>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                </div>
+            <div class="logo">
+                <img src="../logo-images/logo2.png" alt="MoveX Logo" class="logo-icon">
+                <span class="logo-text">MoveX</span>
             </div>
-        </div>
-    </main>
 
-    <!-- Confetti Container -->
-    <div class="confetti-container" id="confettiContainer"></div>
-
-    <!-- MFA Challenge Modal -->
-    <div id="mfaModal" class="mfa-modal">
-        <div class="mfa-container">
-            <div class="mfa-icon">🔐</div>
-            <h2 class="mfa-title">Two-Factor Authentication</h2>
-            <p class="mfa-subtitle">Enter the 6-digit code from your authenticator app</p>
-            <div class="mfa-code-inputs">
-                <input type="text" maxlength="1" class="mfa-digit" id="mfa-1" inputmode="numeric">
-                <input type="text" maxlength="1" class="mfa-digit" id="mfa-2" inputmode="numeric">
-                <input type="text" maxlength="1" class="mfa-digit" id="mfa-3" inputmode="numeric">
-                <input type="text" maxlength="1" class="mfa-digit" id="mfa-4" inputmode="numeric">
-                <input type="text" maxlength="1" class="mfa-digit" id="mfa-5" inputmode="numeric">
-                <input type="text" maxlength="1" class="mfa-digit" id="mfa-6" inputmode="numeric">
+            <div class="maintenance-icon">
+                <svg class="gear-main" viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+                    <path
+                        d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+                </svg>
+                <svg class="gear-small" viewBox="0 0 24 24" fill="none" stroke-width="2">
+                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+                    <path
+                        d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+                </svg>
             </div>
-            <button type="button" id="mfaVerifyBtn" class="btn-login magnetic-btn">
-                <span class="btn-content">
-                    <span class="btn-text">Verify Code</span>
-                </span>
-            </button>
-            <button type="button" id="mfaCancelBtn" class="mfa-cancel-btn">Cancel</button>
+
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                System Upgrade in Progress
+            </div>
+
+            <h1>Under Maintenance</h1>
+            <p class="subtitle">We're upgrading our systems to serve you better. Our team is working hard to bring
+                everything back online.</p>
+
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+
+            <p class="contact">
+                Need help? Contact us at <a href="mailto:support@movex.com">support@movex.com</a>
+            </p>
         </div>
     </div>
 
-    <!-- Scripts - API AUTH VERSION -->
-    <script src="js/particles.js"></script>
-    <script src="js/animations.js"></script>
-    <script src="js/theme.js"></script>
-    <script src="js/auth-api.js"></script>
-
     <script>
-        window.addEventListener('load', function () {
-            const session = sessionStorage.getItem('movexsecuresession');
-            if (session) {
-                history.pushState(null, null, location.href);
-                window.onpopstate = function () {
-                    history.go(1);
-                };
-            }
+        // Theme Toggle - Same as MoveX
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+
+        // Check saved preference
+        const savedTheme = localStorage.getItem('movex-theme');
+        if (savedTheme) {
+            html.setAttribute('data-theme', savedTheme);
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('movex-theme', newTheme);
         });
     </script>
-
 </body>
 
 </html>
