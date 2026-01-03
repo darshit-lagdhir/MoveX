@@ -411,15 +411,18 @@ STORAGE_BUCKET=shipment-photos         # Bucket name for photos
 FRONTEND_URL=https://your-domain.com   # Production frontend URL
 
 # ═══════════════════════════════════════════════════════════
-# LOGGING
+# LOGGING & MONITORING
 # ═══════════════════════════════════════════════════════════
 LOG_LEVEL=info                         # 'debug', 'info', 'warn', 'error'
 LOG_AUTH_ATTEMPTS=true                 # Log authentication events
+HEALTH_CHECK_KEY=your_secret_key       # Protects /api/health/detailed
+MAINTENANCE_MODE=false                 # Set 'true' to enable maintenance page
 
 # ═══════════════════════════════════════════════════════════
-# MONITORING
+# ANALYTICS (Frontend Only)
 # ═══════════════════════════════════════════════════════════
-HEALTH_CHECK_KEY=your_secret_key       # Protects /api/health/detailed in production
+# CLOUDFLARE_ANALYTICS_TOKEN is hardcoded in index.html and maintenance/index.html
+# Only tracks public facing pages.
 ```
 
 ### Environment Variable Rules
