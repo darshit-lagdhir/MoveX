@@ -60,6 +60,25 @@ movex/
 - ✅ CORS whitelist • CSP headers • CSRF
 - ✅ SQL injection prevention
 - ✅ XSS protection
+- ✅ Loading Protection (anti-FOUC hidden content)
+
+---
+
+## 🛠️ Operations
+
+### Maintenance Mode
+Toggle maintenance mode via environment variable without redeploying code.
+- **Enable:** Set `MAINTENANCE_MODE=true` in backend env
+- **Disable:** Set `MAINTENANCE_MODE=false`
+- **Features:**
+  - Auto-redirects all traffic to `/maintenance/`
+  - Allows Analytics tracking on maintenance page
+  - Admin API remains accessible for authorized users [TODO]
+
+### Analytics
+Integrated **Cloudflare Web Analytics** for privacy-first traffic tracking.
+- Tracks public pages (`index.html`, `maintenance/index.html`)
+- Does **not** track internal admin dashboard activity
 
 ---
 

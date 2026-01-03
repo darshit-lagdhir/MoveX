@@ -8,13 +8,16 @@
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/auth/register` | Create new account |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Create new account (supports `role`: user/customer) |
 | POST | `/api/auth/login` | User login |
 | POST | `/api/auth/logout` | User logout |
 | GET | `/api/auth/me` | Current user info |
 | POST | `/api/auth/forgot-password-check` | Check recovery eligibility |
 | POST | `/api/auth/reset-password-security` | Verify security questions |
 | POST | `/api/auth/reset-password` | Reset password with token |
+| GET | `/api/maintenance` | Check maintenance status |
 
 ---
 
