@@ -4,6 +4,7 @@ const authController = require('../controllers/auth.controller');
 const { requireSession, whoami } = require('../sessionMiddleware');
 
 router.post('/register', authController.register);
+router.get('/check-username/:username', authController.checkUsername);
 router.post('/login', authController.login);
 router.post('/logout', authController.logout);
 router.post('/forgot-password', authController.forgotPassword);

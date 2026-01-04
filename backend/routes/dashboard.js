@@ -410,14 +410,24 @@ router.get('/admin/franchises/stats', validateSession, requireRole('admin'), asy
     try {
         const totalResult = await db.query("SELECT COUNT(*) FROM organizations WHERE type = 'franchise'");
         const pendingResult = await db.query("SELECT COUNT(*) FROM organizations WHERE type = 'franchise' AND status = 'pending'");
-        const areasResult = await db.query("SELECT COUNT(DISTINCT service_area) FROM organizations WHERE type = 'franchise' AND status = 'active'");
+        const pincodesResult = await db.query("SELECT pincodes FROM organizations WHERE type = 'franchise' AND status = 'active'");
+
+        const allPincodes = new Set();
+        pincodesResult.rows.forEach(row => {
+            if (row.pincodes) {
+                row.pincodes.split(',').forEach(p => {
+                    const cleanP = p.trim();
+                    if (cleanP) allPincodes.add(cleanP);
+                });
+            }
+        });
 
         res.json({
             success: true,
             stats: {
                 total: parseInt(totalResult.rows[0].count),
                 pending: parseInt(pendingResult.rows[0].count),
-                activeAreas: parseInt(areasResult.rows[0].count)
+                activePincodes: allPincodes.size
             }
         });
     } catch (err) {
@@ -430,7 +440,7 @@ router.get('/admin/franchises/stats', validateSession, requireRole('admin'), asy
 router.post('/admin/franchises/create', validateSession, requireRole('admin'), async (req, res) => {
     const client = await db.pool.connect();
     try {
-        const { name, service_area, pincodes, owner_name, owner_username, owner_password, owner_phone } = req.body;
+        const { name, non_serviceable_areas, pincodes, full_address, owner_name, owner_username, owner_password, owner_phone } = req.body;
 
         if (!name || !owner_name || !owner_username || !owner_password || !owner_phone) {
             return res.status(400).json({ success: false, error: 'Missing required fields' });
@@ -444,8 +454,8 @@ router.post('/admin/franchises/create', validateSession, requireRole('admin'), a
 
         // 1. Create Organization
         const orgResult = await client.query(
-            'INSERT INTO organizations (name, type, service_area, pincodes, status) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-            [name, 'franchise', service_area, pincodes, 'active']
+            'INSERT INTO organizations (name, type, non_serviceable_areas, pincodes, full_address, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+            [name, 'franchise', non_serviceable_areas || '', pincodes || '', full_address || '', 'active']
         );
         const orgId = orgResult.rows[0].id;
 
@@ -491,7 +501,7 @@ router.post('/admin/franchises/status', validateSession, requireRole('admin'), a
 router.post('/admin/franchises/update', validateSession, requireRole('admin'), async (req, res) => {
     const client = await db.pool.connect();
     try {
-        const { id, name, service_area, pincodes, performance, owner_phone } = req.body;
+        const { id, name, non_serviceable_areas, pincodes, full_address, performance, owner_phone, owner_name, owner_username } = req.body;
         if (!id || !name) {
             return res.status(400).json({ success: false, error: 'ID and Name are required' });
         }
@@ -501,17 +511,38 @@ router.post('/admin/franchises/update', validateSession, requireRole('admin'), a
         // 1. Update Organization
         await client.query(`
             UPDATE organizations 
-            SET name = $1, service_area = $2, pincodes = $3, performance = $4, updated_at = NOW() 
-            WHERE id = $5
-        `, [name, service_area, pincodes, performance || 0, id]);
+            SET name = $1, non_serviceable_areas = $2, pincodes = $3, performance = $4, full_address = $5, updated_at = NOW() 
+            WHERE id = $6
+        `, [name, non_serviceable_areas || '', pincodes || '', performance || 0, full_address || '', id]);
 
-        // 2. Update Owner Phone (if provided)
-        if (owner_phone) {
-            await client.query(`
-                UPDATE users 
-                SET phone = $1, updated_at = NOW() 
-                WHERE organization_id = $2 AND role = 'franchisee'
-            `, [owner_phone, id]);
+        // 2. Update Owner Details (if any are provided)
+        if (owner_phone || owner_name || owner_username) {
+            const updates = [];
+            const values = [];
+            let i = 1;
+
+            if (owner_name) {
+                updates.push(`full_name = $${i++}`);
+                values.push(owner_name);
+            }
+            if (owner_username) {
+                updates.push(`username = $${i++}`);
+                values.push(owner_username);
+            }
+            if (owner_phone) {
+                updates.push(`phone = $${i++}`);
+                values.push(owner_phone);
+            }
+
+            if (updates.length > 0) {
+                values.push(id); // $i is current index, but we pushed i++ above. 
+                // Wait, if updates.length is 3, i is 4. values[3] is id. So it's $4. Correct.
+                await client.query(`
+                    UPDATE users 
+                    SET ${updates.join(', ')}, updated_at = NOW() 
+                    WHERE organization_id = $${i} AND role = 'franchisee'
+                `, values);
+            }
         }
 
         await client.query('COMMIT');
@@ -563,6 +594,54 @@ router.post('/logout', async (req, res) => {
     clearSessionCookie(res);
 
     res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// Public API for checking serviceability (by Area Name or Indian Pincode)
+router.get('/public/check-service/:query', async (req, res) => {
+    try {
+        const query = req.params.query.trim();
+        if (!query) return res.status(400).json({ success: false, error: 'Search term required' });
+
+        // Search logic:
+        // 1. If it's a 6-digit number, prioritize pincode matching.
+        // 2. Otherwise, match against Organization Name (Area).
+
+        const result = await db.query(`
+            SELECT o.name, o.full_address, u.phone as owner_phone
+            FROM organizations o
+            LEFT JOIN users u ON u.organization_id = o.id AND u.role = 'franchisee'
+            WHERE o.type = 'franchise' AND o.status = 'active'
+            AND (
+                -- Search by Hub/Area Name
+                o.name ILIKE $1 OR
+                -- Search by Pincode (Robust matching for comma-separated list)
+                o.pincodes = $2 OR 
+                o.pincodes LIKE $2 || ',%' OR 
+                o.pincodes LIKE '%, ' || $2 OR 
+                o.pincodes LIKE '%, ' || $2 || ',%' OR
+                o.pincodes LIKE '%,' || $2 OR 
+                o.pincodes LIKE '%,' || $2 || ',%'
+            )
+            LIMIT 1
+        `, [`%${query}%`, query]);
+
+        if (result.rows.length > 0) {
+            res.json({
+                success: true,
+                serviceable: true,
+                details: result.rows[0]
+            });
+        } else {
+            res.json({
+                success: true,
+                serviceable: false,
+                message: 'Area or Pincode is not currently serviceable'
+            });
+        }
+    } catch (err) {
+        console.error("Check Service Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to verify serviceability' });
+    }
 });
 
 module.exports = router;

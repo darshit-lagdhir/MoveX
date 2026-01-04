@@ -17,7 +17,7 @@ async function validateSession(req, res, next) {
                     SELECT u.id, u.username, u.full_name, u.phone, u.role, u.status, 
                            u.mfa_enabled, u.created_at, u.last_login_at,
                            u.organization_id,
-                           o.name as org_name, o.type as org_type, o.service_area, o.status as org_status
+                           o.name as org_name, o.type as org_type, o.non_serviceable_areas, o.status as org_status
                     FROM users u
                     LEFT JOIN organizations o ON u.organization_id = o.id
                     WHERE u.username = $1
@@ -33,7 +33,7 @@ async function validateSession(req, res, next) {
                     };
                     req.organization = row.organization_id ? {
                         id: row.organization_id, name: row.org_name, type: row.org_type,
-                        service_area: row.service_area, status: row.org_status
+                        non_serviceable_areas: row.non_serviceable_areas, status: row.org_status
                     } : null;
                     return next();
                 }
@@ -55,7 +55,7 @@ async function validateSession(req, res, next) {
                 SELECT u.id, u.username, u.full_name, u.phone, u.role, u.status, 
                        u.mfa_enabled, u.created_at, u.last_login_at,
                        u.organization_id,
-                       o.name as org_name, o.type as org_type, o.service_area, o.status as org_status
+                       o.name as org_name, o.type as org_type, o.non_serviceable_areas, o.status as org_status
                 FROM users u
                 LEFT JOIN organizations o ON u.organization_id = o.id
                 WHERE u.username = $1 OR u.id::text = $1
@@ -71,7 +71,7 @@ async function validateSession(req, res, next) {
                 };
                 req.organization = row.organization_id ? {
                     id: row.organization_id, name: row.org_name, type: row.org_type,
-                    service_area: row.service_area, status: row.org_status
+                    non_serviceable_areas: row.non_serviceable_areas, status: row.org_status
                 } : null;
                 return next();
             }
@@ -197,7 +197,7 @@ router.get('/organization/me', validateSession, async (req, res) => {
 
     try {
         const result = await db.query(`
-            SELECT id, name, type, service_area, status, created_at
+            SELECT id, name, type, non_serviceable_areas, status, created_at
             FROM organizations WHERE id = $1
         `, [orgId]);
 

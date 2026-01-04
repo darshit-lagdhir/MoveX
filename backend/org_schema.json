@@ -1,0 +1,38 @@
+[
+  {
+    "column_name": "id",
+    "data_type": "bigint"
+  },
+  {
+    "column_name": "name",
+    "data_type": "text"
+  },
+  {
+    "column_name": "type",
+    "data_type": "text"
+  },
+  {
+    "column_name": "service_area",
+    "data_type": "text"
+  },
+  {
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "column_name": "status",
+    "data_type": "character varying"
+  },
+  {
+    "column_name": "pincodes",
+    "data_type": "text"
+  },
+  {
+    "column_name": "performance",
+    "data_type": "numeric"
+  }
+]

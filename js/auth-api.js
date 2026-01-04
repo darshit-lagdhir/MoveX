@@ -10,6 +10,14 @@
 
   let isProcessing = false;
 
+  function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
+
   function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.style.cssText = `
@@ -344,7 +352,49 @@
   function setupRegisterForm() {
     const form = document.getElementById('registerForm');
     const btn = document.getElementById('registerBtn');
+    const usernameInput = document.getElementById('register-username');
     if (!form || !btn) return;
+
+    // Live Username Check
+    if (usernameInput) {
+      const statusDiv = document.createElement('div');
+      statusDiv.id = 'username-status';
+      statusDiv.style.cssText = 'font-size: 0.75rem; margin-top: 4px; transition: all 0.3s ease;';
+      usernameInput.parentElement.appendChild(statusDiv);
+
+      const checkUsername = debounce(async (username) => {
+        if (username.length < 3) {
+          statusDiv.textContent = '';
+          return;
+        }
+
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/check-username/${username}`);
+          const data = await res.json();
+
+          if (data.available) {
+            statusDiv.textContent = '✓ Username is available';
+            statusDiv.style.color = '#10b981';
+          } else {
+            statusDiv.textContent = '✗ ' + (data.message || 'Username is taken');
+            statusDiv.style.color = '#ef4444';
+          }
+        } catch (err) {
+          console.error('Live check error:', err);
+        }
+      }, 500);
+
+      usernameInput.addEventListener('input', (e) => {
+        const val = e.target.value.trim();
+        if (!val) {
+          statusDiv.textContent = '';
+          return;
+        }
+        statusDiv.textContent = 'Checking availability...';
+        statusDiv.style.color = 'var(--text-tertiary)';
+        checkUsername(val);
+      });
+    }
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
