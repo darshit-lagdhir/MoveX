@@ -1,163 +1,132 @@
 # 🚚 MoveX - Enterprise Logistics Management Platform
 
-<div align="center">
-  <img src="./logo-images/logo3.png" alt="MoveX Logo" width="120" style="margin-bottom: 20px;">
-  <h3>A modern, secure, and hyper-scalable logistics and courier management system.</h3>
-  <p>Engineered for performance with Node.js, Express, PostgreSQL, and High-Performance Vanilla JavaScript.</p>
-</div>
+Welcome to **MoveX**, a high-performance, secure, and modern logistics orchestration platform. MoveX is built to solve the complex problems of the courier and supply chain industry, providing a digital backbone for tracking, user management, and administrative control.
 
 ---
 
-## 📖 Introduction
+## 📖 Introduction (The "Why")
+In the world of logistics, speed and trust are everything. MoveX was engineered to provide a seamless experience for four main groups:
+1. **Customers**: Who need to track their packages in real-time.
+2. **Franchisees**: Who run local hubs and manage their own territories.
+3. **Staff**: Who handle the day-to-day work of booking and moving packages.
+4. **Admins**: Who oversee the entire system, manage users, and monitor stats.
 
-**MoveX** is a comprehensive logistics orchestration platform designed to handle complex supply chain operations. From sequential tracking ID generation and real-time shipment status updates to organization-wide user management and role-based access control (RBAC), MoveX provides the digital backbone for modern courier services.
-
-The platform is designed with a **Security-First** philosophy, ensuring that sensitive shipment data and user information are protected by industry-standard cryptographic practices.
-
----
-
-## 🏛️ System Architecture
-
-MoveX follows a decoupled architecture ensuring high availability and independent scalability of the frontend and backend layers.
-
-### 1. Frontend Layer (Static & Ultra-Fast)
-- **Host:** Cloudflare Pages
-- **Stack:** HTML5, CSS3, Vanilla ES6+ JavaScript.
-- **Key Features:** Anti-FOUC (Flash of Unauthenticated Content) protection, dynamic dashboard rendering, and client-side encryption vault for offline data protection.
-
-### 2. Backend API Layer (Secure & Scalable)
-- **Host:** Koyeb (Production)
-- **Stack:** Node.js, Express.js.
-- **Logic:** Centralized authentication, shipment lifecycle management, and administrative orchestration.
-- **Security:** Strict CORS, CSP headers, HttpOnly sessions, and rate-limiting.
-
-### 3. Data Persistence Layer (Reliable)
-- **Host:** Supabase (PostgreSQL)
-- **Logic:** Relational schema with indexed tracking IDs, session persistence, and organization-based isolation.
+The platform focuses on **Security-First** logic, ensuring that sensitive shipment data and user info are protected by banking-grade encryption and secure session handling.
 
 ---
 
-## 🚀 Key Features
+## 🏛️ System Architecture (Coding Sense)
 
-### 📦 Shipment Management
-- **Sequential Tracking IDs:** Smart generation (e.g., `MX00001`, `MX00002`) with pattern recognition logic.
-- **Lifecycle Tracking:** Real-time status transitions (`Pending` → `In Transit` → `Delivered`).
-- **Detailed Timeline:** Visual representation of every milestone in a shipment's journey.
-- **Estimations:** Algorithmic delivery date estimation based on route and service type.
+MoveX follows a **Stateless API** design. This means the server doesn't "remember" who you are on its own; it uses secure cookies and database lookups to verify every single click.
 
-### 👥 User & Org Management
-- **Role Hierarchy:** Strict RBAC enforcing permissions for `Admin`, `Franchisee`, `Staff`, and `User`.
-- **Admin Dashboard:** Centralized control plane for managing users, monitoring stats, and handling bookings.
-- **Session Control:** Admins can remotely disable accounts and terminate active sessions instantly.
-- **MFA Ready:** Multi-Factor Authentication bridge integrated for high-security accounts.
+### High-Level Stack:
+- **Frontend**: Ultra-fast Vanilla JavaScript (ES6+), HTML5, and CSS3. We don't use heavy frameworks like React or Vue, which makes the site load almost instantly.
+- **Backend**: Node.js and Express. It acts as the "Brain," handling all the math, security checks, and database talk.
+- **Database**: PostgreSQL (via Supabase). This is where every package and user is stored safely.
 
-### 🛡️ Administrative Control Gear
-- **Maintenance Mode:** Instant global toggle to protect the site during updates without redeploying.
-- **Stats & Reporting:** Real-time KPI injection (Revenue, Success Rate, Daily Volume).
-- **Serviceability Engine:** Quick-check tool for route availability between 100+ major Indian cities.
-
----
-
-## 🔐 Security Deep-Dive
-
-Security is not a feature in MoveX; it is the foundation.
-
-- **Authentication:** Dual-layer auth using **DB-backed Sessions** (primary) and **JWT** (fallback for cross-origin compliance).
-- **Password Strength:** Enforced minimum lengths and **Bcrypt (cost 12)** hashing.
-- **Data Integrity:** Client-side **Vault Architecture** using AES-GCM and SHA-256 integrity signatures.
-- **Infrastructure Security:** 
-  - **HSTS:** Strict Transport Security forced on all production traffic.
-  - **CSP:** Content Security Policy restricting script execution to trusted domains only.
-  - **DDoS Protection:** Leveraging Cloudflare's edge network for the entry point.
-- **Session Hardening:** `HttpOnly`, `SameSite=None/Lax`, and `Secure` attributes on all sensitive cookies.
-
----
-
-## 📁 Project Structure
-
+### 📁 Technical Project Structure
 ```bash
-movex/
-├── admin/                  # Specialized Admin Control Panels
-│   ├── dashboard.html      # KPI & Main Overview
-│   ├── shipments.html      # Global Shipment Ledger
-│   └── users.html          # User Orchestration
-├── backend/                # API Engine (Node.js)
-│   ├── src/
-│   │   ├── app.js          # Main Entry & Security Middleware
-│   │   ├── session.js      # DB Session Store Logic
-│   │   └── controllers/    # Business Logic (Auth, Shipments)
-│   ├── routes/             # Endpoint Definitions
-│   └── sql/                # DB Schema & Migrations
-├── dashboards/             # Role-Specific UI Endpoints
-├── js/                     # Frontend Logical Layer
-│   ├── admin-core.js       # Admin UI Orchestration
-│   ├── auth-api.js         # Unified Auth Interactor
-│   └── security/           # Client-side Crypto & Vault
-├── styles/                 # Design System (Vanilla CSS)
-└── index.html              # Gateway (Landing + Auth Card)
+MoveX/
+├── admin/                  # Admin Dashboard HTML files
+├── backend/                # The logic server (Node.js)
+│   ├── routes/             # URL paths (e.g., /api/auth, /api/dashboard)
+│   ├── src/                # Core engine code
+│   │   ├── app.js          # Security, Middleware, and Setup
+│   │   └── session.js      # Database-backed session logic
+│   └── sql/                # Database table blueprints (Migrations)
+├── dashboards/             # UI for Staff, Users, and Franchisees
+├── js/                     # The "Heartbeat" of the frontend
+│   ├── admin-core.js       # Admin UI logic (Modals, Tables)
+│   ├── auth-api.js         # Unified login/register logic
+│   └── dashboard-guard.js  # Security: Checks if you're allowed to see a page
+└── styles/                 # Modern, Glassmorphism-based CSS
 ```
 
 ---
 
-## 🛠️ Local Development Setup
+## 📊 Database Structure (The Data Logic)
+
+MoveX uses a relational database. Understanding how the tables talk to each other is key for any developer.
+
+### 1. `users` Table
+Stores everyone who can log in. 
+- **Fields**: `id`, `username`, `password_hash`, `role` (admin, franchisee, staff, user), `organization_id`.
+- **Logic**: Linked to an `organization` for Franchisees and Staff.
+
+### 2. `organizations` Table
+Stores the "Hubs" or "Franchises".
+- **Fields**: `name`, `type` (franchise, hq), `pincodes` (comma-separated list of covered areas), `non_serviceable_areas`.
+
+### 3. `shipments` Table
+The heart of the system.
+- **Fields**: `tracking_id` (e.g. MX00001), `sender_name`, `receiver_name`, `status`, `weight`, `price`.
+- **Linked Data**: Each shipment has a timeline (audit trail) showing every move it makes.
+
+### 4. `sessions` Table
+Used for backend security. It stores current active logins so we can kick out users remotely if needed.
+
+---
+
+## 🚀 Key Features & Functionality
+
+### 📦 Shipment Management & Workflow
+- **Creation**: Staff enters details ➡️ Code generates a unique `MX` ID ➡️ Label is ready for printing.
+- **Tracking**: Anyone with the ID can see the timeline. No login needed for basic tracking!
+- **Serviceability Check**: A special API that takes a Pincode and checks the `organizations` table. It tells the user if we can deliver there and which hub will handle it.
+
+### 👥 Franchise Hub System
+- **Hub Creation**: Admins create a Hub (Organization) and an Owner (User) in one step.
+- **Performance**: The system tracks hub performance based on delivery speed and volume.
+- **Pincode Mapping**: Hubs are assigned specific 6-digit pincodes. This makes the "Check Service" tool smart enough to route packages correctly.
+
+### 🛡️ Admin Dashboard (Command Center)
+- **Live Stats**: Uses global `COUNT` and `SUM` queries to show revenue and package volume in real-time.
+- **User Management**: Admins can "Reset Password" or "Disable" any user without touching the database directly.
+
+---
+
+## 🛠️ Local Development (Step-by-Step)
 
 ### Prerequisites
-- Node.js (v18+)
-- PostgreSQL (or Supabase URL)
+- Install **Node.js** (Version 18 or higher).
+- Install **PostgreSQL** or use a **Supabase** account.
 
-### Step 1: Clone & Install
+### Step 1: Clone and Install
 ```bash
 git clone https://github.com/darshit-lagdhir/MoveX.git
 cd MoveX/backend
 npm install
 ```
 
-### Step 2: Environment Configuration
-Create a `.env` file in the root directory (parent of `backend/`):
+### Step 2: Configure Secrets (`.env`)
+Create a `.env` file in the `backend` folder.
 ```ini
+NODE_ENV=development
 PORT=4000
-DATABASE_URL=your_postgres_url
-SESSION_SECRET=min_32_chars_random_secret
-JWT_SECRET=min_32_chars_random_secret
-FRONTEND_URL=http://localhost:4000
+DATABASE_URL=postgresql://postgres:PASSWORD@db.PROJECT_ID.supabase.co:6543/postgres?sslmode=require
+JWT_SECRET=your_jwt_secret_key
+SESSION_SECRET=your_session_secret_key
+SESSION_MAX_AGE=3600000
+SESSION_SECURE=false
+SESSION_SAME_SITE=Strict
+CSRF_ENABLED=true
+OFFLINE_SECURITY_DISABLED=true
+LOG_AUTH_ATTEMPTS=true
+LOG_LEVEL=info
+HEALTH_CHECK_KEY=your_health_check_key
 MAINTENANCE_MODE=false
+FRONTEND_URL=http://localhost:4000
 ```
 
-### Step 3: Database Migration
-Execute the scripts in `backend/sql/` against your PostgreSQL instance to initialize the schema and seed roles.
-
-### Step 4: Run
+### Step 3: Run the Server
 ```bash
 npm start
+# The backend is now watching for requests on port 4000!
 ```
-
----
-
-## 🚢 Deployment Logic
-
-MoveX is optimized for the following production stack:
-
-| Layer | Recommended Provider | Command |
-|-------|----------------------|---------|
-| **Frontend** | Cloudflare Pages | `npx wrangler deploy` |
-| **Backend** | Koyeb / Render | `npm start` (Listen on 0.0.0.0) |
-| **Database** | Supabase | Managed PostgreSQL |
-
-**Pro-Tip:** Always verify `FRONTEND_URL` and `MAINTENANCE_MODE` env vars on the backend provider after deployment.
-
----
-
-## 📖 Extended Documentation
-
-| Document | Content |
-|----------|---------|
-| [PRODUCTION.md](./PRODUCTION.md) | Infrastructure, SSL, and Scaling |
-| [API.md](./API.md) | Endpoint Schemas and Status Codes |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | Git workflow and Coding Standards |
 
 ---
 
 <div align="center">
-  <p>© 2026 MoveX Logistics Platform. All Rights Reserved.</p>
-  <strong>Moving the World, One Package at a Time.</strong>
+  <p>© 2026 MoveX Logistics Ecosystem</p>
+  <strong>"Moving the world, one package at a time."</strong>
 </div>
