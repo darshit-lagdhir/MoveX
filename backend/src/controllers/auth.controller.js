@@ -25,6 +25,26 @@ const ALLOWED_VERIFY_FIELDS = ['username', 'securityAnswers'];
 const ALLOWED_RESET_FIELDS = ['token', 'password'];
 const RESET_TOKEN_TTL_MINUTES = 15;
 
+exports.checkUsername = async (req, res) => {
+  try {
+    const { username } = req.params;
+    if (!username || username.length < 3) {
+      return res.json({ available: false, message: 'Invalid username' });
+    }
+
+    const normalized = username.trim().toLowerCase();
+    const { rows } = await pool.query('SELECT username FROM users WHERE username = $1', [normalized]);
+
+    return res.json({
+      available: rows.length === 0,
+      message: rows.length === 0 ? 'Username is available' : 'Username is already taken'
+    });
+  } catch (err) {
+    console.error('Check username error:', err);
+    return res.status(500).json({ available: false, error: 'Database error' });
+  }
+};
+
 exports.register = async (req, res) => {
   try {
     const body = req.body || {};
@@ -52,7 +72,7 @@ exports.register = async (req, res) => {
       [normalizedUsername]
     );
     if (existing.rows.length > 0) {
-      return res.status(400).json({ message: 'Registration failed. Please check your input.' });
+      return res.status(400).json({ message: 'Username is already taken.' });
     }
 
     // SECURITY: Use bcrypt cost factor 12 (industry standard)

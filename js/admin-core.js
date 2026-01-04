@@ -304,6 +304,119 @@ window.MoveXAdmin = (function () {
         return { close };
     }
 
+    /**
+     * Unified Serviceability Check Logic
+     * Used in both Dashboard and Franchise sections.
+     * Features: Live search, debouncing, and robust Indian Pincode/Area verification.
+     */
+    function handleServiceabilityCheck() {
+        createModal('Check Serviceability', `
+            <div style="padding:1rem;">
+                <label style="display:block; margin-bottom:0.8rem; font-weight:600; color:var(--text-primary);">Enter Area Name or Pincode</label>
+                <div style="position:relative;">
+                    <input type="text" id="pincode_search_input" placeholder="e.g. Mumbai or Pincode" style="width:100%; padding:14px; border:1px solid var(--border-default); border-radius:12px; font-size:1rem; transition: all 0.3s ease; box-shadow: var(--shadow-sm); outline:none;" onfocus="this.style.borderColor='var(--brand-primary)'; this.style.boxShadow='0 0 0 4px var(--brand-primary-soft)'" onblur="this.style.borderColor='var(--border-default)'; this.style.boxShadow='var(--shadow-sm)'">
+                    <div id="pincode_live_status" style="position:absolute; right:15px; top:50%; transform:translateY(-50%); display:none;">
+                        <div class="spinner-small" style="width:20px; height:20px; border-top-color:var(--brand-primary);"></div>
+                    </div>
+                </div>
+                <div id="pincode_search_results" style="margin-top:20px; min-height:120px; display:flex; align-items:center; justify-content:center; border:2px dashed var(--border-subtle); border-radius:16px; transition: all 0.3s ease; background: var(--surface-secondary);">
+                    <div style="color:var(--text-tertiary); font-style:italic; text-align:center;">
+                        <i class="fas fa-search" style="display:block; font-size:1.5rem; margin-bottom:12px; opacity:0.4;"></i>
+                        Typing will automatically check service...
+                    </div>
+                </div>
+                <p style="margin-top:1rem; font-size:0.75rem; color:var(--text-tertiary); text-align:center;">
+                    <i class="fas fa-info-circle" style="margin-right:4px;"></i>Works for Area Names and 6-digit Indian Pincodes
+                </p>
+            </div>
+        `, [{ label: 'Close', onClick: c => c() }]);
+
+        const searchInput = document.getElementById('pincode_search_input');
+        const resultsDiv = document.getElementById('pincode_search_results');
+        const statusIcon = document.getElementById('pincode_live_status');
+        let debounceTimer;
+
+        const performSearch = async (query) => {
+            if (!query || query.length < 3) {
+                resultsDiv.style.borderColor = 'var(--border-subtle)';
+                resultsDiv.style.background = 'var(--surface-secondary)';
+                resultsDiv.innerHTML = `
+                    <div style="color:var(--text-tertiary); font-style:italic; text-align:center;">
+                        <i class="fas fa-keyboard" style="display:block; font-size:1.5rem; margin-bottom:12px; opacity:0.4;"></i>
+                        Enter at least 3 characters to search
+                    </div>
+                `;
+                return;
+            }
+
+            statusIcon.style.display = 'block';
+            try {
+                // Encode to handle spaces in area names
+                const res = await fetch(`/api/dashboard/public/check-service/${encodeURIComponent(query)}`);
+                const data = await res.json();
+
+                if (data.success && data.serviceable) {
+                    resultsDiv.style.borderColor = 'var(--success)';
+                    resultsDiv.style.background = 'rgba(16, 185, 129, 0.08)';
+                    resultsDiv.innerHTML = `
+                        <div style="padding:1.5rem; width:100%;">
+                            <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px; color:var(--success);">
+                                <i class="fas fa-check-circle" style="font-size:1.5rem;"></i>
+                                <strong style="font-size:1.1rem;">Serviceable Location!</strong>
+                            </div>
+                            <div style="background:var(--surface-primary); padding:1.25rem; border-radius:12px; border:1px solid rgba(16, 185, 129, 0.2); box-shadow: var(--shadow-sm);">
+                                <div style="font-size:0.7rem; text-transform:uppercase; font-weight:800; color:var(--text-tertiary); letter-spacing:0.05em; margin-bottom:4px;">Franchise Hub</div>
+                                <div style="font-weight:800; font-size:1.2rem; margin-bottom:12px; color:var(--text-primary);">${data.details.name}</div>
+                                
+                                <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid var(--border-subtle);">
+                                    <div style="font-size:0.7rem; font-weight:700; color:var(--text-tertiary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.02em;">Office Address</div>
+                                    <div style="color:var(--text-secondary); font-size:0.95rem; line-height:1.5; display:flex; gap:10px;">
+                                        <i class="fas fa-map-marker-alt" style="margin-top:4px; color:var(--brand-primary); font-size:0.9rem;"></i>
+                                        <span style="flex:1;">${data.details.full_address || 'Address not set'}</span>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div style="font-size:0.7rem; font-weight:700; color:var(--text-tertiary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.02em;">Contact Number</div>
+                                    <div style="color:var(--brand-primary); font-weight:800; font-size:1.1rem; display:flex; align-items:center; gap:10px;">
+                                        <i class="fas fa-phone-alt" style="font-size:0.9rem;"></i>
+                                        <span>${data.details.owner_phone || 'Contact not set'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.style.borderColor = 'var(--error)';
+                    resultsDiv.style.background = 'rgba(239, 68, 68, 0.08)';
+                    resultsDiv.innerHTML = `
+                        <div style="padding:1.5rem; text-align:center;">
+                            <div style="color:var(--error); margin-bottom:12px;">
+                                <i class="fas fa-times-circle" style="font-size:2.5rem;"></i>
+                            </div>
+                            <div style="font-weight:700; color:var(--error); font-size:1.1rem;">NOT SERVICEABLE</div>
+                            <div style="font-size:0.9rem; color:var(--text-secondary); margin-top:8px;">This area or pincode is not assigned to any franchise yet.</div>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                resultsDiv.innerHTML = '<div style="color:var(--error); font-weight:600;">Search failed. Please try again.</div>';
+            } finally {
+                statusIcon.style.display = 'none';
+            }
+        };
+
+        searchInput.oninput = (e) => {
+            clearTimeout(debounceTimer);
+            const val = e.target.value.trim();
+            if (val) statusIcon.style.display = 'block';
+            debounceTimer = setTimeout(() => performSearch(val), 500);
+        };
+
+        // Auto-focus after modal transition
+        setTimeout(() => searchInput.focus(), 300);
+    }
+
     // --- INITIALIZERS FOR EACH SECTION ---
 
     const initializers = {
@@ -311,40 +424,10 @@ window.MoveXAdmin = (function () {
             document.getElementById('action-create-shipment').onclick = () => window.MoveXAdmin.createShipment();
             document.getElementById('action-add-user').onclick = () => document.querySelector('a[href="users"]').click();
 
-            document.getElementById('action-check-service').onclick = () => {
-                createModal('Check Serviceability', `
-                    <div style="display:flex; flex-direction:column; gap:1.5rem;">
-                        <p style="color:var(--text-secondary); margin:0;">Enter two cities to check if delivery service is currently available between them.</p>
-                        <div style="display:grid; gap:1rem;">
-                            <div style="position:relative;">
-                                <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:0.5rem;">Origin</label>
-                                <input type="text" id="check_origin" placeholder="Select Origin City" style="width:100%;">
-                            </div>
-                            <div style="position:relative;">
-                                <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:0.5rem;">Destination</label>
-                                <input type="text" id="check_dest" placeholder="Select Destination City" style="width:100%;">
-                            </div>
-                        </div>
-                        <div id="service-result" style="display:none; padding:1rem; border-radius:var(--radius-md); background:var(--surface-secondary); text-align:center;">
-                        </div>
-                    </div>
-                 `, [
-                    { label: 'Close', onClick: (close) => close() },
-                    {
-                        label: 'Check Status', primary: true, onClick: () => {
-                            const o = document.getElementById('check_origin').value;
-                            const d = document.getElementById('check_dest').value;
-                            if (!o || !d) return showToast('Please select both cities', 'error');
-
-                            const resDiv = document.getElementById('service-result');
-                            resDiv.style.display = 'block';
-                            resDiv.innerHTML = `<span style="color:var(--success); font-weight:700;">✓ Service Available</span><br><span style="font-size:0.9rem; color:var(--text-secondary);">Standard Delivery: 2-3 Days</span>`;
-                        }
-                    }
-                ]);
-                initCityPicker('check_origin');
-                initCityPicker('check_dest');
-            };
+            const serviceBtn = document.getElementById('action-check-service');
+            if (serviceBtn) {
+                serviceBtn.onclick = () => window.MoveXAdmin.handleServiceabilityCheck();
+            }
         },
 
         'users': async () => {
@@ -463,13 +546,17 @@ window.MoveXAdmin = (function () {
                     const res = await fetch('/api/dashboard/admin/franchises/stats');
                     const data = await res.json();
                     if (data.success) {
-                        const { total, activeAreas, pending } = data.stats;
+                        const { total, activePincodes, pending } = data.stats;
                         const totalEl = document.getElementById('kpi-total-franchises');
                         const areasEl = document.getElementById('kpi-active-areas');
                         const pendingEl = document.getElementById('kpi-pending-approval');
 
+                        // Update label for activeAreas to activePincodes if exists
+                        const areasLabel = document.querySelector('[data-kpi-label="active-areas"]');
+                        if (areasLabel) areasLabel.textContent = 'Active Pincodes';
+
                         if (totalEl) animateValue(totalEl, 0, total, 1000);
-                        if (areasEl) animateValue(areasEl, 0, activeAreas, 1000);
+                        if (areasEl) animateValue(areasEl, 0, activePincodes, 1000);
                         if (pendingEl) animateValue(pendingEl, 0, pending, 1000);
                     }
                 } catch (err) { console.error("Stats Error:", err); }
@@ -493,7 +580,13 @@ window.MoveXAdmin = (function () {
 
             await Promise.all([fetchStats(), fetchFranchises()]);
 
-            const addBtn = document.querySelector('.page-header button');
+            // --- FRANCHISE SECTION INITIALIZATION ---
+
+            // 1. Immediate Button Binding (Before any async calls)
+            // We search all buttons in the header to find the one for adding a franchise
+            const findAddBtn = () => Array.from(document.querySelectorAll('.page-header button')).find(btn => btn.innerText.includes('Add Franchise'));
+            let addBtn = findAddBtn();
+
             if (addBtn) {
                 addBtn.onclick = () => {
                     createModal('Add New Franchise', `
@@ -505,13 +598,17 @@ window.MoveXAdmin = (function () {
                                 <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Franchise / Hub Name</label>
                                 <input type="text" id="f_name" placeholder="e.g. Mumbai Central Hub" style="width:100%;">
                             </div>
+                            <div style="grid-column: span 2;">
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Full Address</label>
+                                <textarea id="f_address" placeholder="Enter complete office address" style="width:100%; min-height:60px;"></textarea>
+                            </div>
                             <div>
-                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Service Area</label>
-                                <input type="text" id="f_area" placeholder="e.g. Andheri West" style="width:100%;">
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Not Serviceable Area</label>
+                                <input type="text" id="f_non_serviceable" placeholder="e.g. Slum Area 1, Forest Range" style="width:100%;">
                             </div>
                             <div>
                                 <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Assigned Pincodes</label>
-                                <input type="text" id="f_pincodes" placeholder="e.g. 400053, 400058" style="width:100%;">
+                                <input type="text" id="f_pincodes" placeholder="e.g. 560048, 560016" style="width:100%;">
                             </div>
 
                             <div style="grid-column: span 2; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-top: 1rem;">
@@ -539,7 +636,8 @@ window.MoveXAdmin = (function () {
                         {
                             label: 'Register Franchise', primary: true, onClick: async (close) => {
                                 const name = document.getElementById('f_name').value;
-                                const service_area = document.getElementById('f_area').value;
+                                const full_address = document.getElementById('f_address').value;
+                                const non_serviceable_areas = document.getElementById('f_non_serviceable').value;
                                 const pincodes = document.getElementById('f_pincodes').value;
                                 const owner_name = document.getElementById('f_owner_name').value;
                                 const owner_username = document.getElementById('f_username').value;
@@ -557,7 +655,7 @@ window.MoveXAdmin = (function () {
                                     const res = await fetch('/api/dashboard/admin/franchises/create', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ name, service_area, pincodes, owner_name, owner_username, owner_password, owner_phone })
+                                        body: JSON.stringify({ name, full_address, non_serviceable_areas, pincodes, owner_name, owner_username, owner_password, owner_phone })
                                     });
                                     const data = await res.json();
                                     if (data.success) {
@@ -574,6 +672,68 @@ window.MoveXAdmin = (function () {
                     ]);
                 };
             }
+
+            // 2. Add 'Check Serviceability' Tool & Grouping
+            const headerActions = document.querySelector('.page-header .header-actions') || document.querySelector('.page-header > div:last-child') || document.querySelector('.page-header');
+            // 2. Add 'Check Serviceability' Tool & Grouping
+            if (!document.getElementById('check-pincode-btn')) {
+                const checkBtn = document.createElement('button');
+                checkBtn.id = 'check-pincode-btn';
+
+                // Copy exact text style + add the + icon for consistency if you want, 
+                // but user wants theme match. Let's use search icon.
+                checkBtn.innerHTML = '<i class="fas fa-search-location" style="margin-right:8px; font-size: 0.9em;"></i>Check Serviceability';
+
+                // FORCE EXACT STYLE PARITY WITH THE HTML BUTTON
+                const styles = {
+                    background: 'var(--brand-primary)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: 'var(--radius-md)',
+                    fontWeight: '600',
+                    fontSize: '0.875rem', // Force standard size
+                    lineHeight: '1.2',    // Ensure height consistency
+                    cursor: 'pointer',
+                    boxShadow: 'var(--shadow-md)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s',
+                    fontFamily: 'inherit',
+                    height: 'auto',
+                    minHeight: '42px' // Standard button height for MoveX
+                };
+
+                Object.assign(checkBtn.style, styles);
+
+                if (addBtn) {
+                    const parent = addBtn.parentNode;
+
+                    // Force the Add Franchise button to also have these exact styles if it doesn't already
+                    // to ensure 1:1 match regardless of what's in the HTML file
+                    Object.assign(addBtn.style, styles);
+                    addBtn.style.minHeight = '42px';
+
+                    let group = parent.querySelector('.header-button-group');
+                    if (!group) {
+                        group = document.createElement('div');
+                        group.className = 'header-button-group';
+                        group.style.cssText = 'display:flex; gap:12px; align-items:center;';
+                        parent.insertBefore(group, addBtn);
+                    }
+
+                    group.appendChild(checkBtn);
+                    group.appendChild(addBtn);
+                } else {
+                    headerActions.appendChild(checkBtn);
+                }
+
+                checkBtn.onclick = () => window.MoveXAdmin.handleServiceabilityCheck();
+            }
+
+            // 3. Sequential Data Fetch
+            await Promise.all([fetchStats(), fetchFranchises()]);
         },
 
         'shipments': function () {
@@ -1218,6 +1378,15 @@ window.MoveXAdmin = (function () {
         tbody.querySelectorAll('.rej-btn').forEach(btn => btn.onclick = () => showToast('Booking Rejected', 'error'));
     }
 
+    function renderTags(str) {
+        if (!str) return '<span style="color:var(--text-tertiary); font-style:italic;">None</span>';
+        return str.split(',').map(tag => `
+            <span style="display:inline-block; padding:2px 8px; background:var(--surface-secondary); border:1px solid var(--border-default); border-radius:4px; font-size:0.75rem; font-weight:600; margin:2px;">
+                ${tag.trim()}
+            </span>
+        `).join('');
+    }
+
     function renderFranchiseTable(data = MOCK_DATA.franchises) {
         const tbody = document.getElementById('franchise-table-body');
         if (!tbody) return;
@@ -1232,6 +1401,9 @@ window.MoveXAdmin = (function () {
                 <td>
                     <div style="font-weight: 700; color: var(--text-primary);">${f.name}</div>
                     <div style="font-size: 0.75rem; color: var(--text-tertiary);">ID: FR-${String(f.id).padStart(3, '0')}</div>
+                    <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top:4px; max-width:200px;" title="${f.full_address || ''}">
+                        <i class="fas fa-map-marker-alt" style="margin-right:4px;"></i>${f.full_address || 'No address set'}
+                    </div>
                 </td>
                 <td>
                     <div style="font-weight: 600;">${f.owner_name || 'Unassigned'}</div>
@@ -1240,9 +1412,15 @@ window.MoveXAdmin = (function () {
                         <i class="fas fa-phone-alt" style="font-size: 0.7rem; margin-right: 4px;"></i>${f.owner_phone || 'No Number'}
                     </div>
                 </td>
-                <td>${f.service_area || 'N/A'}</td>
-                <td style="font-size: 0.85rem; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${f.pincodes || ''}">
-                    ${f.pincodes || 'N/A'}
+                <td style="max-width: 150px;">
+                    <div style="display: flex; flex-wrap: wrap;">
+                        ${renderTags(f.non_serviceable_areas)}
+                    </div>
+                </td>
+                <td style="max-width: 200px;">
+                    <div style="display: flex; flex-wrap: wrap;">
+                        ${renderTags(f.pincodes)}
+                    </div>
                 </td>
                 <td>
                     <span class="status-badge status-${f.status || 'active'}" style="text-transform: capitalize;">
@@ -1307,25 +1485,36 @@ window.MoveXAdmin = (function () {
                             <input type="text" id="edit_f_name" value="${f.name || ''}" style="width:100%;">
                         </div>
                         <div>
-                            <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Service Area</label>
-                            <input type="text" id="edit_f_area" value="${f.service_area || ''}" style="width:100%;">
+                            <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Full Address</label>
+                            <textarea id="edit_f_address" style="width:100%; min-height:60px;">${f.full_address || ''}</textarea>
                         </div>
                         <div>
-                            <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Pincodes</label>
-                            <input type="text" id="edit_f_pincodes" value="${f.pincodes || ''}" style="width:100%;">
+                            <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Not Serviceable Area</label>
+                            <input type="text" id="edit_f_non_serviceable" value="${f.non_serviceable_areas || ''}" placeholder="Comma separated, e.g. Slum Area 1, Hilly Terrain" style="width:100%;">
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Assigned Pincodes</label>
+                            <input type="text" id="edit_f_pincodes" value="${f.pincodes || ''}" placeholder="Comma separated, e.g. 560048, 560016" style="width:100%;">
                         </div>
                         <div>
                             <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Performance Score (%)</label>
                             <input type="number" id="edit_f_perf" value="${f.performance || '0.00'}" step="0.01" min="0" max="100" style="width:100%;">
                         </div>
                         <div>
+                            <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Owner Full Name</label>
+                            <input type="text" id="edit_f_owner_name" value="${f.owner_name || ''}" style="width:100%;">
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Owner Username</label>
+                            <input type="text" id="edit_f_owner_username" value="${f.owner_username || ''}" style="width:100%;">
+                        </div>
+                        <div>
                             <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Owner Phone Number</label>
                             <input type="tel" id="edit_f_phone" value="${f.owner_phone || ''}" placeholder="e.g. +91 9876543210" style="width:100%;">
                         </div>
-                        <div style="padding:1rem; background:var(--surface-secondary); border-radius:var(--radius-md); font-size:0.85rem;">
-                            <strong>Owner:</strong> ${f.owner_name} (${f.owner_username})
-                            <br>
-                            <span style="color:var(--text-tertiary);">Owner details can be managed in the Users section.</span>
+                        <div style="padding:1rem; background:var(--surface-secondary); border-radius:var(--radius-md); font-size:0.85rem; border-left: 4px solid var(--warning);">
+                            <i class="fas fa-info-circle" style="color:var(--warning); margin-right:8px;"></i>
+                            <strong>Note:</strong> Password management is handled in the <a href="users" onclick="document.querySelector('a[href=\'users\']').click(); return false;" style="color:var(--brand-primary); text-decoration:none; font-weight:600;">Users Section</a>.
                         </div>
                     </div>
                 `, [
@@ -1333,16 +1522,29 @@ window.MoveXAdmin = (function () {
                     {
                         label: 'Save Changes', primary: true, onClick: async (close) => {
                             const name = document.getElementById('edit_f_name').value;
-                            const service_area = document.getElementById('edit_f_area').value;
+                            const full_address = document.getElementById('edit_f_address').value;
+                            const non_serviceable_areas = document.getElementById('edit_f_non_serviceable').value;
                             const pincodes = document.getElementById('edit_f_pincodes').value;
                             const performance = document.getElementById('edit_f_perf').value;
                             const owner_phone = document.getElementById('edit_f_phone').value;
+                            const owner_name = document.getElementById('edit_f_owner_name').value;
+                            const owner_username = document.getElementById('edit_f_owner_username').value;
 
                             try {
                                 const res = await fetch('/api/dashboard/admin/franchises/update', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ id: f.id, name, service_area, pincodes, performance, owner_phone })
+                                    body: JSON.stringify({
+                                        id: f.id,
+                                        name,
+                                        full_address,
+                                        non_serviceable_areas,
+                                        pincodes,
+                                        performance,
+                                        owner_phone,
+                                        owner_name,
+                                        owner_username
+                                    })
                                 });
                                 const result = await res.json();
                                 if (result.success) {
@@ -1473,6 +1675,7 @@ window.MoveXAdmin = (function () {
         },
         toast: showToast,
         modal: createModal,
+        handleServiceabilityCheck: handleServiceabilityCheck,
         createShipment: function () {
             createModal('Create New Shipment', `
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">

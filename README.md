@@ -119,7 +119,7 @@ PORT=4000
 DATABASE_URL=your_postgres_url
 SESSION_SECRET=min_32_chars_random_secret
 JWT_SECRET=min_32_chars_random_secret
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:4000
 MAINTENANCE_MODE=false
 ```
 
