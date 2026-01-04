@@ -1,126 +1,162 @@
-# MoveX API Reference
+# 📡 MoveX API Infrastructure Reference
 
-> Complete API documentation for MoveX backend
-
----
-
-## Authentication
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Create new account (supports `role`: user) |
-| POST | `/api/auth/login` | User login |
-| POST | `/api/auth/logout` | User logout |
-| GET | `/api/auth/me` | Current user info |
-| POST | `/api/auth/forgot-password-check` | Check recovery eligibility |
-| POST | `/api/auth/reset-password-security` | Verify security questions |
-| POST | `/api/auth/reset-password` | Reset password with token |
-| GET | `/api/maintenance` | Check maintenance status |
+> **Version:** 2.1.0  
+> **Base URL:** `https://presidential-fly-movex-237428a4.koyeb.app/api`  
+> **Content-Type:** `application/json`
 
 ---
 
-## Dashboard
+## 🔐 Authentication & Identity
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/dashboard/me` | User dashboard data |
-| GET | `/api/dashboard/admin` | Admin access check |
-| GET | `/api/dashboard/admin/stats` | System statistics |
-| POST | `/api/dashboard/logout` | Logout and clear session |
+Endpoints for user lifecycle and session management.
 
----
+### `POST /auth/register`
+Creates a new standard user account.
+- **Access:** Public
+- **Payload:**
+  ```json
+  {
+    "username": "johndoe",
+    "password": "securepassword123",
+    "full_name": "John Doe",
+    "phone": "+919876543210",
+    "role": "user",
+    "securityAnswers": { "q1": "val", "q2": "val", "q3": "val" }
+  }
+  ```
+- **Constraint:** Only `user` role allowed for self-registration.
 
-## Shipments (Admin)
+### `POST /auth/login`
+Authenticates user and established a session.
+- **Access:** Public
+- **Payload:**
+  ```json
+  {
+    "username": "johndoe",
+    "password": "password",
+    "role": "admin"
+  }
+  ```
+- **Response:** Sets `movex.sid` HttpOnly cookie and returns Bearer JWT.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/dashboard/admin/shipments` | List all shipments |
-| POST | `/api/dashboard/admin/shipments/create` | Create new shipment |
+### `POST /auth/logout`
+Destroys the current server-side session and clears client cookies.
+- **Access:** Authenticated
 
----
-
-## Profile
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/me` | Full profile data with organization |
-| PUT | `/api/me` | Update profile (name, phone) |
-| GET | `/api/organization/me` | User's organization details |
-| GET | `/api/organization/users` | Organization users (admin/franchisee) |
-| GET | `/api/organizations` | All organizations (admin only) |
-
----
-
-## Health Check
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Basic health status |
-| GET | `/api/health/detailed` | Detailed health info (requires key) |
-| GET | `/api/health/ready` | Readiness probe |
-| GET | `/api/health/live` | Liveness probe |
-
----
-
-## MFA (Multi-Factor Authentication)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/mfa/verify` | Verify MFA code |
+### `POST /auth/forgot-password-check`
+Checks if a user is eligible for self-service password recovery.
+- **Logic:** Blocked for `admin`, `staff`, and `franchisee` roles (security policy).
 
 ---
 
-## Request/Response Format
+## 🛠️ Administrative Control (Admin Only)
 
-### Authentication Headers
+These endpoints require an active session with the `admin` role.
 
-```
-Content-Type: application/json
-Authorization: Bearer <jwt-token>  // For cross-origin requests
-```
-
-### Success Response
-
-```json
-{
+### `GET /dashboard/admin/stats`
+Returns global system KPIs.
+- **Sample Response:**
+  ```json
+  {
     "success": true,
-    "message": "Operation completed",
-    "data": { ... }
-}
-```
+    "stats": {
+      "totalShipments": 1540,
+      "activeFranchises": 12,
+      "totalRevenue": 450000,
+      "pendingShipments": 85
+    }
+  }
+  ```
 
-### Error Response
+### `GET /dashboard/admin/users`
+Returns a list of all users in the system.
 
-```json
-{
-    "error": "Error type",
-    "message": "Human readable message",
-    "code": "ERROR_CODE"
-}
-```
+### `POST /dashboard/admin/users/create`
+Admin-created users (can specify any role).
+- **Payload:** Same as register + `role` (admin|franchisee|staff|user)
+
+### `POST /dashboard/admin/users/status`
+Enable or disable a user account.
+- **Effect:** Disabling an account immediately kills all associated active sessions.
 
 ---
 
-## Error Codes
+## 📦 Shipment Orchestration
+
+### `GET /dashboard/admin/shipments`
+Fetch shipments with optional pagination and filtering.
+- **Query Params:** `limit`, `status`, `query` (search by tracking ID/sender).
+
+### `POST /dashboard/admin/shipments/create`
+Generates a new shipment with a sequential tracking ID.
+- **Validation:** Pincodes 6-digits, Mobile 10-digits, Name alpha-only.
+
+### `POST /dashboard/admin/shipments/update-status`
+Transition a shipment to a new state.
+- **Allowed States:** `pending`, `in_transit`, `delivered`, `failed`, `returned`.
+
+---
+
+## 👤 User Profile & Organizations
+
+### `GET /me`
+Returns detailed identity data for the current logged-in user.
+- **Includes:** Role-specific dashboard path, organization data, and MFA status.
+
+### `PUT /me`
+Allows users to update their personal details (`full_name`, `phone`).
+
+### `GET /organization/users`
+Returns colleagues within the same organization branch.
+- **Access:** `admin` or `franchisee`.
+
+---
+
+## 🚦 System Health & Ops
+
+### `GET /maintenance`
+Returns the current maintenance mode state.
+- **Logic:** If `true`, the middleware redirects all non-admin traffic.
+
+### `GET /health`
+Standard uptime and connection health check.
+- **Detailed Check:** `/api/health/detailed?key=SECRET_KEY`
+
+---
+
+## ⚠️ Error Handling & Status Codes
 
 | Code | HTTP Status | Description |
 |------|-------------|-------------|
-| `NO_SESSION` | 401 | No valid session/token |
-| `SESSION_EXPIRED` | 401 | Session has expired |
-| `USER_NOT_FOUND` | 401 | User doesn't exist |
-| `ACCOUNT_DISABLED` | 403 | Account is disabled |
-| `ROLE_MISMATCH` | 403 | Insufficient permissions |
-| `INVALID_SESSION` | 401 | Invalid session data |
+| `200` | OK | Success |
+| `201` | Created | Resource created successfully |
+| `400` | Bad Request | Validation error or invalid payload |
+| `401` | Unauthorized | Session missing or expired |
+| `403` | Forbidden | Insufficient permissions (RBAC) |
+| `404` | Not Found | Resource does not exist |
+| `429` | Too Many Requests | Rate limit exceeded |
+| `500` | Internal Server Error | Unexpected server-side failure |
+
+### Error Payload Format:
+```json
+{
+  "success": false,
+  "error": "Error Type",
+  "message": "Descriptive error message for the UI",
+  "code": "SPECIFIC_ERROR_CODE"
+}
+```
 
 ---
 
-## Rate Limits
+## 🛡️ Rate Limiting Policy
 
-| Endpoint | Limit | Window |
-|----------|-------|--------|
-| `/api/auth/login` | 5 attempts | 15 minutes |
-| `/api/auth/register` | 3 attempts | 15 minutes |
-| `/api/auth/forgot-password` | 3 attempts | 15 minutes |
-| General API | 100 requests | 15 minutes |
+- **Auth Login:** 5 attempts / 15 mins (IP bound)
+- **Auth Register:** 3 attempts / 1 hour
+- **General API:** 100 requests / 15 mins / session
+
+---
+
+<div align="center">
+  <sub>MoveX API Documentation System - Internal Use Only</sub>
+</div>
