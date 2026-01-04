@@ -42,117 +42,261 @@ npm start
 
 ---
 
-## 🏢 Project Architecture & Core Logic
+## 📁 Project Structure
 
-MoveX is engineered as a **Privacy-First, Monolithic Logistics Platform**. Unlike traditional JAMstack applications, MoveX tightly couples the frontend and backend to ensure maximum security, zero data leakage, and sub-millisecond latency.
-
-### 1. The "Hybrid SPA" Frontend Engine
-We have rejected heavy frameworks like React or Vue in favor of a custom, hyper-optimized **Vanilla JS Router**.
-
-*   **Zero-Build Architecture:** There is no `npm build` step for the frontend. What you see in `admin/*.html` is exactly what the browser renders. This ensures that no "sourcemap" leaks occur in production.
-*   **The "Shadow Router" (`js/admin-layout.js`):**
-    *   This script acts as the application's layout manager. It intercepts all sidebar clicks.
-    *   Instead of reloading the page, it fetches the target HTML file (e.g., `shipments.html`), strips out the `<head>` and metadata, and injects *only* the body content into the main view container.
-    *   **Result:** The user experiences the speed of a Single Page App (SPA) while maintaining the simplicity of static files.
-*   **State Persistence:** The `Sidebar`, `Header`, and `AudioContext` (for notification sounds) never reload. They persist for the entire session.
-
-### 2. The "Iron Fortress" Backend
-The backend (`backend/src/app.js`) is configured as a strict security gatekeeper. It does not just "serve data"; it aggressively validates every packet.
-
-*   **Static Firewall (`protectStaticDashboards`):**
-    *   Most apps serve HTML files publicly. MoveX does **not**.
-    *   We use a custom middleware that intercepts requests for *any* `.html` file.
-    *   The server checks the PostgreSQL database for a valid, non-expired session token.
-    *   If the session is missing or invalid, the request is rejected with `401 Unauthorized` *before* the file system is even touched.
-*   **Session "Air-Gap":**
-    *   We do not use JWTs (JSON Web Tokens) for session management, as they cannot be instantly revoked.
-    *   Instead, we use **Opaque Tokens** stored in the `sessions` table.
-    *   This allows admins to "Remote Kill" a session instantly if a device is stolen, a feature impossible with standard JWTs.
-
----
-
-## 📁 Critical Directory Structure
-
-Understanding the codebase layout is essential for maintenance.
-
-### `/admin` vs `/dashboards`
-*   **`admin/`**: Contains high-privilege views (User Management, Global Analytics, System Config). These pages are physically separated to allow for stricter file-level permission auditing.
-*   **`dashboards/`**: Contains the specific landing pages for `Franchisee`, `Staff`, and `User` roles. These are optimized for mobile views and low-bandwidth functionality.
-
-### `/backend/src/session.js`
-This is the heart of the authentication system. It implements a **Sliding Window Session Engine**:
-*   **Auto-Renewal:** Every time a user interacts with the app, their session expiry is extended by 1 hour.
-*   **Garbage Collection:** A background process runs every 15 minutes to physically delete expired rows from the database, preventing "zombie sessions".
-
-### `/js/security/`
-*   Contains the **Active Defense Modules**.
-*   **`anti-tamper.js`**: Monitors the browser's viewport and console status. If it detects a debugger or DevTools, it triggers a "System Lockdown" UI.
-*   **`device-binding.js`**: Fingerprints the user's hardware. If a session cookie is copied to a different machine, the server rejects it because the fingerprint hash mismatches.
+```
+movex/
+├── admin/                  # Admin dashboard HTML pages
+│   ├── dashboard.html      # Main admin dashboard
+│   └── print_label.html    # Shipment label printing
+├── backend/               
+│   ├── db/                # Database connection (backward compat)
+│   ├── middleware/        # Express middleware (auth, rate-limit, etc.)
+│   ├── routes/            # API route handlers
+│   ├── src/
+│   │   ├── app.js         # Main Express server
+│   │   ├── config/        # Database configuration
+│   │   ├── controllers/   # Business logic
+│   │   ├── routes/        # Additional routes
+│   │   └── session.js     # Session management (DB-backed)
+│   ├── sql/               # Database migrations
+│   └── utils/             # Helper utilities
+├── dashboards/            # Role-based dashboard pages
+├── js/                    # Frontend JavaScript
+├── styles/                # CSS stylesheets
+├── .env.example           # Environment template
+├── index.html             # Landing page / Login
+└── PRODUCTION.md          # Production deployment guide
+```
 
 ---
 
-## 🔐 Role-Based Access Control (RBAC) Matrix
+## 🔐 User Roles
 
-MoveX enforces permissions at both the **Route Level** (Backend) and **View Level** (Frontend).
-
-| User Role | Dashboard Access | Write Permissions | Sensitive Data Visibility |
-| :--- | :--- | :--- | :--- |
-| **System Admin** | Full System Control | ✅ Create/Delete Users, Franchises | ✅ Full Visibility (Financials, Logs) |
-| **Franchisee** | Local Branch Only | ✅ Create Shipments, Manage Staff | ⚠️ Limited to own branch revenue |
-| **Staff Member** | Operational View | ✅ Update Shipment Status | ❌ Cannot view financials or delete data |
-| **End User** | Personal Portal | ❌ Read-Only (Own History) | ❌ Own data only |
-
----
-
-## 🛠️ Configuration & Environment
-
-The application relies on a strict set of Environment Variables to function. These are loaded from `.env` at startup.
-
-### Core Identity
-*   **`NODE_ENV`**: Controls security strictness. Set to `production` to enable HSTS and Secure Cookies.
-*   **`PORT`**: The internal port the listener binds to (Default: `4000`).
-
-### Database & Security
-*   **`DATABASE_URL`**: The connection string for the PostgreSQL instance. 
-    *   *Note:* Must include `?sslmode=require` for cloud databases like Supabase.
-*   **`SESSION_SECRET`**: A 32+ character random string used to sign the HttpOnly cookies. **If changed, all current users will be logged out.**
-*   **`HEALTH_CHECK_KEY`**: A private key used by uptime monitors to verify the `/api/health` endpoint without exposing system details publicly.
+| Role | Access Level | Dashboard |
+|------|--------------|-----------|
+| **Admin** | Full system access | `/admin/dashboard.html` |
+| **Franchisee** | Franchise management | `/dashboards/franchisee.html` |
+| **Staff** | Staff operations | `/dashboards/staff.html` |
+| **User** | Standard user access | `/dashboards/user.html` |
+| **Customer** | Customer portal | `/dashboards/customer.html` |
 
 ---
 
-## 🔧 Troubleshooting & Operations
+## 🛠️ Configuration
 
-### diagnosing "White Screen" Issues
-If a user reports a blank screen upon login:
-1.  **Check Session State:** The likely cause is an expired session token that the browser hasn't cleared. Direct them to `/api/auth/logout`.
-2.  **Verify Database:** Check if the PostgreSQL service is paused (common with free-tier cloud providers).
-3.  **Check Time Sync:** Since we use strict timestamps, if the server time drifts by >5 minutes, authentication will fail.
+### Environment Variables
 
-### Handling "Connection Refused"
-1.  **Whitelist IP:** If using a cloud database, ensure the server's IP is allowed in the firewall.
-2.  **SSL Configuration:** Ensure `DB_SSL=true` is set in the environment variables if the database enforces SSL connections.
+Copy `.env.example` to `.env` and configure:
 
----
+```env
+# Required
+NODE_ENV=development
+PORT=4000
+JWT_SECRET=your-32+-character-secret
+SESSION_SECRET=your-32+-character-secret
+HEALTH_CHECK_KEY=secret-key-for-health-check
 
-## 📦 Data Management
+# Database (choose one)
+DATABASE_URL=postgresql://...  # Full connection URL
+# OR individual settings:
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=yourpassword
+DB_NAME=movex_auth
+```
 
-### Shipment Life-Cycle
-1.  **Pending:** Created but not yet processed.
-2.  **In Transit:** Picked up and moving through the network.
-3.  **Out for Delivery:** Assign to a last-mile runner.
-4.  **Delivered:** Confirmed with Proof-of-Delivery.
-5.  **Exception:** Address inaccurate or refused.
-
-### Photo Proof-of-Delivery
-*   Photos are **never** public.
-*   They are stored in a private bucket (`shipment-photos`).
-*   The backend generates a **Signed URL** (valid for 60 minutes) only when a legitimate user requests to view a specific tracking ID.
+See `.env.example` for all available options.
 
 ---
 
-## 📜 License & Proprietary Notice
+## 📖 API Endpoints
 
-**MoveX Enterprise Edition**
-Copyright © 2024-2026. All Rights Reserved.
-Unauthorised copying, modification, distribution, or use of this software without prior written consent is strictly prohibited.
+### Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Create new account |
+| POST | `/api/auth/login` | User login |
+| POST | `/api/auth/logout` | User logout |
+| GET | `/api/auth/me` | Current user info |
 
+### Dashboard
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/dashboard/me` | User dashboard data |
+| GET | `/api/dashboard/admin` | Admin stats |
+| GET | `/api/dashboard/admin/stats` | System statistics |
+
+### Shipments (Admin)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/admin/shipments` | List all shipments |
+| POST | `/admin/shipments/create` | Create new shipment |
+
+### Health Check
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/health` | Basic health status |
+| GET | `/api/health/detailed` | Detailed health info |
+| GET | `/api/health/ready` | Readiness probe |
+| GET | `/api/health/live` | Liveness probe |
+
+---
+
+## 🔒 Security Features
+
+- ✅ **Bcrypt** password hashing (cost factor 12)
+- ✅ **HttpOnly** secure session cookies
+- ✅ **DB-backed sessions** (PostgreSQL, 1-hour expiry)
+- ✅ **Rate limiting** on authentication endpoints
+- ✅ **CORS** with whitelist configuration
+- ✅ **CSP** Content Security Policy headers
+- ✅ **CSRF** token protection
+- ✅ **Input validation** on all endpoints
+- ✅ **SQL injection** prevention (parameterized queries)
+- ✅ **XSS** protection headers
+- ✅ **Enterprise-Grade Loading State** (Prevents UI flicker/jank)
+
+---
+
+## 🗄️ Database
+
+### Supabase (Recommended for Production)
+
+See [PRODUCTION.md](./PRODUCTION.md) for complete Supabase setup guide.
+
+### Local PostgreSQL
+
+```bash
+# Create database
+createdb movex_auth
+
+# Run migrations
+psql -d movex_auth -f backend/sql/001_init_users.sql
+psql -d movex_auth -f backend/sql/002_shipment_photos.sql
+```
+
+---
+
+## 📦 Shipment Management
+
+### Features
+- **Create Shipments** with complete sender/receiver details
+- **Full Address Support**: Name, Mobile, Address, Pincode for both parties
+- **Weight Tracking**: Package weight in KG
+- **Price Management**: Shipment cost tracking
+- **Status Workflow**: pending → in_transit → delivered / failed
+- **Estimated Delivery**: Auto-calculated delivery dates
+
+### Shipment Details Modal
+View comprehensive shipment information:
+- Status banner with live tracking badge
+- Sender details (name, phone, full address, pincode)
+- Receiver details (name, phone, full address, pincode)
+- Route visualization (origin → destination)
+- Financial info (amount, weight, booking date, delivery estimate)
+- Activity timeline
+
+---
+
+## 🏷️ Label Printing
+
+### Print Label Feature (`admin/print_label.html`)
+- **One-click printing** from shipment details modal
+- **Dynamic data** - All fields populated from database
+- **Barcode generation** using JsBarcode (CODE128 format)
+- **Auto-print** - Browser print dialog opens automatically
+- **No storage** - Labels generated on-demand, not stored
+
+### Label Contents
+| Field | Source |
+|-------|--------|
+| Tracking ID | Database |
+| Barcode | Generated from Tracking ID |
+| Route | Origin → Destination cities |
+| Receiver | Name, Address, Phone, Pincode |
+| Sender | Name, Origin location |
+| Weight | Database (KG) |
+| Price | Database (₹) |
+| Return Address | Sender's full address |
+
+---
+
+## 📸 Photo Storage
+
+MoveX uses Supabase Storage for shipment photos:
+
+- Photos organized by tracking ID
+- Private bucket with signed URL access
+- Supports: JPEG, PNG, WebP, HEIC
+- Max file size: 5MB
+
+See [PRODUCTION.md](./PRODUCTION.md#section-6-storage-strategy-for-photos) for details.
+
+---
+
+## 🚢 Deployment
+
+### Recommended Platforms
+
+- **Railway** - Easy deployment with auto-detection
+- **Render** - Flexible hosting options
+- **DigitalOcean App Platform** - Scalable container hosting
+
+### Pre-Deployment Checklist
+
+- [ ] Set `NODE_ENV=production`
+- [ ] Configure strong secrets (32+ characters)
+- [ ] Set up Supabase database
+- [ ] Update `FRONTEND_URL` for CORS
+- [ ] Enable `SESSION_SECURE=true` (requires HTTPS)
+
+See [PRODUCTION.md](./PRODUCTION.md) for complete deployment guide.
+
+---
+
+## 🧪 Testing
+
+```bash
+cd backend
+npm test
+```
+
+---
+
+## 📄 Documentation
+
+- **[PRODUCTION.md](./PRODUCTION.md)** - Complete production deployment guide
+- **[.env.example](./.env.example)** - Environment variable reference
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📝 License
+
+MIT License - see [LICENSE](./LICENSE) for details.
+
+---
+
+## 🆘 Support
+
+For issues or questions:
+1. Check [PRODUCTION.md](./PRODUCTION.md) troubleshooting section
+2. Open a GitHub issue
+3. Contact the development team
+
+---
+
+<div align="center">
+  <p><strong>MoveX</strong> - Moving logistics forward</p>
+</div>

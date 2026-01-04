@@ -591,83 +591,335 @@ CREATE INDEX idx_shipment_photos_tracking ON shipment_photos(tracking_id);
 
 ---
 
+## Section 7: Security Measures Applied
+
+### Authentication Security
+
+| Measure | Implementation | Location |
+|---------|---------------|----------|
+| Password Hashing | bcrypt, cost factor 12 | `auth.controller.js` |
+| Session Cookies | HttpOnly, Secure, SameSite=Lax | `sessionMiddleware.js` |
+| JWT Validation | Secret length check, expiry | `auth.controller.js` |
+| Session Timeout | 1 hour sliding window | `session.js` |
+
+### HTTP Security Headers
+
+Applied in `app.js`:
+
+```javascript
+X-Frame-Options: DENY                    // Prevent clickjacking
+X-Content-Type-Options: nosniff          // Prevent MIME sniffing
+X-XSS-Protection: 1; mode=block          // XSS filter
+Referrer-Policy: strict-origin-when-cross-origin
+Content-Security-Policy: [configured]     // Script/style sources
+Strict-Transport-Security: [production]   // HTTPS enforcement
+```
+
+### Rate Limiting
+
+| Endpoint | Limit | Window |
+|----------|-------|--------|
+| `/api/auth/login` | 5 attempts | 15 minutes |
+| `/api/auth/register` | 3 attempts | 15 minutes |
+| `/api/auth/forgot-password` | 3 attempts | 15 minutes |
+| General API | 100 requests | 15 minutes |
+
+### Input Validation
+
+- Email format validation
+- Password complexity requirements (8+ chars, letter + number)
+- Payload size limits (10KB default)
+- JSON content-type enforcement
+- Role whitelisting
+
+### CORS Configuration
+
+```javascript
+Allowed Origins:
+- http://localhost:4000
+- http://localhost:3000
+- http://127.0.0.1:4000
+- http://127.0.0.1:3000
+- process.env.FRONTEND_URL (production)
+
+Methods: GET, POST, PUT, DELETE
+Credentials: true
+```
+
+### SQL Injection Prevention
+
+All database queries use parameterized queries:
+```javascript
+// SAFE
+await db.query('SELECT * FROM users WHERE email = $1', [email]);
+
+// NEVER DO THIS
+await db.query(`SELECT * FROM users WHERE email = '${email}'`);
+```
+
+### Error Handling
+
+- Generic error messages to users (no stack traces)
+- Detailed logging for debugging
+- Transaction rollback on failures
+
 ---
 
-## Section 7: Deployment Notes
+## Section 8: Deployment Notes
 
-### Recommended Platforms
-MoveX is a standard Node.js application, making it compatible with almost any cloud provider.
+### Option 1: Railway (Recommended for Beginners)
 
-#### Option 1: Railway (Preferred)
-*   **Why:** Railway auto-detects `npm start`, handles SSL automatically, and provides a built-in PostgreSQL database.
-*   **Config:** simply set the Environment Variables in the web dashboard.
+1. Connect GitHub repository
+2. Set environment variables in Railway dashboard
+3. Railway auto-detects Node.js and deploys
 
-#### Option 2: VPS (DigitalOcean/AWS)
-*   **Why:** Total control and lower cost at scale.
-*   **Requirements:**
-    *   **Process Manager:** Use `pm2` to keep the app running (`pm2 start src/app.js`).
-    *   **Reverse Proxy:** Use Nginx to handle SSL termination and forward traffic to port 4000.
-    *   **Firewall:** Allow ports 80, 443, and 22 only. Block port 4000 externally.
+### Option 2: Render
 
-### Pre-Flight Checklist
-Before flipping the switch to "Live":
-1.  [ ] **HTTPS Enforcement:** Ensure `NODE_ENV` is set to `production`. This forces the server to reject HTTP connections (HSTS).
-2.  [ ] **Secret Strength:** Verify `SESSION_SECRET` is at least 32 characters long.
-3.  [ ] **Database SSL:** Ensure `DATABASE_URL` ends with `?sslmode=require`.
-4.  [ ] **CORS Lockdown:** Verify `FRONTEND_URL` matches your production domain exactly (no trailing slash mismatches).
+1. Create new Web Service
+2. Connect repository
+3. Set build command: `cd backend && npm install`
+4. Set start command: `cd backend && npm start`
+5. Add environment variables
+
+### Option 3: VPS (DigitalOcean, AWS EC2, etc.)
+
+1. Install Node.js 18+
+2. Clone repository
+3. Set up `.env`
+4. Use PM2 for process management:
+   ```bash
+   npm install -g pm2
+   cd backend
+   pm2 start src/app.js --name movex
+   pm2 save
+   ```
+5. Set up Nginx reverse proxy
+6. Configure SSL with Let's Encrypt
+
+### Pre-Deployment Checklist
+
+- [ ] All environment variables configured
+- [ ] `NODE_ENV=production` set
+- [ ] Database migrations run on Supabase
+- [ ] Admin user created
+- [ ] FRONTEND_URL set correctly
+- [ ] SSL/HTTPS configured
+- [ ] Rate limits reviewed
+- [ ] CORS origins updated
+
+### Post-Deployment Verification
+
+1. Check `/api/auth/login` works
+2. Check admin dashboard loads
+3. Check session persistence
+4. Check rate limiting is active
+5. Monitor error logs
 
 ---
 
-## Section 8: Safe Change Protocol (SOP)
+## Section 9: Common Mistakes to Avoid
 
-When modifying the system, follow this strict protocol to prevent downtime.
+### ❌ Security Mistakes
 
-### The "Do No Harm" Rules
-1.  **Backward Compatibility:** Never rename a database column. Create a new one, migrate data, then deprecate the old one.
-2.  **Feature Flags:** When adding a risky feature (like a new payment gateway), wrap it in an `if (process.env.ENABLE_NEW_PAYMENT)` block.
-3.  **Local Mirror:** Always test migration scripts on a local backup of the production DB before running them in the cloud.
+| Mistake | Why It's Bad | Prevention |
+|---------|--------------|------------|
+| Hardcoding secrets | Secrets in git history forever | Always use env vars |
+| Using SERVICE_KEY in frontend | Full database access exposed | Only use ANON_KEY in frontend |
+| Short JWT_SECRET | Brute-forceable | Use 64+ character random string |
+| Disabling HTTPS in production | All data visible in transit | Always use SSL |
+| Logging passwords/tokens | Leaked in logs | Never log sensitive data |
 
-### Emergency Rollback Procedure
-If a deployment fails:
-1.  **Code:** Revert the Git commit (`git revert HEAD`).
-2.  **Database:** If you ran a destructive migration (like `DROP TABLE`), use Supabase Point-In-Time Recovery (PITR) immediately.
-3.  **Session Purge:** If the issue is authentication-related, run `TRUNCATE sessions;` to force a global logout.
+### ❌ Database Mistakes
+
+| Mistake | Why It's Bad | Prevention |
+|---------|--------------|------------|
+| String concatenation in queries | SQL injection | Use parameterized queries |
+| No connection pooling | Connection exhaustion | Use pooled connection (port 6543) |
+| No indexes | Slow queries | Add indexes on query columns |
+| Storing passwords as plain text | Database breach = all passwords | Always use bcrypt |
+
+### ❌ Deployment Mistakes
+
+| Mistake | Why It's Bad | Prevention |
+|---------|--------------|------------|
+| Using development mode | Debug info exposed, no optimizations | Set NODE_ENV=production |
+| No process manager | App dies on crash | Use PM2 or similar |
+| No backup strategy | Data loss risk | Enable Supabase backups |
+| Ignoring rate limits | DDoS vulnerability | Keep rate limiting enabled |
+
+### ❌ Code Mistakes
+
+| Mistake | Why It's Bad | Prevention |
+|---------|--------------|------------|
+| Changing response formats | Frontend breaks | Add new fields, don't change existing |
+| Renaming routes | All API calls fail | Never rename, only add new |
+| Removing middleware | Security bypassed | Only add, never remove |
+| Trusting client input | All validation bypassable | Always validate server-side |
+
+---
+
+## Section 10: How to Safely Make Future Changes
+
+### The Golden Rules
+
+1. **Never break what works** - All changes must be backward compatible
+2. **Test locally first** - Always verify before deploying
+3. **One change at a time** - Small, incremental updates
+4. **Keep backups** - Database and code
+
+### Safe Change Process
+
+```
+1. UNDERSTAND
+   └── What exactly needs to change?
+   └── What depends on this code?
+   └── What could break?
+
+2. BRANCH
+   └── Create git branch for changes
+   └── Never work on main/master directly
+
+3. IMPLEMENT
+   └── Make minimal changes
+   └── Add, don't replace
+   └── Document why
+
+4. TEST
+   └── Run locally with production DB copy
+   └── Test affected features
+   └── Test edge cases
+
+5. REVIEW
+   └── Check for security issues
+   └── Check for breaking changes
+   └── Verify logging doesn't expose data
+
+6. DEPLOY
+   └── Deploy to staging first if possible
+   └── Monitor logs during deployment
+   └── Have rollback ready
+
+7. VERIFY
+   └── Test in production
+   └── Monitor for errors
+   └── Confirm with users
+```
+
+### Adding New Features
+
+When adding new features:
+
+1. **New routes**: Add new endpoints, don't modify existing ones
+2. **New fields**: Add to responses, don't remove existing fields
+3. **New tables**: Create new tables, don't modify critical existing ones
+4. **New middleware**: Add to chain, don't replace existing
+
+### Modifying Existing Features
+
+When modifying existing features:
+
+1. **Wrap, don't replace**: Create wrapper functions that call old code
+2. **Feature flags**: Use environment variables to toggle new behavior
+3. **Gradual rollout**: Test with subset of users first
+4. **Deprecation path**: Mark old code as deprecated, don't delete immediately
+
+### Emergency Rollback
+
+If something breaks in production:
+
+1. **Immediately revert** to last known working commit
+2. **Check database** for any corrupted data
+3. **Review logs** to understand what failed
+4. **Fix in development** before re-deploying
+5. **Document** what went wrong for future
 
 ---
 
 ## Appendix A: Useful Commands
 
 ```bash
-# Generate a cryptographically secure secret (Use this for SESSION_SECRET)
+# Generate secure secrets
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
-# Verify file integrity (Check if app.js has been tampered with)
-# On Windows PowerShell:
-Get-FileHash backend/src/app.js
+# Generate bcrypt password hash
+node -e "const b = require('bcrypt'); console.log(b.hashSync('password', 12))"
+
+# Start development server
+cd backend && npm start
+
+# Start with PM2 (production)
+pm2 start backend/src/app.js --name movex
+
+# View PM2 logs
+pm2 logs movex
+
+# Restart PM2
+pm2 restart movex
 ```
 
+## Appendix B: Troubleshooting
+
+### "Connection refused" to database
+- Check DATABASE_URL is correct
+- Verify Supabase project is active
+- Check if using correct port (6543 for pooled)
+
+### "SSL required" error
+- Add `?sslmode=require` to DATABASE_URL
+- Or set `DB_SSL=true` in .env
+
+### Sessions not persisting
+- Sessions are now stored in PostgreSQL `sessions` table
+- Check database connection is working
+- Verify `SESSION_SECRET` is set
+- Check cookies are being set (browser dev tools)
+- Session expiry is 1 hour (sliding window)
+
+### CORS errors
+- Add your frontend URL to `FRONTEND_URL` in .env
+- Verify the origin exactly matches (including protocol)
+
 ---
 
-## Appendix B: Troubleshooting Decision Tree
+## Appendix C: Changelog
 
-### 1. "Connection Refused" (Database)
-*   **Check:** Is the Supabase project paused? (Free tier pauses after inactivity).
-*   **Check:** Is the IP blocked? (Check Supabase Network Restrictions).
-*   **Action:** Log in to the Supabase dashboard to wake the instance.
+### v1.1.0 (January 2, 2026)
 
-### 2. "CSRF Mismatch" / "Forbidden" (403)
-*   **Context:** usually happens after a deployment.
-*   **Check:** Did `SESSION_SECRET` change? If so, old cookies are invalid.
-*   **Action:** User must clear cookies and log in again.
+#### New Features
+- **Print Label**: One-click label printing from shipment details
+  - Dynamic data population via URL parameters
+  - JsBarcode integration for CODE128 barcodes
+  - Auto-print on page load
+  - Return address uses sender's address from database
+  
+- **Weight Tracking**: Added weight field to shipments
+  - Database column: `weight DECIMAL(10,2)`
+  - Displayed in shipment details modal
+  - Included in print labels
 
-### 3. "White Screen" on Dashboard
-*   **Context:** The HTML loads, but is blank.
-*   **Check:** Open DevTools Console. Do you see CSP errors? ("Refused to load script...").
-*   **Action:** You may be using a CDN not whitelisted in `helmet` config. Add the domain to `contentSecurityPolicy` in `app.js`.
+- **Complete Address Support**:
+  - Added `sender_address`, `sender_pincode` fields
+  - Added `receiver_address`, `receiver_pincode` fields
+  - Full address display in shipment details modal
+
+#### Improvements
+- **Shipment Details Modal**: Redesigned with comprehensive information
+  - Sender/Receiver cards with full details
+  - Route visualization
+  - Amount, Weight, Dates in grid layout
+  
+- **Session Management**: Migrated to PostgreSQL
+  - Sessions now persist across server restarts
+  - New `sessions` table in database
+  - Session expiry reduced to 1 hour
+
+#### Technical Changes
+- All session methods now async/await
+- Backend routes updated for new fields
+- Label design finalized (Delhivery V2 style)
 
 ---
 
-<div align="center">
-  <p><strong>MoveX Operations Manual</strong></p>
-  <p>Ensure this document is reviewed before every major release.</p>
-</div>
+**End of Document**
+
+*For questions or issues, refer to the codebase comments or contact the development team.*
