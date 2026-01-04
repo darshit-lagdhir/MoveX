@@ -379,12 +379,11 @@ window.MoveXAdmin = (function () {
                             <div><label style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Username</label><input type="text" id="new_username" placeholder="username" style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);"></div>
                             <div>
                                 <label style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Password</label>
-                                <input type="password" id="new_password" placeholder="Min 6 characters" style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);">
+                                <input type="password" id="new_password" placeholder="Min 8 characters" style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);">
                             </div>
                             <div><label style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Role</label>
                                 <select id="new_role" style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);">
                                     <option value="staff">Staff</option>
-                                    <option value="franchisee">Franchisee</option>
                                     <option value="admin">Admin</option>
                                 </select>
                             </div>
@@ -404,7 +403,7 @@ window.MoveXAdmin = (function () {
                                 const phone = document.getElementById('new_phone').value;
 
                                 if (!full_name || !username || !password) return showToast('All fields required', 'error');
-                                if (password.length < 6) return showToast('Password must be at least 6 chars', 'error');
+                                if (password.length < 8) return showToast('Password must be at least 8 chars', 'error');
 
                                 try {
                                     const res = await fetch('/api/dashboard/admin/users/create', {
@@ -455,10 +454,126 @@ window.MoveXAdmin = (function () {
             if (statusFilter) statusFilter.onchange = filterUsers;
         },
 
-        'franchises': function () {
-            renderFranchiseTable();
+        'franchises': async () => {
+            const tableBody = document.getElementById('franchise-table-body');
+            if (!tableBody) return;
+
+            const fetchStats = async () => {
+                try {
+                    const res = await fetch('/api/dashboard/admin/franchises/stats');
+                    const data = await res.json();
+                    if (data.success) {
+                        const { total, activeAreas, pending } = data.stats;
+                        const totalEl = document.getElementById('kpi-total-franchises');
+                        const areasEl = document.getElementById('kpi-active-areas');
+                        const pendingEl = document.getElementById('kpi-pending-approval');
+
+                        if (totalEl) animateValue(totalEl, 0, total, 1000);
+                        if (areasEl) animateValue(areasEl, 0, activeAreas, 1000);
+                        if (pendingEl) animateValue(pendingEl, 0, pending, 1000);
+                    }
+                } catch (err) { console.error("Stats Error:", err); }
+            };
+
+            const fetchFranchises = async () => {
+                try {
+                    const res = await fetch('/api/dashboard/admin/franchises');
+                    const data = await res.json();
+                    if (data.success) {
+                        MOCK_DATA.franchises = data.franchises;
+                        renderFranchiseTable(data.franchises);
+                    } else {
+                        tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--error);">Failed to load franchises.</td></tr>`;
+                    }
+                } catch (err) {
+                    console.error("Fetch Error:", err);
+                    tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--error);">Network Error.</td></tr>`;
+                }
+            };
+
+            await Promise.all([fetchStats(), fetchFranchises()]);
+
             const addBtn = document.querySelector('.page-header button');
-            if (addBtn) addBtn.onclick = () => showToast('Franchise onboarding module opened', 'info');
+            if (addBtn) {
+                addBtn.onclick = () => {
+                    createModal('Add New Franchise', `
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+                            <div style="grid-column: span 2; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle);">
+                                <div style="font-size: 0.9rem; font-weight: 700; color: var(--brand-primary);">OFFICE DETAILS</div>
+                            </div>
+                            <div style="grid-column: span 2;">
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Franchise / Hub Name</label>
+                                <input type="text" id="f_name" placeholder="e.g. Mumbai Central Hub" style="width:100%;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Service Area</label>
+                                <input type="text" id="f_area" placeholder="e.g. Andheri West" style="width:100%;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Assigned Pincodes</label>
+                                <input type="text" id="f_pincodes" placeholder="e.g. 400053, 400058" style="width:100%;">
+                            </div>
+
+                            <div style="grid-column: span 2; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-top: 1rem;">
+                                <div style="font-size: 0.9rem; font-weight: 700; color: var(--brand-primary);">OWNER (FRANCHISEE) ACCOUNT</div>
+                            </div>
+                            <div style="grid-column: span 2;">
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Owner Full Name</label>
+                                <input type="text" id="f_owner_name" placeholder="Full legal name" style="width:100%;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Username</label>
+                                <input type="text" id="f_username" placeholder="Login username" style="width:100%;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Login Password</label>
+                                <input type="password" id="f_password" placeholder="Min 8 characters" style="width:100%;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Owner Phone Number</label>
+                                <input type="tel" id="f_owner_phone" placeholder="e.g. +91 9876543210" style="width:100%;">
+                            </div>
+                        </div>
+                    `, [
+                        { label: 'Cancel', onClick: c => c() },
+                        {
+                            label: 'Register Franchise', primary: true, onClick: async (close) => {
+                                const name = document.getElementById('f_name').value;
+                                const service_area = document.getElementById('f_area').value;
+                                const pincodes = document.getElementById('f_pincodes').value;
+                                const owner_name = document.getElementById('f_owner_name').value;
+                                const owner_username = document.getElementById('f_username').value;
+                                const owner_password = document.getElementById('f_password').value;
+                                const owner_phone = document.getElementById('f_owner_phone').value;
+
+                                if (!name || !owner_name || !owner_username || !owner_password || !owner_phone) {
+                                    return showToast('Please fill all required fields', 'error');
+                                }
+                                if (owner_password.length < 8) {
+                                    return showToast('Owner password must be at least 8 chars', 'error');
+                                }
+
+                                try {
+                                    const res = await fetch('/api/dashboard/admin/franchises/create', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ name, service_area, pincodes, owner_name, owner_username, owner_password, owner_phone })
+                                    });
+                                    const data = await res.json();
+                                    if (data.success) {
+                                        showToast('Franchise created successfully!', 'success');
+                                        fetchFranchises();
+                                        fetchStats();
+                                        close();
+                                    } else {
+                                        showToast(data.error, 'error');
+                                    }
+                                } catch (e) { showToast('Network error', 'error'); }
+                            }
+                        }
+                    ]);
+                };
+            }
         },
 
         'shipments': function () {
@@ -678,12 +793,12 @@ window.MoveXAdmin = (function () {
                 <td><span class="status-badge status-${u.status}">${u.status}</span></td>
                 <td>${u.joined}</td>
                 <td>
-                    <button class="action-btn" data-id="${u.id}" style="border:none; background:none; cursor:pointer; color:var(--text-secondary);"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg></button>
+                    <button class="action-btn" data-username="${u.username}" style="border:none; background:none; cursor:pointer; color:var(--text-secondary);"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg></button>
                 </td>
             </tr>
         `).join('');
         tbody.querySelectorAll('.action-btn').forEach(btn => {
-            btn.onclick = () => showUserActions(MOCK_DATA.users.find(u => u.id == btn.getAttribute('data-id')));
+            btn.onclick = () => showUserActions(MOCK_DATA.users.find(u => u.username == btn.getAttribute('data-username')));
         });
     }
 
@@ -708,7 +823,7 @@ window.MoveXAdmin = (function () {
                     createModal(`Reset Password: ${user.name}`, `
                         <div>
                             <p style="margin-bottom:1rem; font-size:0.9rem;">Set a new password for <strong>${user.username}</strong>.</p>
-                            <input type="password" id="reset_pwd" placeholder="New Password (min 6 chars)" 
+                            <input type="password" id="reset_pwd" placeholder="New Password (min 8 chars)" 
                                 style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px;">
                         </div>
                     `, [
@@ -716,13 +831,13 @@ window.MoveXAdmin = (function () {
                         {
                             label: 'Set Password', primary: true, onClick: async (closeSub) => {
                                 const newPwd = document.getElementById('reset_pwd').value;
-                                if (!newPwd || newPwd.length < 6) return showToast('Password too short', 'error');
+                                if (!newPwd || newPwd.length < 8) return showToast('Password must be at least 8 characters', 'error');
 
                                 try {
                                     const res = await fetch('/api/dashboard/admin/users/reset-password', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ id: user.id, password: newPwd })
+                                        body: JSON.stringify({ username: user.username, password: newPwd })
                                     });
                                     const data = await res.json();
                                     if (data.success) {
@@ -739,9 +854,7 @@ window.MoveXAdmin = (function () {
                 }
             },
             {
-                label: user.status === 'active' ? 'Disable Account' : 'Enable Account',
-                // Primary if enabling, secondary/danger if disabling (but distinct styling not implemented, so just primary logic toggle)
-                primary: user.status !== 'active',
+                label: user.status === 'active' ? 'Disable User' : 'Enable User',
                 onClick: async (close) => {
                     const newStatus = user.status === 'active' ? 'disabled' : 'active';
 
@@ -749,7 +862,7 @@ window.MoveXAdmin = (function () {
                         const res = await fetch('/api/dashboard/admin/users/status', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ id: user.id, status: newStatus })
+                            body: JSON.stringify({ username: user.username, status: newStatus })
                         });
                         const data = await res.json();
 
@@ -1103,6 +1216,146 @@ window.MoveXAdmin = (function () {
         `).join('');
         tbody.querySelectorAll('.app-btn').forEach(btn => btn.onclick = () => showToast('Booking Approved', 'success'));
         tbody.querySelectorAll('.rej-btn').forEach(btn => btn.onclick = () => showToast('Booking Rejected', 'error'));
+    }
+
+    function renderFranchiseTable(data = MOCK_DATA.franchises) {
+        const tbody = document.getElementById('franchise-table-body');
+        if (!tbody) return;
+
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--text-secondary);">No franchises found.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = data.map(f => `
+            <tr class="staggered-item visible">
+                <td>
+                    <div style="font-weight: 700; color: var(--text-primary);">${f.name}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-tertiary);">ID: FR-${String(f.id).padStart(3, '0')}</div>
+                </td>
+                <td>
+                    <div style="font-weight: 600;">${f.owner_name || 'Unassigned'}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">${f.owner_username || ''}</div>
+                    <div style="font-size: 0.75rem; color: var(--brand-primary); font-weight: 600; margin-top: 2px;">
+                        <i class="fas fa-phone-alt" style="font-size: 0.7rem; margin-right: 4px;"></i>${f.owner_phone || 'No Number'}
+                    </div>
+                </td>
+                <td>${f.service_area || 'N/A'}</td>
+                <td style="font-size: 0.85rem; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${f.pincodes || ''}">
+                    ${f.pincodes || 'N/A'}
+                </td>
+                <td>
+                    <span class="status-badge status-${f.status || 'active'}" style="text-transform: capitalize;">
+                        ${f.status || 'Active'}
+                    </span>
+                </td>
+                <td>
+                    <div style="font-weight: 700; color: ${(f.performance || 0) > 95 ? 'var(--success)' : (f.performance || 0) > 85 ? 'var(--warning)' : 'var(--error)'};">
+                        ${f.performance || '0.00'}%
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-tertiary);">SLA Match</div>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 0.5rem;">
+                         <button class="action-btn-small edit-franchise" data-id="${f.id}"
+                            style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-default); background: var(--surface-primary); cursor: pointer; font-size: 0.75rem;">
+                            Edit
+                        </button>
+                         <button class="action-btn-small status-toggle" data-id="${f.id}" data-status="${f.status}"
+                            style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-default); background: ${f.status === 'active' ? 'var(--surface-primary)' : 'var(--brand-primary-soft)'}; cursor: pointer; font-size: 0.75rem;">
+                            ${f.status === 'active' ? 'Disable' : 'Enable'}
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+
+        // Bind events
+        tbody.querySelectorAll('.status-toggle').forEach(btn => {
+            btn.onclick = async () => {
+                const id = btn.dataset.id;
+                const currentStatus = btn.dataset.status;
+                const newStatus = currentStatus === 'active' ? 'disabled' : 'active';
+
+                try {
+                    const res = await fetch('/api/dashboard/admin/franchises/status', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id, status: newStatus })
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        showToast(`Franchise ${newStatus} successfully`, 'success');
+                        // Refresh
+                        if (initializers.franchises) initializers.franchises();
+                    } else {
+                        showToast(result.error, 'error');
+                    }
+                } catch (e) { showToast('Network Error', 'error'); }
+            };
+        });
+
+        tbody.querySelectorAll('.edit-franchise').forEach(btn => {
+            btn.onclick = () => {
+                const f = data.find(item => item.id == btn.dataset.id);
+                if (!f) return;
+
+                createModal(`Edit Franchise: ${f.name}`, `
+                    <div style="display:flex; flex-direction:column; gap:1.2rem;">
+                        <div>
+                            <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Franchise Name</label>
+                            <input type="text" id="edit_f_name" value="${f.name || ''}" style="width:100%;">
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Service Area</label>
+                            <input type="text" id="edit_f_area" value="${f.service_area || ''}" style="width:100%;">
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Pincodes</label>
+                            <input type="text" id="edit_f_pincodes" value="${f.pincodes || ''}" style="width:100%;">
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Performance Score (%)</label>
+                            <input type="number" id="edit_f_perf" value="${f.performance || '0.00'}" step="0.01" min="0" max="100" style="width:100%;">
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Owner Phone Number</label>
+                            <input type="tel" id="edit_f_phone" value="${f.owner_phone || ''}" placeholder="e.g. +91 9876543210" style="width:100%;">
+                        </div>
+                        <div style="padding:1rem; background:var(--surface-secondary); border-radius:var(--radius-md); font-size:0.85rem;">
+                            <strong>Owner:</strong> ${f.owner_name} (${f.owner_username})
+                            <br>
+                            <span style="color:var(--text-tertiary);">Owner details can be managed in the Users section.</span>
+                        </div>
+                    </div>
+                `, [
+                    { label: 'Cancel', onClick: c => c() },
+                    {
+                        label: 'Save Changes', primary: true, onClick: async (close) => {
+                            const name = document.getElementById('edit_f_name').value;
+                            const service_area = document.getElementById('edit_f_area').value;
+                            const pincodes = document.getElementById('edit_f_pincodes').value;
+                            const performance = document.getElementById('edit_f_perf').value;
+                            const owner_phone = document.getElementById('edit_f_phone').value;
+
+                            try {
+                                const res = await fetch('/api/dashboard/admin/franchises/update', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ id: f.id, name, service_area, pincodes, performance, owner_phone })
+                                });
+                                const result = await res.json();
+                                if (result.success) {
+                                    showToast('Franchise updated successfully', 'success');
+                                    if (initializers.franchises) initializers.franchises();
+                                    close();
+                                } else { showToast(result.error, 'error'); }
+                            } catch (e) { showToast('Network Error', 'error'); }
+                        }
+                    }
+                ]);
+            };
+        });
     }
 
     function renderAuditLogs() {

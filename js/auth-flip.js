@@ -130,8 +130,8 @@
                     return;
                 }
 
-                if (password.length < 6) {
-                    showNotification('❌ Password must be at least 6 characters', 'error');
+                if (password.length < 8) {
+                    showNotification('❌ Password must be at least 8 characters', 'error');
                     return;
                 }
 

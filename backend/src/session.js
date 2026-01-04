@@ -8,21 +8,20 @@ class SessionStore {
   }
 
   async createSession(user) {
-    const sessionId = crypto.randomBytes(24).toString('hex');
+    const sessionToken = crypto.randomBytes(24).toString('hex');
     const now = Date.now();
     const expiresAt = now + this.ttlMs;
 
     try {
       await db.query(`
-            INSERT INTO sessions(id, user_id, role, email, created_at, expires_at, last_accessed_at)
-VALUES($1, $2, $3, $4, $5, $6, $7)
-  `, [sessionId, user.id, user.role, user.email, now, expiresAt, now]);
+            INSERT INTO sessions(token, username, role, created_at, expires_at, last_accessed_at)
+            VALUES($1, $2, $3, $4, $5, $6)
+      `, [sessionToken, user.username, user.role, now, expiresAt, now]);
 
       return {
-        id: sessionId,
-        userId: user.id,
+        token: sessionToken,
+        username: user.username,
         role: user.role,
-        email: user.email,
         createdAt: now,
         expiresAt: expiresAt,
         lastAccessedAt: now
@@ -33,11 +32,11 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
     }
   }
 
-  async getSession(sessionId) {
-    if (!sessionId) return null;
+  async getSession(token) {
+    if (!token) return null;
 
     try {
-      const res = await db.query('SELECT * FROM sessions WHERE id = $1', [sessionId]);
+      const res = await db.query('SELECT * FROM sessions WHERE token = $1', [token]);
       if (res.rows.length === 0) return null;
 
       const record = res.rows[0];
@@ -47,7 +46,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
       const expiresAt = parseInt(record.expires_at || 0);
 
       if (expiresAt <= now) {
-        await this.destroySession(sessionId);
+        await this.destroySession(token);
         return null;
       }
 
@@ -57,14 +56,14 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
       await db.query(`
             UPDATE sessions 
             SET last_accessed_at = $1, expires_at = $2 
-            WHERE id = $3
-  `, [now, newExpiresAt, sessionId]);
+            WHERE token = $3
+      `, [now, newExpiresAt, token]);
 
       return {
-        id: record.id,
-        userId: record.user_id,
+        id: record.id, // Assuming 'id' is an auto-generated primary key
+        token: record.token,
+        username: record.username,
         role: record.role,
-        email: record.email,
         createdAt: parseInt(record.created_at),
         expiresAt: newExpiresAt,
         lastAccessedAt: now
@@ -75,19 +74,19 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
     }
   }
 
-  async destroySession(sessionId) {
-    if (!sessionId) return;
+  async destroySession(token) {
+    if (!token) return;
     try {
-      await db.query('DELETE FROM sessions WHERE id = $1', [sessionId]);
+      await db.query('DELETE FROM sessions WHERE token = $1', [token]);
     } catch (err) {
       console.error("Destroy session failed", err);
     }
   }
 
-  async destroySessionsForUser(userId) {
-    if (!userId) return;
+  async destroySessionsForUser(username) {
+    if (!username) return;
     try {
-      await db.query('DELETE FROM sessions WHERE user_id = $1', [userId]);
+      await db.query('DELETE FROM sessions WHERE username = $1', [username]);
     } catch (err) {
       console.error("Destroy user sessions failed", err);
     }

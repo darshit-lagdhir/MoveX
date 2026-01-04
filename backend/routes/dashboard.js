@@ -319,6 +319,14 @@ router.post('/admin/users/create', validateSession, requireRole('admin'), async 
             return res.status(400).json({ success: false, error: 'Username already taken' });
         }
 
+        if (password.length < 8) {
+            return res.status(400).json({ success: false, error: 'Password must be at least 8 characters long' });
+        }
+
+        if (role === 'franchisee') {
+            return res.status(400).json({ success: false, error: 'Franchisees must be created through the Franchise page' });
+        }
+
         const hash = await bcrypt.hash(password, 12);
         const status = 'active';
 
@@ -338,16 +346,16 @@ router.post('/admin/users/create', validateSession, requireRole('admin'), async 
 // Update User Status
 router.post('/admin/users/status', validateSession, requireRole('admin'), async (req, res) => {
     try {
-        const { id, status } = req.body;
-        if (!id || !['active', 'disabled'].includes(status)) {
+        const { username, status } = req.body;
+        if (!username || !['active', 'disabled'].includes(status)) {
             return res.status(400).json({ success: false, error: 'Invalid parameters' });
         }
 
-        await db.query('UPDATE users SET status = $1 WHERE id = $2', [status, id]);
+        await db.query('UPDATE users SET status = $1 WHERE username = $2', [status, username]);
 
         // If disabling, kill their sessions
         if (status === 'disabled') {
-            await sessionStore.destroySessionsForUser(id);
+            await sessionStore.destroySessionsForUser(username);
         }
 
         res.json({ success: true, message: `User ${status}` });
@@ -360,21 +368,160 @@ router.post('/admin/users/status', validateSession, requireRole('admin'), async 
 // Admin Reset Password
 router.post('/admin/users/reset-password', validateSession, requireRole('admin'), async (req, res) => {
     try {
-        const { id, password } = req.body;
-        if (!id || !password || password.length < 6) {
-            return res.status(400).json({ success: false, error: 'Invalid parameters' });
+        const { username, password } = req.body;
+        if (!username || !password || password.length < 8) {
+            return res.status(400).json({ success: false, error: 'Invalid parameters. Password must be at least 8 characters.' });
         }
 
         const hash = await bcrypt.hash(password, 12);
-        await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, id]);
+        await db.query('UPDATE users SET password_hash = $1 WHERE username = $2', [hash, username]);
 
         // Kill sessions so they must re-login with new password
-        await sessionStore.destroySessionsForUser(id);
+        await sessionStore.destroySessionsForUser(username);
 
         res.json({ success: true, message: 'Password reset successfully' });
     } catch (err) {
         console.error("Admin Reset Password Error:", err);
         res.status(500).json({ success: false, error: 'Failed to reset password' });
+    }
+});
+
+// --- FRANCHISE MANAGEMENT ---
+
+// Get all franchises
+router.get('/admin/franchises', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT o.*, u.username as owner_username, u.full_name as owner_name, u.phone as owner_phone
+            FROM organizations o
+            LEFT JOIN users u ON u.organization_id = o.id AND u.role = 'franchisee'
+            WHERE o.type = 'franchise'
+            ORDER BY o.created_at DESC
+        `);
+        res.json({ success: true, franchises: result.rows });
+    } catch (err) {
+        console.error("Fetch Franchises Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch franchises' });
+    }
+});
+
+// Get franchise stats
+router.get('/admin/franchises/stats', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        const totalResult = await db.query("SELECT COUNT(*) FROM organizations WHERE type = 'franchise'");
+        const pendingResult = await db.query("SELECT COUNT(*) FROM organizations WHERE type = 'franchise' AND status = 'pending'");
+        const areasResult = await db.query("SELECT COUNT(DISTINCT service_area) FROM organizations WHERE type = 'franchise' AND status = 'active'");
+
+        res.json({
+            success: true,
+            stats: {
+                total: parseInt(totalResult.rows[0].count),
+                pending: parseInt(pendingResult.rows[0].count),
+                activeAreas: parseInt(areasResult.rows[0].count)
+            }
+        });
+    } catch (err) {
+        console.error("Franchise Stats Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch stats' });
+    }
+});
+
+// Create Franchise (Org + User)
+router.post('/admin/franchises/create', validateSession, requireRole('admin'), async (req, res) => {
+    const client = await db.pool.connect();
+    try {
+        const { name, service_area, pincodes, owner_name, owner_username, owner_password, owner_phone } = req.body;
+
+        if (!name || !owner_name || !owner_username || !owner_password || !owner_phone) {
+            return res.status(400).json({ success: false, error: 'Missing required fields' });
+        }
+
+        if (owner_password.length < 8) {
+            return res.status(400).json({ success: false, error: 'Owner password must be at least 8 characters long' });
+        }
+
+        await client.query('BEGIN');
+
+        // 1. Create Organization
+        const orgResult = await client.query(
+            'INSERT INTO organizations (name, type, service_area, pincodes, status) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            [name, 'franchise', service_area, pincodes, 'active']
+        );
+        const orgId = orgResult.rows[0].id;
+
+        // 2. Create Franchisee User
+        const hash = await bcrypt.hash(owner_password, 12);
+        await client.query(
+            'INSERT INTO users (full_name, username, password_hash, role, organization_id, status, phone) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+            [owner_name, owner_username.trim().toLowerCase(), hash, 'franchisee', orgId, 'active', owner_phone]
+        );
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Franchise and Owner created successfully' });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error("Create Franchise Error:", err);
+        if (err.code === '23505') {
+            return res.status(400).json({ success: false, error: 'Username already exists' });
+        }
+        res.status(500).json({ success: false, error: 'Failed to create franchise' });
+    } finally {
+        client.release();
+    }
+});
+
+// Update Franchise Status
+router.post('/admin/franchises/status', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        const { id, status } = req.body;
+        if (!id || !['active', 'disabled', 'pending'].includes(status)) {
+            return res.status(400).json({ success: false, error: 'Invalid parameters' });
+        }
+
+        await db.query('UPDATE organizations SET status = $1 WHERE id = $2', [status, id]);
+        res.json({ success: true, message: `Franchise status updated to ${status}` });
+    } catch (err) {
+        console.error("Update Franchise Status Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to update status' });
+    }
+});
+
+// Update Franchise Details
+router.post('/admin/franchises/update', validateSession, requireRole('admin'), async (req, res) => {
+    const client = await db.pool.connect();
+    try {
+        const { id, name, service_area, pincodes, performance, owner_phone } = req.body;
+        if (!id || !name) {
+            return res.status(400).json({ success: false, error: 'ID and Name are required' });
+        }
+
+        await client.query('BEGIN');
+
+        // 1. Update Organization
+        await client.query(`
+            UPDATE organizations 
+            SET name = $1, service_area = $2, pincodes = $3, performance = $4, updated_at = NOW() 
+            WHERE id = $5
+        `, [name, service_area, pincodes, performance || 0, id]);
+
+        // 2. Update Owner Phone (if provided)
+        if (owner_phone) {
+            await client.query(`
+                UPDATE users 
+                SET phone = $1, updated_at = NOW() 
+                WHERE organization_id = $2 AND role = 'franchisee'
+            `, [owner_phone, id]);
+        }
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Franchise updated successfully' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error("Update Franchise Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to update franchise' });
+    } finally {
+        client.release();
     }
 });
 
