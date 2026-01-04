@@ -42,6 +42,21 @@ npm start
 
 ---
 
+## 🏗️ System Architecture
+
+MoveX operates on a **Privacy-First Monolithic Architecture**, designed to be an "Iron Fortress" for logistics data.
+
+### 1. The "Hybrid SPA" Frontend
+- **Zero-Build Approach:** We do not use Webpack or Vite. The HTML/JS you see is exactly what runs in the browser, ensuring no hidden code.
+- **Shadow Router (`admin-layout.js`):** A custom engine that intercepts links to load pages dynamically. This gives the speed of a Single Page App (SPA) while keeping the simplicity of static files.
+- **State Persistence:** The Sidebar, Header, and Audio system remain active during navigation, preventing "blinking" and reloading.
+
+### 2. The "Guarded" Backend
+- **Static Firewall:** Standard static files (`.html`) are NOT public. A middleware intercepts every request and checks the database for a valid session before serving the file.
+- **Session Air-Gap:** We use Opaque Tokens (DB-backed) instead of JWTs. This allows Admins to instantly revoke access to any device remotely.
+
+---
+
 ## 📁 Project Structure
 
 ```
@@ -68,6 +83,13 @@ movex/
 ├── index.html             # Landing page / Login
 └── PRODUCTION.md          # Production deployment guide
 ```
+
+### Key Directories
+*   **`/admin` vs `/dashboards`**:
+    *   **Admin**: High-security zone. Contains User Management and internal configs.
+    *   **Dashboards**: Optimized views for Franchisees and Staff (mobile-friendly).
+*   **`/backend/src/session.js`**: The heart of our "Sliding Window" session system. It auto-cleans expired sessions every 15 minutes.
+*   **`/js/security/`**: Contains active defense scripts like `anti-tamper.js` and `device-binding.js`.
 
 ---
 

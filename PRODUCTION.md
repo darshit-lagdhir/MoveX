@@ -717,7 +717,24 @@ await db.query(`SELECT * FROM users WHERE email = '${email}'`);
 
 ---
 
-## Section 9: Common Mistakes to Avoid
+## Section 9: Maintenance & Backup
+
+### Database Backups (Critical)
+If using Supabase, Pulse/PITR is enabled by default. For local/VPS:
+1.  **Daily Dump:** `pg_dump -U postgres movex > backup_$(date +%F).sql`
+2.  **Retention:** Keep last 7 days locally, upload monthly archives to S3/Drive.
+
+### Log Rotation
+*   The application logs via `stdout`. Use `pm2-logrotate` to prevent logs from filling the disk:
+    ```bash
+    pm2 install pm2-logrotate
+    pm2 set pm2-logrotate:max_size 10M
+    pm2 set pm2-logrotate:retain 5
+    ```
+
+---
+
+## Section 10: Common Mistakes to Avoid
 
 ### ❌ Security Mistakes
 
@@ -758,7 +775,7 @@ await db.query(`SELECT * FROM users WHERE email = '${email}'`);
 
 ---
 
-## Section 10: How to Safely Make Future Changes
+## Section 11: How to Safely Make Future Changes
 
 ### The Golden Rules
 
