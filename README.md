@@ -1,7 +1,7 @@
 # 🚚 MoveX - Enterprise Logistics Management Platform
 
 <div align="center">
-  <img src="./assets/logo.png" alt="MoveX Logo" width="120" style="margin-bottom: 20px;">
+  <img src="./logo-images/logo2.png" alt="MoveX Logo" width="120" style="margin-bottom: 20px;">
   <h3>A modern, secure, and hyper-scalable logistics and courier management system.</h3>
   <p>Engineered for performance with Node.js, Express, PostgreSQL, and High-Performance Vanilla JavaScript.</p>
 </div>

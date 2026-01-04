@@ -20,8 +20,8 @@ async function validateSession(req, res, next) {
                            o.name as org_name, o.type as org_type, o.service_area, o.status as org_status
                     FROM users u
                     LEFT JOIN organizations o ON u.organization_id = o.id
-                    WHERE u.id = $1
-                `, [session.userId]);
+                    WHERE u.username = $1
+                `, [session.username]);
 
                 if (result.rows.length > 0 && result.rows[0].status === 'active') {
                     const row = result.rows[0];
@@ -49,6 +49,8 @@ async function validateSession(req, res, next) {
         const token = authHeader.substring(7);
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const userIdentifier = decoded.username || decoded.userId || decoded.id;
+
             const result = await db.query(`
                 SELECT u.id, u.username, u.full_name, u.phone, u.role, u.status, 
                        u.mfa_enabled, u.created_at, u.last_login_at,
@@ -56,8 +58,8 @@ async function validateSession(req, res, next) {
                        o.name as org_name, o.type as org_type, o.service_area, o.status as org_status
                 FROM users u
                 LEFT JOIN organizations o ON u.organization_id = o.id
-                WHERE u.id = $1
-            `, [decoded.userId || decoded.id]);
+                WHERE u.username = $1 OR u.id::text = $1
+            `, [String(userIdentifier)]);
 
             if (result.rows.length > 0 && result.rows[0].status === 'active') {
                 const row = result.rows[0];
@@ -136,7 +138,7 @@ router.get('/me', validateSession, (req, res) => {
 
 router.put('/me', validateSession, async (req, res) => {
     const { full_name, phone } = req.body;
-    const userId = req.user.id;
+    const username = req.user.username;
 
     const updates = [];
     const values = [];
@@ -157,19 +159,19 @@ router.put('/me', validateSession, async (req, res) => {
         return res.status(400).json({ error: 'No valid fields to update' });
     }
 
-    values.push(userId);
+    values.push(username);
 
     try {
         await db.query(
-            `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramCount}`,
+            `UPDATE users SET ${updates.join(', ')} WHERE username = $${paramCount}`,
             values
         );
 
         const result = await db.query(`
             SELECT id, username, full_name, phone, role, status, mfa_enabled, 
                    organization_id, created_at, last_login_at
-            FROM users WHERE id = $1
-        `, [userId]);
+            FROM users WHERE username = $1
+        `, [username]);
 
         res.json({
             success: true,

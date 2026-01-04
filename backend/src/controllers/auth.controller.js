@@ -127,19 +127,18 @@ exports.login = async (req, res) => {
     }
 
     // MoveX User Activity Tracking
-    await pool.query('UPDATE users SET last_login_at = NOW() WHERE id = $1', [user.id]);
+    await pool.query('UPDATE users SET last_login_at = NOW() WHERE username = $1', [user.username]);
 
     // Create server-side session and set HttpOnly cookie
     const session = await sessionStore.createSession({
-      id: user.id,
       username: user.username,
       role: user.role
     });
-    setSessionCookie(res, session.id);
+    setSessionCookie(res, session.token);
 
     // Generate JWT for cross-origin fallback (when cookies blocked)
     const token = jwt.sign(
-      { userId: user.id, username: user.username, role: user.role },
+      { username: user.username, role: user.role },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
@@ -171,9 +170,9 @@ exports.logout = async (req, res) => {
         const token = authHeader.substring(7);
         try {
           const decoded = jwt.verify(token, process.env.JWT_SECRET);
-          const userId = decoded.userId || decoded.id;
-          if (userId) {
-            await sessionStore.destroySessionsForUser(userId);
+          const username = decoded.username || decoded.userId || decoded.id;
+          if (username) {
+            await sessionStore.destroySessionsForUser(username);
           }
         } catch (e) {
           // Ignore token errors on logout
@@ -238,12 +237,12 @@ exports.verifyQuestions = async (req, res) => {
     const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MINUTES * 60 * 1000);
 
     // clear old tokens
-    await pool.query('DELETE FROM password_resets WHERE user_id = $1', [user.id]);
+    await pool.query('DELETE FROM password_resets WHERE username = $1', [user.username]);
 
     await pool.query(
-      `INSERT INTO password_resets (user_id, token_hash, expires_at, used)
+      `INSERT INTO password_resets (username, token_hash, expires_at, used)
        VALUES ($1, $2, $3, false)`,
-      [user.id, tokenHash, expiresAt]
+      [user.username, tokenHash, expiresAt]
     );
 
     return res.status(200).json({
@@ -337,12 +336,12 @@ exports.resetPassword = async (req, res) => {
     const hash = await bcrypt.hash(password, 12);
 
     await pool.query('BEGIN');
-    await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, reset.user_id]);
+    await pool.query('UPDATE users SET password_hash = $1 WHERE username = $2', [hash, reset.username]);
     await pool.query('UPDATE password_resets SET used = true WHERE id = $1', [reset.id]);
     await pool.query('COMMIT');
 
     // Invalidate all sessions for this user
-    await sessionStore.destroySessionsForUser(reset.user_id);
+    await sessionStore.destroySessionsForUser(reset.username);
 
     return res.status(200).json({ message: 'Password has been reset. Please log in.' });
   } catch (err) {
