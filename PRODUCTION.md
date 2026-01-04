@@ -132,183 +132,542 @@ This document provides a complete guide for running MoveX in a production enviro
 | `.env` | Environment configuration (local only) |
 | `.env.example` | Template for environment variables |
 
-
 ---
 
----
+## Section 3: Supabase Setup Guide (Step-by-Step)
 
----
+### What is Supabase?
 
-## Section 3: The Active Defense System (Security Architecture Deep Dive)
+Supabase is a managed backend service that provides:
 
-MoveX employs a **"Zero-Trust, Defense-in-Depth"** strategy. We assume the network is hostile and every request is potentially malicious.
+1. **PostgreSQL Database** - A fully managed PostgreSQL database (the same database technology MoveX already uses locally)
+2. **Storage** - File storage with access control (for photos)
+3. **Authentication** - Optional auth service (we use our own)
+4. **Realtime** - Optional realtime subscriptions
 
-### 3a. Backend Security Pipeline (The Iron Gate)
-Every single request hitting `backend/src/app.js` is processed by these layers *before* it reaches any business logic:
+**Important:** Supabase PostgreSQL is **standard PostgreSQL**. Your existing queries, tables, and code will work exactly the same. You're just changing WHERE the database runs, not HOW it works.
 
-1.  **Helmet (Header Hardening)**
-    *   **Why?** Browsers have dangerous defaults (like allowing iframes).
-    *   **Config:**
-        *   `X-Frame-Options: DENY`: Prevents Clickjacking attacks where your site is essentially "painted" over a malicious site.
-        *   `Content-Security-Policy`: Disables `eval()` and blocks scripts from unauthorized domains (e.g., hacker-cdn.com).
-        *   `Strict-Transport-Security (HSTS)`: Tells the browser "Only talk to me over HTTPS" for the next year.
+### PgAdmin vs Supabase
 
-2.  **CORS (Origin Verification)**
-    *   **Why?** Prevents malicious websites from making API calls on behalf of your logged-in users.
-    *   **Config:** We strictly check the `Origin` header against `process.env.FRONTEND_URL`. If they don't match, the request is dropped instantly.
+| Aspect | PgAdmin | Supabase |
+|--------|---------|----------|
+| **What it is** | GUI tool to view/manage databases | Cloud platform hosting databases |
+| **Where runs** | Your computer | Supabase servers |
+| **Data storage** | Your local machine | Cloud (backed up automatically) |
+| **Access** | Only from your computer | From anywhere with connection string |
+| **Required?** | Optional (development tool) | No, but recommended for production |
 
-3.  **Rate Limiting (Anti-Abuse)**
-    *   **Why?** Prevents Brute Force attacks and Denial of Service (DoS).
-    *   **Rules:**
-        *   **Login Endpoints:** Stricter limit (5 reqs / 15 mins). Prevents password guessing.
-        *   **General API:** Looser limit (100 reqs / 15 mins). Allows normal usage but stops scrapers.
+**Key Point:** PgAdmin is like a file explorer for databases. Supabase is like cloud storage for your database. You can use PgAdmin to connect TO Supabase if you want a visual interface.
 
-4.  **Static Firewall (`protectStaticDashboards`)**
-    *   **Why?** Static HTML files usually aren't protected by backend logic.
-    *   **Logic:** This middleware intercepts `GET *.html`. It pauses the request, decrypts the session cookie, checks the DB, and *only then* serves the file. Unauthenticated users get a `401` immediately.
+### Step 1: Create a Supabase Account and Project
 
-### 3b. Client-Side Countermeasures
-We don't trust the browser, but we make it hard to tamper with.
+1. Go to [supabase.com](https://supabase.com)
+2. Click "Start your project" → Sign up with GitHub/Email
+3. Click "New Project"
+4. Fill in:
+   - **Name:** `movex-production` (or any name)
+   - **Database Password:** Generate a strong password → **SAVE THIS IMMEDIATELY**
+   - **Region:** Choose closest to your users (e.g., Mumbai for India)
+5. Click "Create new project"
+6. Wait 2-3 minutes for project creation
 
-*   **Anti-Tamper (`js/security/anti-tamper.js`):**
-    *   **Logic:** Monitors the difference between `window.outerWidth` and `window.innerWidth`. A large difference usually means the DevTools sidebar is open.
-    *   **Action:** If detected, it replaces the entire DOM with a red warning screen and forces a reload loops to detach debuggers.
+### Step 2: Locate Database Credentials
 
-*   **Device Binding (`js/security/device-binding.js`):**
-    *   **Logic:** When you log in, we fingerprint your device (Canvas hash + User Agent + Screen Resolution).
-    *   **Check:** Every subsequent request sends this fingerprint in a header. If the session cookie is stolen and used on a hacker's laptop, the fingerprint won't match, and the server rejects it.
+1. In your Supabase project dashboard, click **Settings** (gear icon) → **Database**
+2. Scroll to "Connection string" section
+3. You'll see:
+   - **Host:** `db.xxxxxxxxxxxx.supabase.co`
+   - **Database name:** `postgres`
+   - **Port:** `5432` (direct) or `6543` (pooled - recommended)
+   - **User:** `postgres`
+   - **Password:** The password you saved in Step 1
 
----
+4. Copy the "Connection string" → Choose the **URI** format:
+   ```
+   postgresql://postgres:[YOUR-PASSWORD]@db.xxxxxxxxxxxx.supabase.co:6543/postgres
+   ```
 
-## Section 4: Database & Storage Configuration
+### Step 3: Understand the Connection URL Format
 
-### 4a. Supabase Setup Guide (Comprehensive Walkthrough)
-Follow these exact steps to provision a production-ready database.
-
-**Step 1: Project Creation**
-1.  Log in to [supabase.com](https://supabase.com).
-2.  Click **"New Project"**.
-3.  **Organization:** Select your default org.
-4.  **Name:** `movex-production`.
-5.  **Database Password:** click "Generate" and **COPY IT** to a notepad. You cannot see it again.
-6.  **Region:** Select the region physically closest to your users (e.g., `Mumbai`).
-7.  Click **"Create new project"**.
-
-**Step 2: Get Connection Details**
-1.  Wait for the project to finish "Provisioning" (about 2 mins).
-2.  Go to **Settings** (Gear Icon) -> **Database**.
-3.  Scroll down to **Connection String**.
-4.  Click **"URI"** tab.
-5.  Copy the string. It looks like: `postgresql://postgres:[YOUR-PASSWORD]@db.xxxx.supabase.co:5432/postgres`.
-6.  **CRITICAL:** Change port `5432` to `6543` (Connection Pooler) for better performance.
-7.  **CRITICAL:** Append `?sslmode=require` to the end.
-
-**Step 3: Run SQL Migrations**
-1.  Go to the **SQL Editor** tab (Icon with two brackets `[ ]`).
-2.  Open the files in your local `/backend/sql/` folder.
-3.  Copy/Paste and Run them in this EXACT order:
-    *   `001_init_users.sql` (Creates base structure)
-    *   `011_create_shipments.sql` (Add shipment logic)
-    *   `017_franchise_updates.sql` (Final patches)
-
-**Step 4: Configure Storage**
-1.  Go to **Storage** tab (Folder Icon).
-2.  Click **"New Bucket"**.
-3.  **Name:** `shipment-photos`.
-4.  **Public bucket:** OFF (Unchecked).
-5.  Click **"Save"**.
-
-### 4b. Environment Variables Reference
-Ensure all these are set in your deployment platform.
-
-| Variable | Required? | Description | Example / Default |
-| :--- | :--- | :--- | :--- |
-| `NODE_ENV` | **YES** | Sets app to secure mode. | `production` |
-| `PORT` | **YES** | Port to listen on. | `4000` |
-| `DATABASE_URL` | **YES** | Full Postgres connection string. | `postgresql://...?sslmode=require` |
-| `SESSION_SECRET` | **YES** | Used to sign session cookies. | Random 32+ char string |
-| `JWT_SECRET` | **YES** | Used for API tokens (if enabled). | Random 32+ char string |
-| `FRONTEND_URL` | **YES** | URL for CORS whitelisting. | `https://movex.app` |
-| `SUPABASE_SERVICE_KEY`| No | Required only if using Photo Uploads. | `eyJ...` (from API Settings) |
-| `MAINTENANCE_MODE` | No | Kill switch for the frontend. | `false` |
-
----
-
-## Section 5: Operations Manual (SOPs)
-
-### 5a. Routine Maintenance Scripts
-Copy-paste these into the Supabase SQL Editor to perform maintenance.
-
-**SCRIPT 1: Prune Expired Sessions**
-*Use this if the DB size is growing too fast.*
-```sql
--- Explanation: Deletes rows where 'expires_at' is in the past.
--- We use NOW() converted to Epoch Milliseconds to match our JS timestamp format.
-DELETE FROM sessions 
-WHERE expires_at < (EXTRACT(EPOCH FROM NOW()) * 1000);
+```
+postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:6543/postgres
+│            │         │          │                            │    │
+│            │         │          │                            │    └── Database name
+│            │         │          │                            └── Port (6543 = pooled)
+│            │         │          └── Host (unique per project)
+│            │         └── Your database password
+│            └── Username (always 'postgres' for Supabase)
+└── Protocol (always postgresql)
 ```
 
-**SCRIPT 2: Fraud Detection Audit**
-*Use this to spot weird activity patterns.*
-```sql
--- Explanation: Finds phone numbers that have created > 50 shipments in 24 hours.
-SELECT sender_mobile, COUNT(*) as shipment_count
-FROM shipments 
-WHERE created_at > NOW() - INTERVAL '24 HOURS' 
-GROUP BY sender_mobile 
-HAVING COUNT(*) > 50
-ORDER BY shipment_count DESC;
+**Port Options:**
+- `5432` = Direct connection (limited connections, use for migrations)
+- `6543` = Connection pooler (recommended for apps, handles many connections)
+
+### Step 4: Configure MoveX for Supabase
+
+1. **Copy your Supabase connection URL**
+
+2. **Open your `.env` file** in the project root and add/update:
+
+```env
+# Database Connection (Supabase)
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:6543/postgres?sslmode=require
+
+# Individual credentials (fallback if DATABASE_URL not set)
+DB_HOST=db.[YOUR-PROJECT-REF].supabase.co
+DB_PORT=6543
+DB_USER=postgres
+DB_PASSWORD=[YOUR-PASSWORD]
+DB_NAME=postgres
+DB_SSL=true
 ```
 
-**SCRIPT 3: Emergency Admin Reset**
-*Use this if you get locked out.*
+3. **Important:** Add `?sslmode=require` to the DATABASE_URL - Supabase requires SSL
+
+### Step 5: Create Tables in Supabase
+
+1. In Supabase dashboard, go to **SQL Editor**
+2. Run the following SQL to create required tables:
+
 ```sql
--- Explanation: Manually updates the admin password hash.
--- NOTE: You must generate a new bcrypt hash manually before running this.
-UPDATE users 
-SET password_hash = '$2b$12$NEW_HASH_GOES_HERE' 
-WHERE username = 'admin';
+-- Create enums (if not exists)
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('admin', 'franchisee', 'staff', 'user', 'customer');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE user_status AS ENUM ('active', 'disabled', 'suspended');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- Users table
+CREATE TABLE IF NOT EXISTS users (
+    id BIGSERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    full_name VARCHAR(255),
+    phone VARCHAR(50),
+    role user_role NOT NULL DEFAULT 'user',
+    status user_status NOT NULL DEFAULT 'active',
+    mfa_enabled BOOLEAN DEFAULT false,
+    oauth_provider VARCHAR(50),
+    organization_id BIGINT,
+    security_answers JSONB,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    last_login_at TIMESTAMPTZ
+);
+
+-- Organizations table
+CREATE TABLE IF NOT EXISTS organizations (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    type VARCHAR(50),
+    service_area VARCHAR(255),
+    status VARCHAR(50) DEFAULT 'active',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Password reset tokens
+CREATE TABLE IF NOT EXISTS password_resets (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    used BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_status ON users(status);
+CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets(user_id);
+CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token_hash);
+
+-- Foreign key for organizations
+ALTER TABLE users 
+ADD CONSTRAINT fk_users_organization 
+FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE SET NULL;
 ```
 
-### 5b. Disaster Recovery (DR) Protocols
+### Step 6: Test Connection Locally
 
-**Scenario: "The Database was Deleted"**
-1.  **Don't Panic.** Supabase takes daily backups.
-2.  **Stop Traffic:** Scale your web server down to 0 instances to prevent failed writes.
-3.  **Go to Supabase:** Database -> Backups.
-4.  **Select Point-In-Time:** Choose a time *before* the deletion occurred.
-5.  **Restore:** Click Restore. This may take 20 minutes.
-6.  **Resume:** Scale web server back up.
+1. Make sure your `.env` is updated with Supabase credentials
+2. Restart your backend:
+   ```bash
+   cd backend
+   npm start
+   ```
+3. Check for "Auth API listening on port 4000" message
+4. If you see database errors, verify:
+   - Connection string is correct
+   - Password has no special characters that need URL encoding
+   - `?sslmode=require` is appended to DATABASE_URL
 
-**Scenario: "API Keys Leaked on GitHub"**
-1.  **Revoke:** Go to Supabase -> Settings -> API. Click "Rotate Secret".
-2.  **Update Config:** This will generate a new `ANON_KEY` and `SERVICE_KEY`. You must update these in your hosting platform's Environment Variables immediately.
-3.  **Redeploy:** Restart the application to load the new keys.
+### Step 7: Create Initial Admin User
+
+Run this SQL in Supabase SQL Editor (replace password hash with a real bcrypt hash):
+
+```sql
+-- First, generate a password hash using bcrypt (cost 12)
+-- You can use: https://bcrypt-generator.com/ or run in Node:
+-- const bcrypt = require('bcrypt'); console.log(bcrypt.hashSync('YourPassword123', 12));
+
+INSERT INTO users (email, password_hash, role, status, full_name)
+VALUES (
+    'admin@movex.com',
+    '$2b$12$YOUR_GENERATED_BCRYPT_HASH_HERE',
+    'admin',
+    'active',
+    'System Administrator'
+);
+```
+
+**Never commit real passwords or hashes to git!**
 
 ---
 
-## Section 6: Troubleshooting Guide (Decision Tree)
+## Section 4: Environment Variables List and Purpose
 
-**Issue: User sees "Connection Refused"**
-1.  Is the Database URL correct in `.env`?
-    *   **No:** Fix it.
-    *   **Yes:** Check Supabase status. Is the project paused?
-        *   **Yes:** Log in to wake it up.
-        *   **No:** Contact Support.
+Copy `.env.example` to `.env` and fill in all values:
 
-**Issue: "Session Invalid" Loop**
-1.  Are cookies being set in the browser?
-    *   **No:** Check `SESSION_SECURE`. If testing on HTTP (Localhost), this must be `false`. If HTTPS (Prod), it must be `true`.
-    *   **Yes:** Check Server Logs. Is the server time synced? Auth tokens rely on time windows.
+```env
+# ═══════════════════════════════════════════════════════════
+# APPLICATION
+# ═══════════════════════════════════════════════════════════
+NODE_ENV=production                    # 'development' or 'production'
+PORT=4000                              # Server port
 
-**Issue: "CORS Error" / Blocked Request**
-1.  Check the `Origin` header in the failing request (DevTools -> Network).
-2.  Does it match `FRONTEND_URL` *exactly*?
-    *   **No:** Update `FRONTEND_URL`. Note that `https://myapp.com` is different from `https://myapp.com/` (trailing slash).
+# ═══════════════════════════════════════════════════════════
+# DATABASE (Supabase PostgreSQL)
+# ═══════════════════════════════════════════════════════════
+# Option 1: Connection URL (recommended)
+DATABASE_URL=postgresql://postgres:PASSWORD@db.PROJECT.supabase.co:6543/postgres?sslmode=require
+
+# Option 2: Individual credentials (fallback)
+DB_HOST=db.PROJECT.supabase.co
+DB_PORT=6543
+DB_USER=postgres
+DB_PASSWORD=your_supabase_db_password
+DB_NAME=postgres
+DB_SSL=true
+
+# ═══════════════════════════════════════════════════════════
+# AUTHENTICATION & SESSIONS
+# ═══════════════════════════════════════════════════════════
+# CRITICAL: Must be random, 32+ characters each
+# Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+JWT_SECRET=your_64_character_random_hex_string_here
+SESSION_SECRET=another_64_character_random_hex_string_here
+SESSION_MAX_AGE=3600000                # 1 hour in milliseconds
+
+# ═══════════════════════════════════════════════════════════
+# SECURITY
+# ═══════════════════════════════════════════════════════════
+CSRF_ENABLED=true                      # Enable CSRF protection
+SESSION_SECURE=true                    # Secure cookies (requires HTTPS)
+SESSION_SAME_SITE=Strict               # Cookie same-site policy
+
+# ═══════════════════════════════════════════════════════════
+# RATE LIMITING
+# ═══════════════════════════════════════════════════════════
+RATE_LIMIT_LOGIN=5                     # Max login attempts per 15 min
+RATE_LIMIT_REGISTER=3                  # Max register attempts per 15 min
+RATE_LIMIT_FORGOT_PASSWORD=3           # Max password reset per 15 min
+RATE_LIMIT_GENERAL=100                 # Max general API calls per 15 min
+
+# ═══════════════════════════════════════════════════════════
+# STORAGE (Supabase Storage)
+# ═══════════════════════════════════════════════════════════
+SUPABASE_URL=https://PROJECT.supabase.co
+SUPABASE_ANON_KEY=eyJ...               # Public anon key (safe for frontend)
+SUPABASE_SERVICE_KEY=eyJ...            # Service key (BACKEND ONLY - never expose!)
+STORAGE_BUCKET=shipment-photos         # Bucket name for photos
+
+# ═══════════════════════════════════════════════════════════
+# FRONTEND URL (for CORS)
+# ═══════════════════════════════════════════════════════════
+FRONTEND_URL=https://your-domain.com   # Production frontend URL
+
+# ═══════════════════════════════════════════════════════════
+# LOGGING
+# ═══════════════════════════════════════════════════════════
+LOG_LEVEL=info                         # 'debug', 'info', 'warn', 'error'
+LOG_AUTH_ATTEMPTS=true                 # Log authentication events
+
+# ═══════════════════════════════════════════════════════════
+# MONITORING
+# ═══════════════════════════════════════════════════════════
+HEALTH_CHECK_KEY=your_secret_key       # Protects /api/health/detailed in production
+```
+
+### Environment Variable Rules
+
+1. **Never commit `.env` to git** - `.gitignore` already excludes it
+2. **Use `.env.example` as template** - Keep it updated but with placeholder values
+3. **Generate unique secrets** - Never reuse secrets across environments
+4. **Validate at startup** - App should fail if critical vars are missing
+
+---
+
+## Section 5: Database Structure Overview
+
+### Tables
+
+#### `users`
+Primary user table for authentication and authorization.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | BIGSERIAL | Primary key |
+| email | VARCHAR(255) | Login identifier (unique) |
+| password_hash | TEXT | bcrypt hashed password |
+| full_name | VARCHAR(255) | Display name |
+| phone | VARCHAR(50) | Contact number |
+| role | user_role | ENUM: admin, franchisee, staff, user, customer |
+| status | user_status | ENUM: active, disabled, suspended |
+| mfa_enabled | BOOLEAN | MFA status |
+| oauth_provider | VARCHAR(50) | OAuth provider if applicable |
+| organization_id | BIGINT | FK to organizations |
+| security_answers | JSONB | Password recovery questions |
+| created_at | TIMESTAMPTZ | Account creation time |
+| last_login_at | TIMESTAMPTZ | Last successful login |
+
+#### `organizations`
+Franchise/organization data.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | BIGSERIAL | Primary key |
+| name | VARCHAR(255) | Organization name |
+| type | VARCHAR(50) | Organization type |
+| service_area | VARCHAR(255) | Service coverage area |
+| status | VARCHAR(50) | Active/inactive status |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+
+#### `password_resets`
+Secure password reset token storage.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | BIGSERIAL | Primary key |
+| user_id | BIGINT | FK to users |
+| token_hash | TEXT | SHA-256 hash of reset token |
+| expires_at | TIMESTAMPTZ | Token expiration time |
+| used | BOOLEAN | Whether token was consumed |
+| created_at | TIMESTAMPTZ | Token creation time |
+
+#### `sessions`
+Database-backed session storage for persistent logins.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | VARCHAR(255) | Primary key (session token) |
+| user_id | INTEGER | FK to users |
+| role | VARCHAR(255) | User role at session creation |
+| email | VARCHAR(255) | User email |
+| created_at | BIGINT | Session creation timestamp (ms) |
+| expires_at | BIGINT | Session expiry timestamp (ms) |
+| last_accessed_at | BIGINT | Last activity timestamp (ms) |
+
+#### `shipments`
+Shipment/parcel tracking data.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | BIGSERIAL | Primary key |
+| tracking_id | VARCHAR(50) | Unique tracking number |
+| sender_name | VARCHAR(100) | Sender's name |
+| sender_mobile | VARCHAR(20) | Sender's phone |
+| sender_address | TEXT | Sender's full address |
+| sender_pincode | VARCHAR(10) | Sender's PIN code |
+| receiver_name | VARCHAR(100) | Receiver's name |
+| receiver_mobile | VARCHAR(20) | Receiver's phone |
+| receiver_address | TEXT | Receiver's full address |
+| receiver_pincode | VARCHAR(10) | Receiver's PIN code |
+| origin_address | TEXT | Origin city/location |
+| destination_address | TEXT | Destination city/location |
+| status | VARCHAR(50) | pending, in_transit, delivered, failed |
+| price | DECIMAL(10,2) | Shipment cost |
+| weight | DECIMAL(10,2) | Package weight in KG |
+| estimated_delivery | TIMESTAMPTZ | Expected delivery date |
+| created_at | TIMESTAMPTZ | Booking timestamp |
+| updated_at | TIMESTAMPTZ | Last status update |
+
+### Indexes
+
+- `idx_users_email` - Fast email lookups (login)
+- `idx_users_role` - Role-based queries
+- `idx_users_status` - Active user filtering
+- `idx_password_resets_user` - User's reset tokens
+- `idx_password_resets_token` - Token validation
+- `idx_shipments_tracking` - Fast tracking ID lookups
+- `idx_shipments_status` - Status-based filtering
+
+---
+
+## Section 6: Storage Strategy for Photos
+
+### Overview
+
+MoveX stores shipment photos using Supabase Storage with tracking ID-based organization.
+
+### Storage Structure
+
+```
+shipment-photos/                    # Bucket (private)
+├── MX29801/                       # Tracking ID folder
+│   ├── 1703251200000_pickup.jpg   # Timestamp_type.jpg
+│   ├── 1703252800000_delivery.jpg
+│   └── 1703252850000_signature.jpg
+├── MX29802/
+│   └── 1703253600000_pickup.jpg
+└── ...
+```
+
+### File Naming Convention
+
+```
+{TRACKING_ID}/{TIMESTAMP}_{TYPE}.{EXTENSION}
+
+Examples:
+MX29801/1703251200000_pickup.jpg
+MX29801/1703252800000_delivery.jpg
+MX29801/1703252850000_damage.jpg
+```
+
+| Component | Description |
+|-----------|-------------|
+| TRACKING_ID | Shipment tracking ID (e.g., MX29801) |
+| TIMESTAMP | Unix timestamp in milliseconds |
+| TYPE | Photo type: pickup, delivery, signature, damage, pod |
+| EXTENSION | File extension (jpg, png, webp) |
+
+### Access Control
+
+1. **Bucket is PRIVATE** - No public access
+2. **Backend generates signed URLs** - Time-limited access (1 hour default)
+3. **URLs are per-photo** - Each photo requires specific permission
+4. **Database stores paths, not URLs** - URL generated on demand
+
+### Database Photo Reference
+
+Store photo references in a shipment_photos table:
+
+```sql
+CREATE TABLE IF NOT EXISTS shipment_photos (
+    id BIGSERIAL PRIMARY KEY,
+    tracking_id VARCHAR(50) NOT NULL,
+    photo_type VARCHAR(50) NOT NULL,
+    storage_path TEXT NOT NULL,
+    uploaded_by BIGINT REFERENCES users(id),
+    uploaded_at TIMESTAMPTZ DEFAULT NOW(),
+    file_size INTEGER,
+    mime_type VARCHAR(100)
+);
+
+CREATE INDEX idx_shipment_photos_tracking ON shipment_photos(tracking_id);
+```
+
+### Photo Upload Flow
+
+1. Frontend requests upload permission from backend
+2. Backend validates user session and permissions
+3. Backend generates signed upload URL
+4. Frontend uploads directly to Supabase Storage
+5. Backend records photo metadata in database
+6. For viewing: backend generates signed download URL
+
+### Implementation Notes
+
+- **Never store base64 images in database** - Use storage paths only
+- **Always validate file types** - Accept only image/* MIME types
+- **Limit file size** - 5MB max recommended
+- **Generate thumbnails** - Consider edge function for optimization
+
+---
+
+---
+
+## Section 7: Deployment Notes
+
+### Recommended Platforms
+MoveX is a standard Node.js application, making it compatible with almost any cloud provider.
+
+#### Option 1: Railway (Preferred)
+*   **Why:** Railway auto-detects `npm start`, handles SSL automatically, and provides a built-in PostgreSQL database.
+*   **Config:** simply set the Environment Variables in the web dashboard.
+
+#### Option 2: VPS (DigitalOcean/AWS)
+*   **Why:** Total control and lower cost at scale.
+*   **Requirements:**
+    *   **Process Manager:** Use `pm2` to keep the app running (`pm2 start src/app.js`).
+    *   **Reverse Proxy:** Use Nginx to handle SSL termination and forward traffic to port 4000.
+    *   **Firewall:** Allow ports 80, 443, and 22 only. Block port 4000 externally.
+
+### Pre-Flight Checklist
+Before flipping the switch to "Live":
+1.  [ ] **HTTPS Enforcement:** Ensure `NODE_ENV` is set to `production`. This forces the server to reject HTTP connections (HSTS).
+2.  [ ] **Secret Strength:** Verify `SESSION_SECRET` is at least 32 characters long.
+3.  [ ] **Database SSL:** Ensure `DATABASE_URL` ends with `?sslmode=require`.
+4.  [ ] **CORS Lockdown:** Verify `FRONTEND_URL` matches your production domain exactly (no trailing slash mismatches).
+
+---
+
+## Section 8: Safe Change Protocol (SOP)
+
+When modifying the system, follow this strict protocol to prevent downtime.
+
+### The "Do No Harm" Rules
+1.  **Backward Compatibility:** Never rename a database column. Create a new one, migrate data, then deprecate the old one.
+2.  **Feature Flags:** When adding a risky feature (like a new payment gateway), wrap it in an `if (process.env.ENABLE_NEW_PAYMENT)` block.
+3.  **Local Mirror:** Always test migration scripts on a local backup of the production DB before running them in the cloud.
+
+### Emergency Rollback Procedure
+If a deployment fails:
+1.  **Code:** Revert the Git commit (`git revert HEAD`).
+2.  **Database:** If you ran a destructive migration (like `DROP TABLE`), use Supabase Point-In-Time Recovery (PITR) immediately.
+3.  **Session Purge:** If the issue is authentication-related, run `TRUNCATE sessions;` to force a global logout.
+
+---
+
+## Appendix A: Useful Commands
+
+```bash
+# Generate a cryptographically secure secret (Use this for SESSION_SECRET)
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+# Verify file integrity (Check if app.js has been tampered with)
+# On Windows PowerShell:
+Get-FileHash backend/src/app.js
+```
+
+---
+
+## Appendix B: Troubleshooting Decision Tree
+
+### 1. "Connection Refused" (Database)
+*   **Check:** Is the Supabase project paused? (Free tier pauses after inactivity).
+*   **Check:** Is the IP blocked? (Check Supabase Network Restrictions).
+*   **Action:** Log in to the Supabase dashboard to wake the instance.
+
+### 2. "CSRF Mismatch" / "Forbidden" (403)
+*   **Context:** usually happens after a deployment.
+*   **Check:** Did `SESSION_SECRET` change? If so, old cookies are invalid.
+*   **Action:** User must clear cookies and log in again.
+
+### 3. "White Screen" on Dashboard
+*   **Context:** The HTML loads, but is blank.
+*   **Check:** Open DevTools Console. Do you see CSP errors? ("Refused to load script...").
+*   **Action:** You may be using a CDN not whitelisted in `helmet` config. Add the domain to `contentSecurityPolicy` in `app.js`.
 
 ---
 
 <div align="center">
-  <p><strong>MoveX Enterprise Operations Manual</strong></p>
-  <p>Property of MoveX Logistics. Do not distribute publicly.</p>
+  <p><strong>MoveX Operations Manual</strong></p>
+  <p>Ensure this document is reviewed before every major release.</p>
 </div>
