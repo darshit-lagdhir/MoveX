@@ -33,8 +33,10 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:4000',
   'http://127.0.0.1:3000',
-  process.env.FRONTEND_URL // Production URL from .env
-].filter(Boolean); // Remove undefined/null entries
+  'http://127.0.0.1:4000',
+  'http://127.0.0.1:3000',
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : [])
+].map(origin => origin.trim()).filter(Boolean);
 
 app.use(cors({
   origin: function (origin, callback) {

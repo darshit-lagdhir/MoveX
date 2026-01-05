@@ -3,10 +3,10 @@
 (function () {
   'use strict';
 
-  // Auto-detect: localhost for dev, Koyeb for production
-  const API_BASE = window.location.hostname === 'localhost'
-    ? ''
-    : 'https://presidential-fly-movex-237428a4.koyeb.app';
+  // Auto-detect: localhost/127.0.0.1 for dev, Koyeb for production
+  const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  const API_BASE = isLocal ? 'http://localhost:4000' : 'https://presidential-fly-movex-237428a4.koyeb.app';
+  if (isLocal) console.log('🔧 Running in Development Mode');
 
   let isProcessing = false;
 
