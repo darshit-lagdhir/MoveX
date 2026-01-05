@@ -351,7 +351,7 @@ window.MoveXAdmin = (function () {
             statusIcon.style.display = 'block';
             try {
                 // Encode to handle spaces in area names
-                const res = await fetch(`/api/dashboard/public/check-service/${encodeURIComponent(query)}`);
+                const res = await fetch(`${API_BASE}/api/dashboard/public/check-service/${encodeURIComponent(query)}`);
                 const data = await res.json();
 
                 if (data.success && data.serviceable) {
@@ -435,7 +435,15 @@ window.MoveXAdmin = (function () {
 
             const fetchUsers = async () => {
                 try {
-                    const res = await fetch('/api/dashboard/admin/users');
+                    const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                    const token = session.data?.token;
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                    const res = await fetch(`${API_BASE}/api/dashboard/admin/users`, {
+                        credentials: 'include',
+                        headers: headers
+                    });
                     const data = await res.json();
                     if (data.success) {
                         MOCK_DATA.users = data.users; // Cache for basic filtering
@@ -488,9 +496,15 @@ window.MoveXAdmin = (function () {
                                 if (password.length < 8) return showToast('Password must be at least 8 chars', 'error');
 
                                 try {
-                                    const res = await fetch('/api/dashboard/admin/users/create', {
+                                    const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                                    const token = session.data?.token;
+                                    const headers = { 'Content-Type': 'application/json' };
+                                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                                    const res = await fetch(`${API_BASE}/api/dashboard/admin/users/create`, {
                                         method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
+                                        headers: headers,
+                                        credentials: 'include',
                                         body: JSON.stringify({ full_name, username, password, role, phone })
                                     });
                                     const data = await res.json();
@@ -542,7 +556,15 @@ window.MoveXAdmin = (function () {
 
             const fetchStats = async () => {
                 try {
-                    const res = await fetch('/api/dashboard/admin/franchises/stats');
+                    const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                    const token = session.data?.token;
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                    const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises/stats`, {
+                        credentials: 'include',
+                        headers: headers
+                    });
                     const data = await res.json();
                     if (data.success) {
                         const { total, activePincodes, pending } = data.stats;
@@ -563,7 +585,15 @@ window.MoveXAdmin = (function () {
 
             const fetchFranchises = async () => {
                 try {
-                    const res = await fetch('/api/dashboard/admin/franchises');
+                    const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                    const token = session.data?.token;
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                    const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises`, {
+                        credentials: 'include',
+                        headers: headers
+                    });
                     const data = await res.json();
                     if (data.success) {
                         MOCK_DATA.franchises = data.franchises;
@@ -651,9 +681,15 @@ window.MoveXAdmin = (function () {
                                 }
 
                                 try {
-                                    const res = await fetch('/api/dashboard/admin/franchises/create', {
+                                    const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                                    const token = session.data?.token;
+                                    const headers = { 'Content-Type': 'application/json' };
+                                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                                    const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises/create`, {
                                         method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
+                                        headers: headers,
+                                        credentials: 'include',
                                         body: JSON.stringify({ name, full_address, non_serviceable_areas, pincodes, owner_name, owner_username, owner_password, owner_phone })
                                     });
                                     const data = await res.json();
@@ -844,7 +880,15 @@ window.MoveXAdmin = (function () {
             if (!tBody) return;
 
             try {
-                const res = await fetch('/api/dashboard/admin/bookings');
+                const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                const token = session.data?.token;
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                const res = await fetch(`${API_BASE}/api/dashboard/admin/bookings`, {
+                    credentials: 'include',
+                    headers: headers
+                });
                 const data = await res.json();
 
                 if (!data.success) throw new Error(data.error);
