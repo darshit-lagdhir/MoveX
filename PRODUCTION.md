@@ -86,15 +86,16 @@ This document provides a complete guide for running MoveX in a production enviro
 │  └─────────────────────────────────────────────────────┘    │
 │                              │                               │
 │  ┌───────────────────────────────────────────────────────┐  │
-│  │                    MIDDLEWARE                          │  │
-│  │  CORS | Sessions | Security Headers | Rate Limiting   │  │
-│  │  Cookie Parser | Static File Protection | CSRF        │  │
+│  │                   MIDDLEWARE (in src/)                │  │
+│  │  src/sessionMiddleware.js (Session & Auth)            │  │
+│  │  src/app.js (Inline Security & CORS)                  │  │
 │  └───────────────────────────────────────────────────────┘  │
 │                              │                               │
 │  ┌───────────────────────────────────────────────────────┐  │
 │  │                      ROUTES                            │  │
-│  │  /api/auth/* | /api/dashboard/* | /api/mfa/*          │  │
-│  │  /api/me | /api/organization/*                        │  │
+│  │  src/routes/auth.routes.js                            │  │
+│  │  backend/routes/dashboard.js                          │  │
+│  │  backend/routes/mfa.js                                │  │
 │  └───────────────────────────────────────────────────────┘  │
 │                              │                               │
 │  ┌───────────────────────────────────────────────────────┐  │
@@ -109,26 +110,20 @@ This document provides a complete guide for running MoveX in a production enviro
 │                       DATABASE                               │
 │  ┌─────────────────────────────────────────────────────┐    │
 │  │              PostgreSQL (Supabase)                   │    │
-│  │  Tables: users, organizations, password_resets       │    │
-│  └─────────────────────────────────────────────────────┘    │
-│                                                              │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │              Supabase Storage                        │    │
-│  │  Buckets: shipment-photos (Private)                  │    │
+│  │  Tables: users, organizations, shipments             │    │
 │  └─────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────┘
-```
 
 ### Key Files
 
 | File | Purpose |
 |------|---------|
-| `backend/src/app.js` | Main Express server entry point |
+| `backend/src/app.js` | **Active** Express server entry point |
 | `backend/src/config/db.js` | Database connection configuration |
 | `backend/src/session.js` | Session store (DB-backed PostgreSQL) |
-| `backend/src/controllers/auth.controller.js` | Authentication logic |
-| `backend/routes/*.js` | API route handlers |
-| `backend/middleware/*.js` | Security & validation middleware |
+| `backend/src/sessionMiddleware.js` | Authentication & Session logic |
+| `backend/src/routes/*.js` | Core routes (Auth, Shipments) |
+| `backend/routes/dashboard.js` | Dashboard API logic |
 | `.env` | Environment configuration (local only) |
 | `.env.example` | Template for environment variables |
 
