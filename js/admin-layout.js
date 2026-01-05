@@ -4,7 +4,7 @@
  */
 
 // LOADING FIX: Prevent UI flash and "settling" animations during initial load
-document.documentElement.classList.add('loading');
+// document.documentElement.classList.add('loading');
 
 (function () {
     'use strict';

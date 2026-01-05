@@ -1,5 +1,5 @@
-// LOADING FIX: Hide UI immediately before first paint
-document.documentElement.classList.add('loading');
+// LOADING FIX: REMOVED for Instant Paint
+// document.documentElement.classList.add('loading');
 
 (function () {
     'use strict';
@@ -172,7 +172,7 @@ document.documentElement.classList.add('loading');
         document.body.classList.add('authenticated');
 
         // SECURITY: Only show content after auth is verified
-        document.documentElement.classList.remove('loading');
+        // document.documentElement.classList.remove('loading');
 
         document.dispatchEvent(new CustomEvent('movex:authenticated', { detail: { user, organization: result.organization } }));
     }
