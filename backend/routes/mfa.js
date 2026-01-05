@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const db = require('../db');
-const { protect } = require('../middleware/authMiddleware');
+const db = require('../src/config/db');
+const { requireSession } = require('../src/sessionMiddleware');
 const sessionStore = require('../src/session');
 
 const pendingMfaChallenges = new Map();
@@ -104,7 +104,7 @@ router.post('/verify', async (req, res) => {
     }
 });
 
-router.get('/status', protect, async (req, res) => {
+router.get('/status', requireSession, async (req, res) => {
     try {
         res.json({
             enabled: false,
