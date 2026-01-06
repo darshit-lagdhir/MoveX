@@ -246,6 +246,7 @@ body {
    ANIMATED BACKGROUND
    ═══════════════════════════════════════════════════════════ */
 
+/* OPTIMIZED BACKGROUND FOR LOW-END DEVICES */
 .background {
     position: fixed;
     top: 0;
@@ -254,63 +255,60 @@ body {
     height: 100%;
     z-index: 0;
     overflow: hidden;
+    background: var(--app-background);
+    transform: translate3d(0, 0, 0);
+    /* Force GPU */
 }
 
 .gradient-overlay {
     position: absolute;
     inset: 0;
-    background: var(--gradient-bg);
-    opacity: 0.8;
+    background: radial-gradient(circle at top right, var(--brand-primary-soft), transparent),
+        radial-gradient(circle at bottom left, var(--brand-primary-soft), transparent);
+    opacity: 0.6;
+    z-index: 1;
 }
 
 .mesh-gradient {
     position: absolute;
     inset: 0;
-    background: radial-gradient(at 40% 20%, var(--brand-primary-glow) 0%, transparent 50%),
-        radial-gradient(at 80% 0%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
-        radial-gradient(at 0% 50%, rgba(124, 58, 237, 0.15) 0%, transparent 50%);
-    animation: meshMove 20s ease-in-out infinite;
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(124, 58, 237, 0.05) 50%, rgba(236, 72, 153, 0.05) 100%);
+    z-index: 2;
 }
 
+/* REPLACING BLOCKS WITH HARDWARE ACCELERATED GRADIENTS (NO BLUR) */
 .blob {
     position: absolute;
     border-radius: 50%;
-    filter: blur(100px);
-    opacity: 0.3;
-    mix-blend-mode: multiply;
-    animation: float 25s ease-in-out infinite;
-}
-
-[data-theme="dark"] .blob {
-    mix-blend-mode: screen;
-    opacity: 0.2;
+    filter: none;
+    /* REMOVED BLUR */
+    opacity: 0.15;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+    z-index: 0;
 }
 
 .blob-1 {
-    width: 600px;
-    height: 600px;
-    background: linear-gradient(135deg, #4F46E5, #7C3AED);
-    top: -15%;
-    left: -15%;
-    animation-delay: 0s;
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, var(--brand-primary) 0%, transparent 70%);
+    top: -200px;
+    left: -200px;
+    animation: float 30s ease-in-out infinite;
 }
 
 .blob-2 {
-    width: 500px;
-    height: 500px;
-    background: linear-gradient(135deg, #EC4899, #F43F5E);
-    bottom: -15%;
-    right: -15%;
-    animation-delay: -10s;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, #EC4899 0%, transparent 70%);
+    bottom: -150px;
+    right: -150px;
+    animation: float 25s ease-in-out infinite reverse;
 }
 
 .blob-3 {
-    width: 550px;
-    height: 550px;
-    background: linear-gradient(135deg, #06B6D4, #4F46E5);
-    top: 40%;
-    left: 40%;
-    animation-delay: -20s;
+    display: none;
+    /* Remove 3rd blob to save memory */
 }
 
 /* ═══════════════════════════════════════════════════════════
