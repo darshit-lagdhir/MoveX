@@ -525,22 +525,28 @@
 }
 
 /* ═══════════════════════════════════════════════════════════
-   CARD FLIP ANIMATION
+   CARD FLIP ANIMATIONS (ZERO-FLICKER 2D)
    ═══════════════════════════════════════════════════════════ */
 
-/* 2D SNAPPY TRANSITIONS (0% Perspective Cost) */
-.card-flipper {
+/* SHARED TRANSITION RULES */
+.card-flipper,
+.vertical-flipper {
     position: relative;
     width: 100%;
 }
 
-.card-face {
+.card-face,
+.vertical-face {
     width: 100%;
     transition: opacity 0.4s ease, transform 0.4s ease;
+    backface-visibility: hidden;
 }
 
+/* HORIZONTAL FLIP (Register) */
 .card-front {
     position: relative;
+    z-index: 2;
+    opacity: 1;
 }
 
 .card-back {
@@ -549,53 +555,60 @@
     left: 0;
     width: 100%;
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateX(15px);
     pointer-events: none;
+    z-index: 1;
 }
 
-/* FLIPPED STATE (2D Slide) */
 .card-flipper.flipped .card-front {
     opacity: 0;
-    transform: translateX(-20px);
+    transform: translateX(-15px);
     pointer-events: none;
+    z-index: 1;
 }
 
 .card-flipper.flipped .card-back {
     opacity: 1;
     transform: translateX(0);
     pointer-events: auto;
+    z-index: 2;
 }
 
-.card-front {
+/* VERTICAL FLIP (Forgot Password) */
+.vertical-front {
     position: relative;
-    height: 100%;
-    /* FIX: Explicitly inherit height */
-    transform-style: preserve-3d;
-    /* FIX: Enable nested 3D context */
-    transition: visibility 0s linear 0s;
-    /* Show immediately by default */
+    z-index: 2;
+    opacity: 1;
 }
 
-.card-back {
+.vertical-back {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    transform: rotateY(180deg);
-    transition: visibility 0s linear 0.2s;
-    /* Hidden by default (via generic rule below) - wait 90deg */
+    opacity: 0;
+    transform: translateY(15px);
+    pointer-events: none;
+    z-index: 1;
 }
 
-/* Vertical Flip Visibility - SIMPLIFIED 2D */
-.card-flipper.flipped .card-front,
-.card-flipper:not(.flipped) .card-back {
-    visibility: hidden;
-    position: absolute;
+.vertical-flipper.flipped-vertical .vertical-front {
+    opacity: 0;
+    transform: translateY(-15px);
+    pointer-events: none;
+    z-index: 1;
 }
 
-/* Ensure login card maintains its styling */
-/* Ensure login card maintains its styling */
-.card-face .login-card {
+.vertical-flipper.flipped-vertical .vertical-back {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    z-index: 2;
+}
+
+/* Cleanup for nested cards */
+.card-face .login-card,
+.vertical-face .login-card {
     margin: 0;
 }
 
