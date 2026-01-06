@@ -24,23 +24,6 @@ window.MoveXAdmin = (function () {
         auditLogs: []
     };
 
-    const INDIAN_CITIES = [
-        "Mumbai, MH", "Delhi, NCR", "Bangalore, KA", "Hyderabad, TS", "Ahmedabad, GJ", "Chennai, TN", "Kolkata, WB", "Surat, GJ",
-        "Pune, MH", "Jaipur, RJ", "Lucknow, UP", "Kanpur, UP", "Nagpur, MH", "Indore, MP", "Thane, MH", "Bhopal, MP",
-        "Visakhapatnam, AP", "Pimpri-Chinchwad, MH", "Patna, BR", "Vadodara, GJ", "Ghaziabad, UP", "Ludhiana, PB", "Agra, UP",
-        "Nashik, MH", "Faridabad, HR", "Meerut, UP", "Rajkot, GJ", "Kalyan-Dombivli, MH", "Vasai-Virar, MH", "Varanasi, UP",
-        "Srinagar, JK", "Aurangabad, MH", "Dhanbad, JH", "Amritsar, PB", "Navi Mumbai, MH", "Allahabad, UP", "Howrah, WB",
-        "Ranchi, JH", "Gwalior, MP", "Jabalpur, MP", "Coimbatore, TN", "Vijayawada, AP", "Jodhpur, RJ", "Madurai, TN",
-        "Raipur, CT", "Chandigarh, CH", "Guwahati, AS", "Solapur, MH", "Hubli-Dharwad, KA", "Mysore, KA", "Tiruchirappalli, TN",
-        "Bareilly, UP", "Aligarh, UP", "Tiruppur, TN", "Gurgaon, HR", "Moradabad, UP", "Jalandhar, PB", "Bhubaneswar, OR",
-        "Salem, TN", "Warangal, TS", "Mira-Bhayandar, MH", "Thiruvananthapuram, KL", "Bhiwandi, MH", "Saharanpur, UP",
-        "Guntur, AP", "Amravati, MH", "Bikaner, RJ", "Noida, UP", "Jamshedpur, JH", "Bhilai, CT", "Cuttack, OR", "Firozabad, UP",
-        "Kochi, KL", "Nellore, AP", "Bhavnagar, GJ", "Dehradun, UK", "Durgapur, WB", "Asansol, WB", "Rourkela, OR", "Nanded, MH",
-        "Kolhapur, MH", "Ajmer, RJ", "Akola, MH", "Gulbarga, KA", "Jamnagar, GJ", "Ujjain, MP", "Loni, UP", "Siliguri, WB",
-        "Jhansi, UP", "Ulhasnagar, MH", "Jammu, JK", "Sangli-Miraj & Kupwad, MH", "Mangalore, KA", "Erode, TN", "Belgaum, KA",
-        "Ambattur, TN", "Tirunelveli, TN", "Malegaon, MH", "Gaya, BR", "Jalgaon, MH", "Udaipur, RJ", "Maheshtala, WB"
-    ];
-
     // --- UI UTILITIES ---
 
     function animateValue(obj, start, end, duration, prefix = '', suffix = '') {
@@ -167,37 +150,46 @@ window.MoveXAdmin = (function () {
         `;
         wrapper.appendChild(dropdown);
 
-        const renderCities = (filter = '') => {
-            const filtered = INDIAN_CITIES.filter(c => c.toLowerCase().includes(filter.toLowerCase()));
-            if (filtered.length === 0) {
-                dropdown.innerHTML = '<div style="padding: 0.75rem; color: var(--text-tertiary); font-size: 0.85rem;">No cities found</div>';
-            } else {
-                dropdown.innerHTML = filtered.map(city => `
-                    <div class="city-option" data-value="${city}" style="padding: 0.75rem 1rem; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;" 
-                         onmouseover="this.style.background='var(--brand-primary-soft)'; this.style.paddingLeft='1.25rem';" 
-                         onmouseout="this.style.background='none'; this.style.paddingLeft='1rem';">
-                        <span>${city}</span>
-                        <span style="font-size: 0.7rem; color: var(--brand-primary); font-weight: 700; text-transform: uppercase;">Select</span>
-                    </div>
-                `).join('');
+        let debounceTimer;
 
-                dropdown.querySelectorAll('.city-option').forEach(opt => {
-                    opt.addEventListener('mousedown', (e) => {
-                        input.value = opt.getAttribute('data-value');
-                        dropdown.style.display = 'none';
+        const fetchAndRenderCities = async (filter = '') => {
+            try {
+                // If filter is empty, fetch default top cities or all
+                const url = `${API_BASE}/api/dashboard/public/serviceable-cities${filter ? `?search=${encodeURIComponent(filter)}` : ''}`;
+
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (!data.success || data.cities.length === 0) {
+                    dropdown.innerHTML = '<div style="padding: 0.75rem; color: var(--text-tertiary); font-size: 0.85rem;">No cities found</div>';
+                } else {
+                    dropdown.innerHTML = data.cities.map(city => `
+                        <div class="city-option" data-value="${city}" style="padding: 0.75rem 1rem; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;" 
+                             onmouseover="this.style.background='var(--brand-primary-soft)'; this.style.paddingLeft='1.25rem';" 
+                             onmouseout="this.style.background='none'; this.style.paddingLeft='1rem';">
+                            <span>${city}</span>
+                            <span style="font-size: 0.7rem; color: var(--brand-primary); font-weight: 700; text-transform: uppercase;">Select</span>
+                        </div>
+                    `).join('');
+
+                    dropdown.querySelectorAll('.city-option').forEach(opt => {
+                        opt.addEventListener('mousedown', (e) => {
+                            input.value = opt.getAttribute('data-value');
+                            dropdown.style.display = 'none';
+                        });
                     });
-                });
+                }
+                dropdown.style.display = 'block';
+            } catch (err) {
+                console.error('City fetch error', err);
             }
         };
 
-        input.addEventListener('focus', () => {
-            renderCities(input.value);
-            dropdown.style.display = 'block';
-        });
+        input.addEventListener('focus', () => fetchAndRenderCities(input.value));
 
         input.addEventListener('input', () => {
-            renderCities(input.value);
-            dropdown.style.display = 'block';
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => fetchAndRenderCities(input.value), 300);
         });
 
         input.addEventListener('blur', () => {

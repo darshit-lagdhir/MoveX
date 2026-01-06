@@ -46,8 +46,15 @@ This document provides a complete guide for running MoveX in a production enviro
 ### ✅ Operational Requirements
 - Clear logging for debugging (without sensitive data)
 - Graceful error handling
-- Connection pooling and reconnection logic
-- Rate limiting on sensitive endpoints
+- ✅ **HttpOnly** secure session cookies
+- ✅ **DB-backed sessions** (PostgreSQL, 1-hour expiry)
+- ✅ **Rate limiting** on authentication endpoints
+- ✅ **CORS** with whitelist configuration
+- ✅ **CSP** Content Security Policy headers
+- ✅ **Input validation** on all endpoints
+- ✅ **SQL injection** prevention (parameterized queries)
+- ✅ **XSS** protection headers
+- ✅ **Enterprise-Grade Loading State** (Prevents UI flicker/jank)
 
 ### ❌ What Production-Ready Does NOT Mean
 - The application is feature-complete
@@ -72,7 +79,8 @@ This document provides a complete guide for running MoveX in a production enviro
 │  ┌───────────────────────────────────────────────────────┐  │
 │  │                    js/*.js                             │  │
 │  │  auth-api.js | admin-layout.js | admin-core.js         │  │
-│  │  dashboard-guard.js | animations.js                    │  │
+│  │  dashboard-guard.js                                    │  │
+│  │                                                        │  │
 │  └───────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
                               │
@@ -95,7 +103,7 @@ This document provides a complete guide for running MoveX in a production enviro
 │  │                      ROUTES                            │  │
 │  │  src/routes/auth.routes.js                            │  │
 │  │  backend/routes/dashboard.js                          │  │
-│  │  backend/routes/mfa.js                                │  │
+│  │  backend/routes/profile.js                            │  │
 │  └───────────────────────────────────────────────────────┘  │
 │                              │                               │
 │  ┌───────────────────────────────────────────────────────┐  │
@@ -110,7 +118,7 @@ This document provides a complete guide for running MoveX in a production enviro
 │                       DATABASE                               │
 │  ┌─────────────────────────────────────────────────────┐    │
 │  │              PostgreSQL (Supabase)                   │    │
-│  │  Tables: users, organizations, shipments             │    │
+│| Table: users, organizations, shipments, serviceable_cities |
 │  └─────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────┘
 
@@ -228,7 +236,7 @@ DB_SSL=true
 ```sql
 -- Create enums (if not exists)
 DO $$ BEGIN
-    CREATE TYPE user_role AS ENUM ('admin', 'franchisee', 'staff', 'user', 'customer');
+    CREATE TYPE user_role AS ENUM ('admin', 'franchisee', 'staff', 'user');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
@@ -242,28 +250,28 @@ END $$;
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
+    username VARCHAR(255) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
-    full_name VARCHAR(255),
+    full_name VARCHAR(100),
     phone VARCHAR(50),
     role user_role NOT NULL DEFAULT 'user',
     status user_status NOT NULL DEFAULT 'active',
-    mfa_enabled BOOLEAN DEFAULT false,
-    oauth_provider VARCHAR(50),
     organization_id BIGINT,
-    security_answers JSONB,
+    security_answers JSONB DEFAULT '{}',
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    last_login_at TIMESTAMPTZ
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Organizations table
 CREATE TABLE IF NOT EXISTS organizations (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    type VARCHAR(50),
-    service_area VARCHAR(255),
+    type VARCHAR(50) NOT NULL DEFAULT 'franchise',
+    service_area TEXT,
+    pincodes TEXT,
     status VARCHAR(50) DEFAULT 'active',
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Password reset tokens
@@ -277,7 +285,7 @@ CREATE TABLE IF NOT EXISTS password_resets (
 );
 
 -- Indexes
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_status ON users(status);
 CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets(user_id);
@@ -312,9 +320,9 @@ Run this SQL in Supabase SQL Editor (replace password hash with a real bcrypt ha
 -- You can use: https://bcrypt-generator.com/ or run in Node:
 -- const bcrypt = require('bcrypt'); console.log(bcrypt.hashSync('YourPassword123', 12));
 
-INSERT INTO users (email, password_hash, role, status, full_name)
+INSERT INTO users (username, password_hash, role, status, full_name)
 VALUES (
-    'admin@movex.com',
+    'admin_user',
     '$2b$12$YOUR_GENERATED_BCRYPT_HASH_HERE',
     'admin',
     'active',
@@ -363,7 +371,6 @@ SESSION_MAX_AGE=3600000                # 1 hour in milliseconds
 # ═══════════════════════════════════════════════════════════
 # SECURITY
 # ═══════════════════════════════════════════════════════════
-CSRF_ENABLED=true                      # Enable CSRF protection
 SESSION_SECURE=true                    # Secure cookies (requires HTTPS)
 SESSION_SAME_SITE=Strict               # Cookie same-site policy
 
@@ -419,18 +426,16 @@ Primary user table for authentication and authorization.
 | Column | Type | Description |
 |--------|------|-------------|
 | id | BIGSERIAL | Primary key |
-| email | VARCHAR(255) | Login identifier (unique) |
+| username | VARCHAR(255) | Login identifier (unique) |
 | password_hash | TEXT | bcrypt hashed password |
-| full_name | VARCHAR(255) | Display name |
+| full_name | VARCHAR(100) | Display name |
 | phone | VARCHAR(50) | Contact number |
-| role | user_role | ENUM: admin, franchisee, staff, user, customer |
+| role | user_role | ENUM: admin, franchisee, staff, user |
 | status | user_status | ENUM: active, disabled, suspended |
-| mfa_enabled | BOOLEAN | MFA status |
-| oauth_provider | VARCHAR(50) | OAuth provider if applicable |
 | organization_id | BIGINT | FK to organizations |
 | security_answers | JSONB | Password recovery questions |
 | created_at | TIMESTAMPTZ | Account creation time |
-| last_login_at | TIMESTAMPTZ | Last successful login |
+| updated_at | TIMESTAMPTZ | Last update time |
 
 #### `organizations`
 Franchise/organization data.
@@ -439,8 +444,9 @@ Franchise/organization data.
 |--------|------|-------------|
 | id | BIGSERIAL | Primary key |
 | name | VARCHAR(255) | Organization name |
-| type | VARCHAR(50) | Organization type |
-| service_area | VARCHAR(255) | Service coverage area |
+| type | VARCHAR(50) | Organization type (admin, franchise) |
+| service_area | TEXT | Service coverage area |
+| pincodes | TEXT | Covered pincodes |
 | status | VARCHAR(50) | Active/inactive status |
 | created_at | TIMESTAMPTZ | Creation timestamp |
 
@@ -461,10 +467,10 @@ Database-backed session storage for persistent logins.
 
 | Column | Type | Description |
 |--------|------|-------------|
-| id | VARCHAR(255) | Primary key (session token) |
-| user_id | INTEGER | FK to users |
-| role | VARCHAR(255) | User role at session creation |
-| email | VARCHAR(255) | User email |
+| id | BIGSERIAL | Primary key |
+| token | VARCHAR(255) | Session Token (unique) |
+| username | VARCHAR(100) | User identifier |
+| role | VARCHAR(50) | User role at session creation |
 | created_at | BIGINT | Session creation timestamp (ms) |
 | expires_at | BIGINT | Session expiry timestamp (ms) |
 | last_accessed_at | BIGINT | Last activity timestamp (ms) |
@@ -493,15 +499,21 @@ Shipment/parcel tracking data.
 | created_at | TIMESTAMPTZ | Booking timestamp |
 | updated_at | TIMESTAMPTZ | Last status update |
 
+#### `serviceable_cities`
+List of cities where service is available.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | SERIAL | Primary key |
+| name | VARCHAR(255) | City Name (e.g. "Mumbai, MH") |
+
 ### Indexes
 
-- `idx_users_email` - Fast email lookups (login)
+- `idx_users_username` - Fast login lookups
 - `idx_users_role` - Role-based queries
 - `idx_users_status` - Active user filtering
-- `idx_password_resets_user` - User's reset tokens
-- `idx_password_resets_token` - Token validation
 - `idx_shipments_tracking` - Fast tracking ID lookups
-- `idx_shipments_status` - Status-based filtering
+- `idx_sessions_token` - Session token lookups
 
 ---
 
@@ -621,8 +633,8 @@ Strict-Transport-Security: [production]   // HTTPS enforcement
 
 ### Input Validation
 
-- Email format validation
-- Password complexity requirements (8+ chars, letter + number)
+- Username format validation
+- Password complexity requirements (8+ chars)
 - Payload size limits (10KB default)
 - JSON content-type enforcement
 - Role whitelisting
@@ -646,10 +658,10 @@ Credentials: true
 All database queries use parameterized queries:
 ```javascript
 // SAFE
-await db.query('SELECT * FROM users WHERE email = $1', [email]);
+await db.query('SELECT * FROM users WHERE username = $1', [username]);
 
 // NEVER DO THIS
-await db.query(`SELECT * FROM users WHERE email = '${email}'`);
+await db.query(`SELECT * FROM users WHERE username = '${username}'`);
 ```
 
 ### Error Handling

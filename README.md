@@ -65,7 +65,6 @@ movex/
 │   ├── dashboard.html      # Main admin dashboard
 │   └── print_label.html    # Shipment label printing
 ├── backend/               
-│   ├── db/                # Database connection (backward compat)
 │   ├── middleware/        # Express middleware (auth, rate-limit, etc.)
 │   ├── routes/            # API route handlers
 │   ├── src/
@@ -74,7 +73,7 @@ movex/
 │   │   ├── controllers/   # Business logic
 │   │   ├── routes/        # Additional routes
 │   │   └── session.js     # Session management (DB-backed)
-│   ├── sql/               # Database migrations
+│   ├── sql/               # Consolidated Database migrations (001-003)
 │   └── utils/             # Helper utilities
 ├── dashboards/            # Role-based dashboard pages
 ├── js/                    # Frontend JavaScript
@@ -89,7 +88,6 @@ movex/
     *   **Admin**: High-security zone. Contains User Management and internal configs.
     *   **Dashboards**: Optimized views for Franchisees and Staff (mobile-friendly).
 *   **`/backend/src/session.js`**: The heart of our "Sliding Window" session system. It auto-cleans expired sessions every 15 minutes.
-*   **`/js/security/`**: Contains active defense scripts like `anti-tamper.js` and `device-binding.js`.
 
 ---
 
@@ -101,7 +99,6 @@ movex/
 | **Franchisee** | Franchise management | `/dashboards/franchisee.html` |
 | **Staff** | Staff operations | `/dashboards/staff.html` |
 | **User** | Standard user access | `/dashboards/user.html` |
-| **Customer** | Customer portal | `/dashboards/customer.html` |
 
 ---
 
@@ -139,7 +136,7 @@ See `.env.example` for all available options.
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/auth/register` | Create new account |
-| POST | `/api/auth/login` | User login |
+| POST | `/api/auth/login` | User login (via username) |
 | POST | `/api/auth/logout` | User logout |
 | GET | `/api/auth/me` | Current user info |
 
@@ -149,6 +146,7 @@ See `.env.example` for all available options.
 | GET | `/api/dashboard/me` | User dashboard data |
 | GET | `/api/dashboard/admin` | Admin stats |
 | GET | `/api/dashboard/admin/stats` | System statistics |
+| GET | `/api/dashboard/public/serviceable-cities` | Public list of serviceable cities |
 
 ### Shipments (Admin)
 | Method | Endpoint | Description |
@@ -174,7 +172,6 @@ See `.env.example` for all available options.
 - ✅ **Rate limiting** on authentication endpoints
 - ✅ **CORS** with whitelist configuration
 - ✅ **CSP** Content Security Policy headers
-- ✅ **CSRF** token protection
 - ✅ **Input validation** on all endpoints
 - ✅ **SQL injection** prevention (parameterized queries)
 - ✅ **XSS** protection headers
@@ -194,9 +191,10 @@ See [PRODUCTION.md](./PRODUCTION.md) for complete Supabase setup guide.
 # Create database
 createdb movex_auth
 
-# Run migrations
-psql -d movex_auth -f backend/sql/001_init_users.sql
-psql -d movex_auth -f backend/sql/002_shipment_photos.sql
+# Run migrations (Sequentially)
+psql -d movex_auth -f backend/sql/001_schema.sql
+psql -d movex_auth -f backend/sql/002_security.sql
+psql -d movex_auth -f backend/sql/003_seeds.sql
 ```
 
 ---
