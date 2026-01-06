@@ -59,6 +59,8 @@ class SessionStore {
             WHERE token = $3
       `, [now, newExpiresAt, token]);
 
+      console.log(`[Sessions] Retrieved valid session for ${record.username} (${token.substring(0, 6)}...)`);
+
       return {
         id: record.id, // Assuming 'id' is an auto-generated primary key
         token: record.token,
@@ -77,7 +79,8 @@ class SessionStore {
   async destroySession(token) {
     if (!token) return;
     try {
-      await db.query('DELETE FROM sessions WHERE token = $1', [token]);
+      const res = await db.query('DELETE FROM sessions WHERE token = $1', [token]);
+      console.log(`[Sessions] Destroyed session ${token.substring(0, 6)}... Rows affected: ${res.rowCount}`);
     } catch (err) {
       console.error("Destroy session failed", err);
     }

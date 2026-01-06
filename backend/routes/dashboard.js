@@ -791,7 +791,9 @@ router.post('/logout', async (req, res) => {
         if (sid) {
             await sessionStore.destroySession(sid);
         }
-        res.clearCookie('movex.sid', { path: '/' });
+        // Use shared helper to ensure attributes (Secure, SameSite) match
+        clearSessionCookie(res);
+
         res.json({ success: true, message: 'Logged out successfully' });
     } catch (err) {
         console.error("Logout Error:", err);
