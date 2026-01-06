@@ -232,10 +232,10 @@
     );
 
     const dashboards = {
-      admin: 'admin/dashboard',
-      franchisee: 'dashboards/franchisee',
-      staff: 'dashboards/staff',
-      user: 'dashboards/user'
+      admin: 'admin/dashboard.html',
+      franchisee: 'dashboards/franchisee.html',
+      staff: 'dashboards/staff.html',
+      user: 'dashboards/user.html'
     };
 
     const target = dashboards[user.role] || 'dashboards/user';
@@ -305,10 +305,10 @@
 
         setTimeout(() => {
           const dashboards = {
-            admin: 'admin/dashboard',
-            franchisee: 'dashboards/franchisee',
-            staff: 'dashboards/staff',
-            user: 'dashboards/user'
+            admin: 'admin/dashboard.html',
+            franchisee: 'dashboards/franchisee.html',
+            staff: 'dashboards/staff.html',
+            user: 'dashboards/user.html'
           };
           const target = dashboards[user.role] || 'dashboards/user';
           window.location.href = target;
