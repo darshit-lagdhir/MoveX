@@ -212,8 +212,8 @@
                                 style="padding: 0.5rem; border: 1px solid var(--border-default); border-radius: var(--radius-sm);">
                                 <option>All Roles</option>
                                 <option>Driver</option>
-                                <option>Warehouse Manager</option>
-                                <option>Support Agent</option>
+                                <option>Warehouse Staff</option>
+                                <option>Delivery Associate</option>
                             </select>
                         </div>
                         <div class="data-table-container" style="border: none; border-radius: 0;">
@@ -228,37 +228,12 @@
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="staffTableBody">
                                     <tr>
-                                        <td>
-                                            <div style="font-weight: 600;">Amit Patel</div>
-                                            <div style="font-size: 0.85rem; color: var(--text-secondary);">ID: MXSTF001
-                                            </div>
-                                        </td>
-                                        <td><span class="status-badge"
-                                                style="background: var(--surface-tertiary); color: var(--text-primary);">Driver</span>
-                                        </td>
-                                        <td>Andheri East, Mumbai</td>
-                                        <td><span class="status-badge status-active">On Duty</span></td>
-                                        <td>+91 98765 00001</td>
-                                        <td><button
-                                                style="border: 1px solid var(--border-default); background: var(--surface-primary); color: var(--text-primary); padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer;">Edit</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div style="font-weight: 600;">Rohit Sharma</div>
-                                            <div style="font-size: 0.85rem; color: var(--text-secondary);">ID: MXSTF002
-                                            </div>
-                                        </td>
-                                        <td><span class="status-badge"
-                                                style="background: var(--surface-tertiary); color: var(--text-primary);">Manager</span>
-                                        </td>
-                                        <td>Bhiwandi Warehouse</td>
-                                        <td><span class="status-badge status-active">Active</span></td>
-                                        <td>+91 98765 00002</td>
-                                        <td><button
-                                                style="border: 1px solid var(--border-default); background: var(--surface-primary); color: var(--text-primary); padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer;">Edit</button>
+                                        <td colspan="6"
+                                            style="text-align:center; padding: 3rem; color: var(--text-tertiary);">
+                                            <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> Loading
+                                            staff roster...
                                         </td>
                                     </tr>
                                 </tbody>

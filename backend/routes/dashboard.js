@@ -6,6 +6,20 @@ const sessionStore = require('../src/session'); // Needed for logout
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+// --- RECOVERY/MIGRATION: Ensure staff columns exist ---
+(async () => {
+    try {
+        await db.query(`
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_role TEXT;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_status TEXT DEFAULT 'Active';
+            UPDATE users SET staff_role = 'Warehouse Staff' WHERE staff_role = 'Warehouse Manager';
+        `);
+        console.log('[Migration] Staff columns verified.');
+    } catch (e) {
+        console.warn('[Migration] Staff columns check failed (might already exist):', e.message);
+    }
+})();
+
 // Dashboard Stats
 router.get('/admin/stats', validateSession, requireRole('admin'), async (req, res) => {
     try {
@@ -664,6 +678,110 @@ router.get('/public/serviceable-cities', async (req, res) => {
     } catch (err) {
         console.error("Fetch Cities Error:", err);
         res.status(500).json({ success: false, error: 'Failed to fetch cities' });
+    }
+});
+
+// --- STAFF MANAGEMENT ---
+
+// Get all staff
+router.get('/admin/staff', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT u.id, u.full_name, u.username, u.staff_role, u.staff_status, u.phone, u.status as user_status, 
+                   o.name as org_name, o.id as org_id
+            FROM users u
+            LEFT JOIN organizations o ON u.organization_id = o.id
+            WHERE u.role = 'staff'
+            ORDER BY u.created_at DESC
+        `);
+
+        res.json({
+            success: true,
+            staff: result.rows.map(s => ({
+                id: s.id,
+                tracking_id: `MXSTF${String(s.id).padStart(3, '0')}`,
+                name: s.full_name,
+                username: s.username,
+                role: s.staff_role || 'Staff Member',
+                org: s.org_name || 'Unassigned Hub',
+                org_id: s.org_id,
+                status: s.staff_status || 'Active',
+                user_status: s.user_status,
+                contact: s.phone || 'No Contact'
+            }))
+        });
+    } catch (err) {
+        console.error("Fetch Staff Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch staff' });
+    }
+});
+
+// Create Staff
+router.post('/admin/staff/create', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        const { full_name, username, password, staff_role, phone, organization_id } = req.body;
+
+        if (!full_name || !username || !password || !staff_role) {
+            return res.status(400).json({ success: false, error: 'Name, Username, Password, and Role are required' });
+        }
+
+        const existing = await db.query('SELECT id FROM users WHERE username = $1', [username]);
+        if (existing.rows.length > 0) {
+            return res.status(400).json({ success: false, error: 'Username already taken' });
+        }
+
+        const hash = await bcrypt.hash(password, 12);
+
+        await db.query(`
+            INSERT INTO users (full_name, username, password_hash, role, staff_role, phone, organization_id, status, staff_status)
+            VALUES ($1, $2, $3, 'staff', $4, $5, $6, 'active', 'Active')
+        `, [full_name, username, hash, staff_role, phone || null, organization_id || null]);
+
+        res.json({ success: true, message: 'Staff member created successfully' });
+    } catch (err) {
+        console.error("Create Staff Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to create staff' });
+    }
+});
+
+// Update Staff
+router.post('/admin/staff/update', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        const { id, full_name, staff_role, phone, organization_id, staff_status } = req.body;
+
+        if (!id) return res.status(400).json({ success: false, error: 'Staff ID is required' });
+
+        await db.query(`
+            UPDATE users 
+            SET full_name = COALESCE($1, full_name), 
+                staff_role = COALESCE($2, staff_role), 
+                phone = COALESCE($3, phone), 
+                organization_id = $4,
+                staff_status = COALESCE($5, staff_status),
+                updated_at = NOW()
+            WHERE id = $6 AND role = 'staff'
+        `, [full_name, staff_role, phone, organization_id || null, staff_status, id]);
+
+        res.json({ success: true, message: 'Staff updated successfully' });
+    } catch (err) {
+        console.error("Update Staff Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to update staff' });
+    }
+});
+
+// Update Staff User Status (Active/Disabled)
+router.post('/admin/staff/status', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        const { id, status } = req.body;
+        if (!id || !['active', 'disabled'].includes(status)) {
+            return res.status(400).json({ success: false, error: 'Invalid parameters' });
+        }
+
+        await db.query("UPDATE users SET status = $1 WHERE id = $2 AND role = 'staff'", [status, id]);
+        res.json({ success: true, message: `Staff account ${status}` });
+    } catch (err) {
+        console.error("Update Staff Status Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to update status' });
     }
 });
 

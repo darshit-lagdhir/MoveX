@@ -212,6 +212,8 @@ CREATE TABLE IF NOT EXISTS users (
     phone VARCHAR(50),
     role user_role NOT NULL DEFAULT 'user',
     status user_status NOT NULL DEFAULT 'active',
+    staff_role VARCHAR(50), 
+    staff_status VARCHAR(50) DEFAULT 'Active',
     organization_id BIGINT,
     security_answers JSONB DEFAULT '{}',
     created_at TIMESTAMPTZ DEFAULT NOW(),

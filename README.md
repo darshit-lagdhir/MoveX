@@ -63,6 +63,8 @@ MoveX uses a **Single-system design built for safety**, made to be an "Iron Fort
 movex/
 ├── admin/                  # Admin dashboard pages
 │   ├── dashboard.html      # Main admin page
+│   ├── staff.html          # Staff & Logistics management
+│   ├── franchises.html     # Branch management
 │   └── print_label.html    # Printing labels for parcels
 ├── backend/               
 │   ├── middleware/        # Security check-posts (auth, limits, etc.)

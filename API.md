@@ -128,6 +128,30 @@ These paths are used by the Admin to manage the whole business.
 
 ---
 
+## 👥 4. Staff Management (Logistics Team)
+
+These paths are for managing the ground team (Drivers, Warehouse Staff, etc.).
+
+### 📋 List All Staff
+*   **Path:** `GET /api/dashboard/admin/staff`
+*   **Who can use it:** Only **Admins**.
+*   **What you get:** A list of all staff members with their role, hub, and contact info.
+
+### ➕ Register New Staff
+*   **Path:** `POST /api/dashboard/admin/staff/create`
+*   **What to send:** `full_name`, `username`, `password`, `staff_role` (e.g., Driver, Warehouse Staff), `phone`, and `organization_id` (Hub).
+
+### ✏️ Update Staff Details
+*   **Path:** `POST /api/dashboard/admin/staff/update`
+*   **What to send:** `id` (Staff ID) and any fields you want to change (`full_name`, `staff_role`, etc.).
+
+### 🛡️ Disable Staff Account
+*   **Path:** `POST /api/dashboard/admin/staff/status`
+*   **What to send:** `{"id": 123, "status": "disabled"}`.
+*   **Effect:** Prevents the staff member from logging in immediately.
+
+---
+
 ## � 4. Public Tools (No Login Needed)
 
 ### 🧐 Can you deliver here? (Service Check)

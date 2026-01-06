@@ -527,7 +527,6 @@ window.MoveXAdmin = (function () {
                             </div>
                             <div><label style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Role</label>
                                 <select id="new_role" style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);">
-                                    <option value="staff">Staff</option>
                                     <option value="admin">Admin</option>
                                 </select>
                             </div>
@@ -897,7 +896,141 @@ window.MoveXAdmin = (function () {
             }
         },
 
-        'staff': function () { renderStaffTable(); },
+        'staff': async function () {
+            showSkeletons('.data-table-container', 'table');
+
+            // 1. Fetch Staff Data
+            const fetchStaff = async () => {
+                try {
+                    const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                    const token = session.data?.token;
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                    const res = await fetch(`${API_BASE}/api/dashboard/admin/staff`, {
+                        credentials: 'include',
+                        headers: headers
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        MOCK_DATA.staff = data.staff;
+                        renderStaffTable(MOCK_DATA.staff);
+                    } else {
+                        showToast(data.error || 'Failed to load staff', 'error');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast('Network error while loading staff', 'error');
+                }
+            };
+
+            await fetchStaff();
+
+            // 2. Search and Filter Logic
+            const searchInput = document.querySelector('input[placeholder*="Search"]');
+            const roleFilter = document.querySelector('select'); // The first select is the role filter
+
+            const performFilter = () => {
+                const query = (searchInput?.value || '').toLowerCase().trim();
+                const role = (roleFilter?.value || 'All Roles').toLowerCase();
+
+                const filtered = MOCK_DATA.staff.filter(s => {
+                    const mQuery = !query || s.name.toLowerCase().includes(query) || s.username.toLowerCase().includes(query) || s.tracking_id.toLowerCase().includes(query);
+                    const mRole = role === 'all roles' || s.role.toLowerCase() === role;
+                    return mQuery && mRole;
+                });
+                renderStaffTable(filtered);
+            };
+
+            if (searchInput) searchInput.oninput = performFilter;
+            if (roleFilter) roleFilter.onchange = performFilter;
+
+            // 3. Add Staff Modal
+            const addBtn = document.querySelector('.page-header button');
+            if (addBtn) {
+                addBtn.onclick = async () => {
+                    // Fetch franchises for the dropdown
+                    let franchises = [];
+                    try {
+                        const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises`);
+                        const fData = await res.json();
+                        franchises = fData.franchises || [];
+                    } catch (e) { console.error('Failed to pre-fetch hubs', e); }
+
+                    createModal('Add New Staff Member', `
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.2rem;">
+                            <div style="grid-column: span 2;">
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Full Name</label>
+                                <input type="text" id="stf_name" placeholder="Staff Name" style="width:100%;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Username</label>
+                                <input type="text" id="stf_username" placeholder="Login username" style="width:100%;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Password</label>
+                                <input type="password" id="stf_password" placeholder="Min 8 characters" style="width:100%;">
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Staff Role</label>
+                                <select id="stf_role" style="width:100%;">
+                                    <option value="Driver">Driver</option>
+                                    <option value="Warehouse Staff">Warehouse Staff</option>
+                                    <option value="Delivery Associate">Delivery Associate</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Contact Number</label>
+                                <input type="tel" id="stf_phone" placeholder="+91..." style="width:100%;">
+                            </div>
+                            <div style="grid-column: span 2;">
+                                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Assign to Franchise (Hub)</label>
+                                <select id="stf_org" style="width:100%;">
+                                    <option value="">None (HQ Staff)</option>
+                                    ${franchises.map(f => `<option value="${f.id}">${f.name}</option>`).join('')}
+                                </select>
+                            </div>
+                        </div>
+                    `, [
+                        { label: 'Cancel', onClick: c => c() },
+                        {
+                            label: 'Register Staff', primary: true, onClick: async (close) => {
+                                const payload = {
+                                    full_name: document.getElementById('stf_name').value.trim(),
+                                    username: document.getElementById('stf_username').value.trim(),
+                                    password: document.getElementById('stf_password').value,
+                                    staff_role: document.getElementById('stf_role').value,
+                                    phone: document.getElementById('stf_phone').value.trim(),
+                                    organization_id: document.getElementById('stf_org').value
+                                };
+
+                                if (!payload.full_name || !payload.username || !payload.password) {
+                                    return showToast('Please fill required fields', 'error');
+                                }
+
+                                try {
+                                    const res = await fetch(`${API_BASE}/api/dashboard/admin/staff/create`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(payload)
+                                    });
+                                    const result = await res.json();
+                                    if (result.success) {
+                                        showToast('Staff registered successfully!', 'success');
+                                        fetchStaff();
+                                        close();
+                                    } else {
+                                        showToast(result.error, 'error');
+                                    }
+                                } catch (e) { showToast('Network error', 'error'); }
+                            }
+                        }
+                    ]);
+                    // Re-init theme consistent selects
+                    initCustomSelects();
+                };
+            }
+        },
         'bookings': function () { renderBookingTable(); },
 
         'finance': function () {
@@ -1431,32 +1564,149 @@ window.MoveXAdmin = (function () {
         }
     }
 
-    function renderStaffTable() {
-        const staffData = [
-            { id: 'MXSTF001', name: 'Amit Patel', role: 'Driver', org: 'Andheri East, Mumbai', status: 'On Duty', contact: '+91 98765 00001' },
-            { id: 'MXSTF002', name: 'Rohit Sharma', role: 'Manager', org: 'Bhiwandi Warehouse', status: 'Active', contact: '+91 98765 00002' },
-            { id: 'MXSTF003', name: 'Priya Singh', role: 'Support Agent', org: 'HQ Call Center', status: 'Active', contact: '+91 98765 00003' }
-        ];
+    function renderStaffTable(data = MOCK_DATA.staff) {
         const tbody = document.querySelector('.data-table tbody');
         if (!tbody) return;
-        tbody.innerHTML = staffData.map(s => `
-            <tr>
-                <td>
-                    <div style="font-weight: 600;">${s.name}</div>
-                    <div style="font-size: 0.85rem; color: var(--text-secondary);">ID: ${s.id}</div>
-                </td>
-                <td><span class="status-badge" style="background: var(--surface-tertiary); color: var(--text-primary);">${s.role}</span></td>
-                <td>${s.org}</td>
-                <td><span class="status-badge status-active">${s.status}</span></td>
-                <td>${s.contact}</td>
-                <td><button class="edit-btn" style="border: 1px solid var(--border-default); background: var(--surface-primary); color: var(--text-primary); padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer;">Edit</button></td>
-            </tr>
-        `).join('');
-        tbody.querySelectorAll('.edit-btn').forEach((btn, i) => {
-            btn.onclick = () => showToast(`Editing staff: ${staffData[i].name}`, 'info');
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem;">No staff members found.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = data.map(s => {
+            const statusClass = s.status === 'On Duty' || s.status === 'Active' ? 'status-active' : 'status-warn';
+            const userStatusBadge = s.user_status === 'disabled' ?
+                `<span class="status-badge" style="background:#fee2e2; color:#b91c1c; margin-left:5px;">Disabled</span>` : '';
+
+            return `
+                <tr>
+                    <td>
+                        <div style="font-weight: 600;">${s.name}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">ID: ${s.tracking_id}</div>
+                    </td>
+                    <td><span class="status-badge" style="background: var(--surface-tertiary); color: var(--text-primary);">${s.role}</span></td>
+                    <td>${s.org}</td>
+                    <td><span class="status-badge ${statusClass}">${s.status}</span>${userStatusBadge}</td>
+                    <td>${s.contact}</td>
+                    <td><button class="action-edit" data-id="${s.id}" style="border: 1px solid var(--border-default); background: var(--surface-primary); color: var(--text-primary); padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer;">Edit</button></td>
+                </tr>
+            `;
+        }).join('');
+
+        // Bind Edit Buttons
+        tbody.querySelectorAll('.action-edit').forEach(btn => {
+            btn.onclick = () => {
+                const staffId = btn.getAttribute('data-id');
+                const staff = data.find(s => s.id == staffId);
+                if (staff) editStaff(staff);
+            };
         });
-        const addBtn = document.querySelector('.page-header button');
-        if (addBtn) addBtn.onclick = () => showToast('Staff onboarding modal', 'info');
+    }
+
+    async function editStaff(s) {
+        // Fetch franchises for the dropdown
+        let franchises = [];
+        try {
+            const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises`);
+            const fData = await res.json();
+            franchises = fData.franchises || [];
+        } catch (e) { console.error('Failed to pre-fetch hubs', e); }
+
+        createModal(`Edit Staff: ${s.name}`, `
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.2rem;">
+                <div style="grid-column: span 2;">
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Full Name</label>
+                    <input type="text" id="edit_stf_name" value="${s.name}" style="width:100%;">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Staff Role</label>
+                    <select id="edit_stf_role" style="width:100%;">
+                        <option value="Driver" ${s.role === 'Driver' ? 'selected' : ''}>Driver</option>
+                        <option value="Warehouse Staff" ${s.role === 'Warehouse Staff' ? 'selected' : ''}>Warehouse Staff</option>
+                        <option value="Delivery Associate" ${s.role === 'Delivery Associate' ? 'selected' : ''}>Delivery Associate</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Status</label>
+                    <select id="edit_stf_status" style="width:100%;">
+                        <option value="Active" ${s.status === 'Active' ? 'selected' : ''}>Active</option>
+                        <option value="On Duty" ${s.status === 'On Duty' ? 'selected' : ''}>On Duty</option>
+                        <option value="Off Duty" ${s.status === 'Off Duty' ? 'selected' : ''}>Off Duty</option>
+                        <option value="On Leave" ${s.status === 'On Leave' ? 'selected' : ''}>On Leave</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Contact Number</label>
+                    <input type="tel" id="edit_stf_phone" value="${s.contact}" style="width:100%;">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Franchise (Hub)</label>
+                    <select id="edit_stf_org" style="width:100%;">
+                        <option value="">None (HQ Staff)</option>
+                        ${franchises.map(f => `<option value="${f.id}" ${s.org_id == f.id ? 'selected' : ''}>${f.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div style="grid-column: span 2; padding-top:10px; border-top: 1px solid var(--border-subtle);">
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600; color:var(--text-secondary);">Account Controls</label>
+                    <button id="toggle_stf_account" style="width:100%; padding:0.6rem; border-radius:4px; border:1px solid ${s.user_status === 'disabled' ? '#059669' : '#dc2626'}; background:none; color:${s.user_status === 'disabled' ? '#059669' : '#dc2626'}; cursor:pointer; font-weight:600;">
+                        ${s.user_status === 'disabled' ? 'Enable Account' : 'Disable Account'}
+                    </button>
+                </div>
+            </div>
+        `, [
+            { label: 'Cancel', onClick: c => c() },
+            {
+                label: 'Save Changes', primary: true, onClick: async (close) => {
+                    const payload = {
+                        id: s.id,
+                        full_name: document.getElementById('edit_stf_name').value.trim(),
+                        staff_role: document.getElementById('edit_stf_role').value,
+                        staff_status: document.getElementById('edit_stf_status').value,
+                        phone: document.getElementById('edit_stf_phone').value.trim(),
+                        organization_id: document.getElementById('edit_stf_org').value
+                    };
+
+                    try {
+                        const res = await fetch(`${API_BASE}/api/dashboard/admin/staff/update`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const result = await res.json();
+                        if (result.success) {
+                            showToast('Staff updated!', 'success');
+                            window.location.reload();
+                            close();
+                        } else {
+                            showToast(result.error, 'error');
+                        }
+                    } catch (e) { showToast('Network error', 'error'); }
+                }
+            }
+        ]);
+
+        const accBtn = document.getElementById('toggle_stf_account');
+        if (accBtn) {
+            accBtn.onclick = async () => {
+                const newStatus = s.user_status === 'disabled' ? 'active' : 'disabled';
+                if (!confirm(`Are you sure you want to ${newStatus === 'active' ? 'enable' : 'disable'} this account?`)) return;
+
+                try {
+                    const res = await fetch(`${API_BASE}/api/dashboard/admin/staff/status`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: s.id, status: newStatus })
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        showToast(`Account ${newStatus}!`, 'success');
+                        window.location.reload();
+                    }
+                } catch (e) { console.error(e); }
+            };
+        }
+
+        initCustomSelects();
     }
 
     function renderBookingTable() {
