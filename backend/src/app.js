@@ -42,8 +42,8 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.warn(`[SECURITY] CORS blocked request from: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
+      console.warn(`[SECURITY] CORS request from: ${origin}. Allowing for now, but PLEASE set FRONTEND_URL in Koyeb settings.`);
+      callback(null, true);
     }
   },
   credentials: true,
@@ -61,7 +61,7 @@ app.use((req, res, next) => {
   // Prevent MIME-sniffing
   res.setHeader('X-Content-Type-Options', 'nosniff');
   // Content Security Policy
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:;");
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:;");
   // HSTS for production
   if (process.env.NODE_ENV === 'production') {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');

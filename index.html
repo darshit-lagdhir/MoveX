@@ -6,31 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoveX - Next Generation Logistics Platform</title>
 
-    <!-- Zero-Lag Auto-Redirect: Checks for active session immediately -->
-    <script>
-        (function () {
-            try {
-                const session = sessionStorage.getItem('movexsecuresession');
-                if (session) {
-                    const data = JSON.parse(session).data;
-                    if (data && data.isLoggedIn && data.role) {
-                        const role = data.role;
-                        let target = 'dashboards/user.html'; // Default
-
-                        if (role === 'admin') target = 'admin/dashboard.html';
-                        else if (role === 'franchisee') target = 'dashboards/franchisee.html';
-                        else if (role === 'staff') target = 'dashboards/staff.html';
-
-                        console.log('Restoring session for', role);
-                        window.location.replace(target);
-                    }
-                }
-            } catch (e) {
-                // Ignore parsing errors
-            }
-        })();
-    </script>
-
 
     <link rel="stylesheet" href="styles/base.css?v=4">
     <link rel="stylesheet" href="styles/components.css?v=4">
