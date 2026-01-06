@@ -7,28 +7,21 @@
    ═══════════════════════════════════════════════════════════ */
 
 .login-card-wrapper {
-    perspective: 1500px;
-    transform-style: preserve-3d;
     width: 100%;
     max-width: 520px;
+    z-index: 10;
 }
 
-/* LOGIN CARD - OPTIMIZED FOR 0% LAG */
+/* LOGIN CARD - OPTIMIZED FOR 0% LAG (NO BLUR) */
 .login-card {
     width: 100%;
     max-width: 480px;
     background: var(--surface-primary);
-    /* More solid background */
     border: 1px solid var(--border-default);
     border-radius: var(--radius-2xl);
     padding: 1rem 1.75rem;
     box-shadow: var(--shadow-2xl);
-    /* SUBTLE BLUR ONLY ON POWERFUL DEVICES */
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     position: relative;
-    transform: translate3d(0, 0, 0);
-    /* Force GPU Layer */
     transition: box-shadow var(--transition-smooth);
 }
 
@@ -731,9 +724,7 @@
     background: var(--surface-elevated);
     border: 1px solid var(--border-default);
     border-radius: var(--radius-xl);
-    backdrop-filter: blur(var(--blur-md));
     transition: all var(--transition-base);
-    transform-style: preserve-3d;
     overflow: hidden;
 }
 

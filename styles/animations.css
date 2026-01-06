@@ -528,28 +528,42 @@
    CARD FLIP ANIMATION
    ═══════════════════════════════════════════════════════════ */
 
-.card-flip-container {
-    perspective: 1500px;
-    width: 100%;
-}
-
+/* 2D SNAPPY TRANSITIONS (0% Perspective Cost) */
 .card-flipper {
     position: relative;
     width: 100%;
-    transform-style: preserve-3d;
-    transition: transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1);
-}
-
-.card-flipper.flipped {
-    transform: rotateY(180deg);
 }
 
 .card-face {
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
     width: 100%;
-    height: 100%;
-    /* FIX: Ensure face matches container height for correct pivoting */
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.card-front {
+    position: relative;
+}
+
+.card-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    transform: translateX(20px);
+    pointer-events: none;
+}
+
+/* FLIPPED STATE (2D Slide) */
+.card-flipper.flipped .card-front {
+    opacity: 0;
+    transform: translateX(-20px);
+    pointer-events: none;
+}
+
+.card-flipper.flipped .card-back {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
 }
 
 .card-front {
@@ -572,27 +586,11 @@
     /* Hidden by default (via generic rule below) - wait 90deg */
 }
 
-/* 3D VISIBILITY FIX: Hide the inactive face when it's behind (at 90deg / 0.4s) */
-.card-flipper.flipped .card-front {
-    visibility: hidden;
-    transition: visibility 0s linear 0.2s;
-}
-
+/* Vertical Flip Visibility - SIMPLIFIED 2D */
+.card-flipper.flipped .card-front,
 .card-flipper:not(.flipped) .card-back {
     visibility: hidden;
-    transition: visibility 0s linear 0.2s;
-}
-
-.card-flipper.flipped .card-back {
-    visibility: visible;
-    transition: visibility 0s linear 0.25s;
-    /* Wait until it passes 90deg to show */
-}
-
-.card-flipper:not(.flipped) .card-front {
-    visibility: visible;
-    transition: visibility 0s linear 0.25s;
-    /* Wait until it passes 90deg to show */
+    position: absolute;
 }
 
 /* Ensure login card maintains its styling */
@@ -605,36 +603,40 @@
    VERTICAL FLIP (FORGOT PASSWORD)
    ═══════════════════════════════════════════════════════════ */
 
+/* VERTICAL SLIDE (FORGOT PASSWORD) - 2D ONLY */
 .vertical-flipper {
     position: relative;
     width: 100%;
-    height: 100%;
-    transform-style: preserve-3d;
-    transition: transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1);
-    transform-origin: center center;
-    /* FIX: Pivot around center */
-}
-
-.vertical-flipper.flipped-vertical {
-    transform: rotateX(-180deg);
+    transition: opacity 0.4s ease;
 }
 
 .vertical-face {
     width: 100%;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
 .vertical-front {
-    /* Default face */
     z-index: 2;
-    transform: rotateX(0deg);
 }
 
 .vertical-back {
     position: absolute;
     top: 0;
     left: 0;
-    transform: rotateX(-180deg);
+    opacity: 0;
+    transform: translateY(20px);
     z-index: 1;
+    pointer-events: none;
+}
+
+.vertical-flipper.flipped-vertical .vertical-front {
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
+}
+
+.vertical-flipper.flipped-vertical .vertical-back {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
 }

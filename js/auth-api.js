@@ -79,54 +79,28 @@
     const backToLogin = document.getElementById('back-to-login');
     const backToLogin2 = document.getElementById('back-to-login-2');
 
-    // Dynamic Height Adjustment Helper
+    // Optimized Height Adjustment (Better for CPU)
     const updateHeight = () => {
       if (!flipper) return;
       const isFlipped = flipper.classList.contains('flipped');
-      const loginCard = document.getElementById('loginCard');
-      const registerCard = document.getElementById('registerCard');
       const verticalFlipper = document.getElementById('verticalFlipper');
+      const isForgotFlipped = verticalFlipper ? verticalFlipper.classList.contains('flipped-vertical') : false;
 
-      if (loginCard && registerCard && verticalFlipper) {
-        let height;
-        const isForgotFlipped = verticalFlipper.classList.contains('flipped-vertical');
-        const forgotCard = document.getElementById('forgotCard');
+      let targetCardId = 'loginCard';
+      if (isFlipped) targetCardId = 'registerCard';
+      else if (isForgotFlipped) targetCardId = 'forgotCard';
 
-        if (isFlipped) {
-          // Register Mode
-          height = registerCard.offsetHeight;
-        } else if (isForgotFlipped && forgotCard) {
-          // Forgot Mode
-          height = forgotCard.offsetHeight;
-        } else {
-          // Login Mode
-          height = loginCard.offsetHeight;
-        }
-
+      const targetCard = document.getElementById(targetCardId);
+      if (targetCard) {
+        const height = targetCard.offsetHeight;
         flipper.style.height = height + 'px';
-        if (verticalFlipper) verticalFlipper.style.height = '100%';
-
-        // Also set wrapper min-height to ensure no clipping
         const wrapper = document.getElementById('cardWrapper');
         if (wrapper) wrapper.style.minHeight = height + 'px';
-
-        // TOGGLE SCROLLING:
-        if (isFlipped) {
-          document.body.style.overflowY = 'auto';
-          document.documentElement.style.overflowY = 'auto';
-        } else {
-          // Force scroll top before locking
-          window.scrollTo(0, 0);
-          document.documentElement.scrollTop = 0;
-          document.body.scrollTop = 0;
-
-          // Lock after short delay to ensure scroll happened
-          setTimeout(() => {
-            document.body.style.overflowY = 'hidden';
-            document.documentElement.style.overflowY = 'hidden';
-          }, 20);
-        }
       }
+
+      // Snappy scrolling
+      document.body.style.overflowY = isFlipped ? 'auto' : 'hidden';
+      document.documentElement.style.overflowY = isFlipped ? 'auto' : 'hidden';
     };
 
     if (showRegister && flipper) {

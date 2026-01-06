@@ -246,7 +246,7 @@ body {
    ANIMATED BACKGROUND
    ═══════════════════════════════════════════════════════════ */
 
-/* OPTIMIZED BACKGROUND FOR LOW-END DEVICES */
+/* ZERO-LAG STATIC BACKGROUND */
 .background {
     position: fixed;
     top: 0;
@@ -255,60 +255,26 @@ body {
     height: 100%;
     z-index: 0;
     overflow: hidden;
-    background: var(--app-background);
-    transform: translate3d(0, 0, 0);
-    /* Force GPU */
+    /* High-quality static mesh - 0% CPU cost */
+    background: radial-gradient(at 0% 0%, #E0E7FF 0%, transparent 50%),
+        radial-gradient(at 100% 0%, #FEE2E2 0%, transparent 50%),
+        radial-gradient(at 100% 100%, #DBEAFE 0%, transparent 50%),
+        radial-gradient(at 0% 100%, #F3E8FF 0%, transparent 50%),
+        #FAFAFA;
 }
 
-.gradient-overlay {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at top right, var(--brand-primary-soft), transparent),
-        radial-gradient(circle at bottom left, var(--brand-primary-soft), transparent);
-    opacity: 0.6;
-    z-index: 1;
+[data-theme="dark"] .background {
+    background: radial-gradient(at 0% 0%, #1E1B4B 0%, transparent 50%),
+        radial-gradient(at 100% 0%, #450A0A 0%, transparent 50%),
+        radial-gradient(at 100% 100%, #172554 0%, transparent 50%),
+        radial-gradient(at 0% 100%, #2E1065 0%, transparent 50%),
+        #0A0A0A;
 }
 
+.blob,
+.gradient-overlay,
 .mesh-gradient {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(124, 58, 237, 0.05) 50%, rgba(236, 72, 153, 0.05) 100%);
-    z-index: 2;
-}
-
-/* REPLACING BLOCKS WITH HARDWARE ACCELERATED GRADIENTS (NO BLUR) */
-.blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: none;
-    /* REMOVED BLUR */
-    opacity: 0.15;
-    will-change: transform;
-    transform: translate3d(0, 0, 0);
-    z-index: 0;
-}
-
-.blob-1 {
-    width: 800px;
-    height: 800px;
-    background: radial-gradient(circle, var(--brand-primary) 0%, transparent 70%);
-    top: -200px;
-    left: -200px;
-    animation: float 30s ease-in-out infinite;
-}
-
-.blob-2 {
-    width: 700px;
-    height: 700px;
-    background: radial-gradient(circle, #EC4899 0%, transparent 70%);
-    bottom: -150px;
-    right: -150px;
-    animation: float 25s ease-in-out infinite reverse;
-}
-
-.blob-3 {
-    display: none;
-    /* Remove 3rd blob to save memory */
+    display: none !important;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -331,9 +297,8 @@ body {
     align-items: center;
     justify-content: center;
     transition: all var(--transition-base);
+    /* REMOVED BLUR */
     box-shadow: var(--shadow-lg);
-    backdrop-filter: blur(var(--blur-md));
-    -webkit-backdrop-filter: blur(var(--blur-md));
 }
 
 .theme-toggle::before {
