@@ -1,15 +1,15 @@
-# MoveX - Next Generation Logistics Platform
+# MoveX - Modern Logistics System
 
 <div align="center">
   <h3>A modern, secure logistics and courier management system</h3>
-  <p>Built with Node.js, Express, PostgreSQL, and Vanilla JavaScript</p>
+  <p>Built with Node.js, Express, PostgreSQL, and basic JavaScript</p>
 </div>
 
 ---
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Things you need
 
 - **Node.js** 18.x or higher
 - **PostgreSQL** 14+ (local) or Supabase account (cloud)
@@ -26,34 +26,34 @@ cd movex
 cd backend
 npm install
 
-# Configure environment
+# Setup your environment settings
 cp ../.env.example ../.env
-# Edit .env with your settings
+# Edit .env with your own settings
 
 # Start the server
 npm start
 ```
 
-### Access the Application
+### Accessing the App
 
-- **Main Application:** http://localhost:4000
-- **Health Check:** http://localhost:4000/api/health
-- **Admin Dashboard:** http://localhost:4000/admin/dashboard.html
+- **Main App:** http://localhost:4000
+- **System Status:** http://localhost:4000/api/health
+- **Admin Section:** http://localhost:4000/admin/dashboard.html
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ How the System Works
 
-MoveX operates on a **Privacy-First Monolithic Architecture**, designed to be an "Iron Fortress" for logistics data.
+MoveX uses a **Single-system design built for safety**, made to be an "Iron Fortress" for your delivery data.
 
-### 1. The "Hybrid SPA" Frontend
-- **Zero-Build Approach:** We do not use Webpack or Vite. The HTML/JS you see is exactly what runs in the browser, ensuring no hidden code.
-- **Shadow Router (`admin-layout.js`):** A custom engine that intercepts links to load pages dynamically. This gives the speed of a Single Page App (SPA) while keeping the simplicity of static files.
-- **State Persistence:** The Sidebar, Header, and Audio system remain active during navigation, preventing "blinking" and reloading.
+### 1. The "Fast & Simple" Frontend
+- **No special setup needed:** We do not use complex tools like Webpack. The code you see is exactly what runs in the browser.
+- **Shadow Router (`admin-layout.js`):** A custom tool that catches clicks to load pages quickly without reloading the whole site.
+- **Keeps your data visible:** The Sidebar and Header stay active while you move between pages, so the screen doesn't "blink."
 
-### 2. The "Guarded" Backend
-- **Static Firewall:** Standard static files (`.html`) are NOT public. A middleware intercepts every request and checks the database for a valid session before serving the file.
-- **Session Air-Gap:** We use Opaque Tokens (DB-backed) instead of JWTs. This allows Admins to instantly revoke access to any device remotely.
+### 2. The "Protected" Backend
+- **File Protection:** Your private files (`.html`) are NOT public. A security layer checks if you are logged in before showing them.
+- **Safe Session Control:** We use secure random codes instead of simple passwords in the browser. Admins can stop any user's login instantly.
 
 ---
 
@@ -61,52 +61,51 @@ MoveX operates on a **Privacy-First Monolithic Architecture**, designed to be an
 
 ```
 movex/
-├── admin/                  # Admin dashboard HTML pages
-│   ├── dashboard.html      # Main admin dashboard
-│   └── print_label.html    # Shipment label printing
+├── admin/                  # Admin dashboard pages
+│   ├── dashboard.html      # Main admin page
+│   └── print_label.html    # Printing labels for parcels
 ├── backend/               
-│   ├── middleware/        # Express middleware (auth, rate-limit, etc.)
-│   ├── routes/            # API route handlers
+│   ├── middleware/        # Security check-posts (auth, limits, etc.)
+│   ├── routes/            # Main URL paths
 │   ├── src/
-│   │   ├── app.js         # Main Express server
-│   │   ├── config/        # Database configuration
-│   │   ├── controllers/   # Business logic
-│   │   ├── routes/        # Additional routes
-│   │   └── session.js     # Session management (DB-backed)
-│   ├── sql/               # Consolidated Database migrations (001-003)
-│   └── utils/             # Helper utilities
-├── dashboards/            # Role-based dashboard pages
-├── js/                    # Frontend JavaScript
-├── styles/                # CSS stylesheets
-├── .env.example           # Environment template
-├── index.html             # Landing page / Login
-└── PRODUCTION.md          # Production deployment guide
+│   │   ├── app.js         # Main server file
+│   │   ├── config/        # Database setup
+│   │   ├── controllers/   # App logic
+│   │   ├── routes/        # Extra URL paths
+│   │   └── session.js     # Managing logins (saved in DB)
+│   ├── sql/               # Combined database setup files (001-003)
+│   └── utils/             # Helper tools
+├── dashboards/            # Pages for various roles
+├── js/                    # Frontend JavaScript files
+├── styles/                # CSS design files
+├── index.html             # Main login page
+└── PRODUCTION.md          # Guide for real online setup
 ```
 
-### Key Directories
+### Important Folders
 *   **`/admin` vs `/dashboards`**:
-    *   **Admin**: High-security zone. Contains User Management and internal configs.
-    *   **Dashboards**: Optimized views for Franchisees and Staff (mobile-friendly).
-*   **`/backend/src/session.js`**: The heart of our "Sliding Window" session system. It auto-cleans expired sessions every 15 minutes.
+    *   **Admin**: High-security area. For managing users and settings.
+    *   **Dashboards**: Special views for franchisees and staff (works on mobile).
+*   **`/backend/src/session.js`**: Controls the login timer. It cleans up old logins every 15 minutes.
 
 ---
 
 ## 🔐 User Roles
 
-| Role | Access Level | Dashboard |
+| Role | What they can do | Dashboard link |
 |------|--------------|-----------|
-| **Admin** | Full system access | `/admin/dashboard.html` |
-| **Franchisee** | Franchise management | `/dashboards/franchisee.html` |
-| **Staff** | Staff operations | `/dashboards/staff.html` |
-| **User** | Standard user access | `/dashboards/user.html` |
+| **Admin** | Full control of the system | `/admin/dashboard.html` |
+| **Franchisee** | Manage their own branch | `/dashboards/franchisee.html` |
+| **Staff** | Daily work and parcel updates | `/dashboards/staff.html` |
+| **User** | Simple tasks and viewing | `/dashboards/user.html` |
 
 ---
 
-## 🛠️ Configuration
+## 🛠️ Setup Settings
 
 ### Environment Variables
 
-Copy `.env.example` to `.env` and configure:
+Copy `.env.example` to `.env` and fill in:
 
 ```env
 # Required
@@ -116,66 +115,63 @@ JWT_SECRET=your-32+-character-secret
 SESSION_SECRET=your-32+-character-secret
 HEALTH_CHECK_KEY=secret-key-for-health-check
 
-# Database (choose one)
-DATABASE_URL=postgresql://...  # Full connection URL
-# OR individual settings:
+# Database settings
+DATABASE_URL=postgresql://...  # Full connection link
+# OR use individual details:
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
-DB_PASSWORD=yourpassword
+DB_PASSWORD=your_password
 DB_NAME=movex_auth
 ```
 
-See `.env.example` for all available options.
-
 ---
 
-## 📖 API Endpoints
+## 📖 API Paths
 
-### Authentication
-| Method | Endpoint | Description |
+### Login & Signup
+| Method | Path | Description |
 |--------|----------|-------------|
-| POST | `/api/auth/register` | Create new account |
-| POST | `/api/auth/login` | User login (via username) |
-| POST | `/api/auth/logout` | User logout |
-| GET | `/api/auth/me` | Current user info |
+| POST | `/api/auth/register` | Create a new account |
+| POST | `/api/auth/login` | Log in (using username) |
+| POST | `/api/auth/logout` | Log out |
+| GET | `/api/auth/me` | Show current user info |
 
 ### Dashboard
-| Method | Endpoint | Description |
+| Method | Path | Description |
 |--------|----------|-------------|
-| GET | `/api/dashboard/me` | User dashboard data |
-| GET | `/api/dashboard/admin` | Admin stats |
-| GET | `/api/dashboard/admin/stats` | System statistics |
-| GET | `/api/dashboard/public/serviceable-cities` | Public list of serviceable cities |
+| GET | `/api/dashboard/me` | My dashboard data |
+| GET | `/api/dashboard/admin` | Admin dashboard data |
+| GET | `/api/dashboard/admin/stats` | Main system numbers |
+| GET | `/api/dashboard/public/serviceable-cities` | Cities where we work |
 
 ### Shipments (Admin)
-| Method | Endpoint | Description |
+| Method | Path | Description |
 |--------|----------|-------------|
-| GET | `/admin/shipments` | List all shipments |
-| POST | `/admin/shipments/create` | Create new shipment |
+| GET | `/admin/shipments` | List all parcels |
+| POST | `/admin/shipments/create` | Create a new parcel |
 
-### Health Check
-| Method | Endpoint | Description |
+### System Status
+| Method | Path | Description |
 |--------|----------|-------------|
-| GET | `/api/health` | Basic health status |
-| GET | `/api/health/detailed` | Detailed health info |
-| GET | `/api/health/ready` | Readiness probe |
-| GET | `/api/health/live` | Liveness probe |
+| GET | `/api/health` | Simple status check |
+| GET | `/api/health/detailed` | Full system status |
+| GET | `/api/health/ready` | Readiness check |
+| GET | `/api/health/live` | Liveness check |
 
 ---
 
 ## 🔒 Security Features
 
-- ✅ **Bcrypt** password hashing (cost factor 12)
-- ✅ **HttpOnly** secure session cookies
-- ✅ **DB-backed sessions** (PostgreSQL, 1-hour expiry)
-- ✅ **Rate limiting** on authentication endpoints
-- ✅ **CORS** with whitelist configuration
-- ✅ **CSP** Content Security Policy headers
-- ✅ **Input validation** on all endpoints
-- ✅ **SQL injection** prevention (parameterized queries)
-- ✅ **XSS** protection headers
-- ✅ **Enterprise-Grade Loading State** (Prevents UI flicker/jank)
+- ✅ **Safe Passwords:** Hiding passwords using "Bcrypt" (very strong).
+- ✅ **Secure Cookies:** Keeping login session safe in the browser (HttpOnly).
+- ✅ **Saved Logins:** Logins stay active even if the server restarts.
+- ✅ **Request Limits:** Blocks hackers trying to guess passwords too fast.
+- ✅ **CORS:** Only allows your own website to talk to the server.
+- ✅ **Browser Protection:** Extra safety layers for the browser (CSP).
+- ✅ **Input Check:** Making sure all data sent by users is correct.
+- ✅ **Database Safety:** Stops bad code from entering your database (SQL injection).
+- ✅ **Smooth Loading:** The website doesn't flicker when it loads data.
 
 ---
 
@@ -183,15 +179,15 @@ See `.env.example` for all available options.
 
 ### Supabase (Recommended for Production)
 
-See [PRODUCTION.md](./PRODUCTION.md) for complete Supabase setup guide.
+See **[PRODUCTION.md](./PRODUCTION.md)** for the full setup guide.
 
 ### Local PostgreSQL
 
 ```bash
-# Create database
+# 1. Create the database
 createdb movex_auth
 
-# Run migrations (Sequentially)
+# 2. Run these files in order to setup the tables
 psql -d movex_auth -f backend/sql/001_schema.sql
 psql -d movex_auth -f backend/sql/002_security.sql
 psql -d movex_auth -f backend/sql/003_seeds.sql
@@ -199,121 +195,90 @@ psql -d movex_auth -f backend/sql/003_seeds.sql
 
 ---
 
-## 📦 Shipment Management
+## 📦 Managing Parcels (Shipments)
 
 ### Features
-- **Create Shipments** with complete sender/receiver details
-- **Full Address Support**: Name, Mobile, Address, Pincode for both parties
-- **Weight Tracking**: Package weight in KG
-- **Price Management**: Shipment cost tracking
-- **Status Workflow**: pending → in_transit → delivered / failed
-- **Estimated Delivery**: Auto-calculated delivery dates
+- **Add Parcels**: Full details for both sender and receiver.
+- **Address Details**: Name, Phone, Address, and Pincode for both sides.
+- **Weight**: Track parcel weight in KG.
+- **Cost**: Manage how much the delivery costs.
+- **Workflow**: Move status from "Pending" to "Delivered".
+- **Delivery Date**: Automatically calculate when the parcel will arrive.
 
-### Shipment Details Modal
-View comprehensive shipment information:
-- Status banner with live tracking badge
-- Sender details (name, phone, full address, pincode)
-- Receiver details (name, phone, full address, pincode)
-- Route visualization (origin → destination)
-- Financial info (amount, weight, booking date, delivery estimate)
-- Activity timeline
+### Parcel Details Window
+View everything in one place:
+- Live status badge.
+- Sender and receiver contact info.
+- Route visualization (Start → End).
+- Money, weight, and booking dates.
+- Timeline of recent updates.
 
 ---
 
-## 🏷️ Label Printing
+## 🏷️ Printing Labels
 
-### Print Label Feature (`admin/print_label.html`)
-- **One-click printing** from shipment details modal
-- **Dynamic data** - All fields populated from database
-- **Barcode generation** using JsBarcode (CODE128 format)
-- **Auto-print** - Browser print dialog opens automatically
-- **No storage** - Labels generated on-demand, not stored
+### Quick Printing (`admin/print_label.html`)
+- **Print with one click**: Right from the parcel details window.
+- **Autofill**: All data is pulled from the database automatically.
+- **Barcodes**: Barcodes are made automatically for every parcel.
+- **One-time use**: Labels are made only when you click print, so they don't fill up the server.
 
-### Label Contents
-| Field | Source |
+### What's on the Label?
+| Field | Where it comes from |
 |-------|--------|
-| Tracking ID | Database |
-| Barcode | Generated from Tracking ID |
-| Route | Origin → Destination cities |
+| Tracking ID | From your database |
+| Barcode | Made from the Tracking ID |
+| Route | Start city and End city |
 | Receiver | Name, Address, Phone, Pincode |
-| Sender | Name, Origin location |
-| Weight | Database (KG) |
-| Price | Database (₹) |
+| Sender | Name and City |
+| Weight | Total weight in KG |
+| Price | Total cost in ₹ |
 | Return Address | Sender's full address |
 
 ---
 
-## 📸 Photo Storage
+## 📸 Photo Proof
 
-MoveX uses Supabase Storage for shipment photos:
+MoveX uses Supabase Storage for parcel photos:
 
-- Photos organized by tracking ID
-- Private bucket with signed URL access
-- Supports: JPEG, PNG, WebP, HEIC
-- Max file size: 5MB
-
-See [PRODUCTION.md](./PRODUCTION.md#section-6-storage-strategy-for-photos) for details.
+- Photos are organized by their Tracking ID.
+- Private storage that only allowed users can see.
+- Supports JPEG, PNG, WebP, and more.
+- Maximum file size: 5MB per photo.
 
 ---
 
-## 🚢 Deployment
+## 🚢 Putting it Online (Deployment)
 
 ### Recommended Platforms
 
-- **Railway** - Easy deployment with auto-detection
-- **Render** - Flexible hosting options
-- **DigitalOcean App Platform** - Scalable container hosting
+- **Railway** - Easiest way to put the app online.
+- **Render** - Good second choice.
+- **DigitalOcean** - For advanced users.
 
-### Pre-Deployment Checklist
+### Checklist before going live
 
-- [ ] Set `NODE_ENV=production`
-- [ ] Configure strong secrets (32+ characters)
-- [ ] Set up Supabase database
-- [ ] Update `FRONTEND_URL` for CORS
-- [ ] Enable `SESSION_SECURE=true` (requires HTTPS)
-
-See [PRODUCTION.md](./PRODUCTION.md) for complete deployment guide.
-
----
-
-## 🧪 Testing
-
-```bash
-cd backend
-npm test
-```
+- [ ] Set `NODE_ENV=production`.
+- [ ] Use long, random secrets for your passwords and tokens (32+ characters).
+- [ ] Setup your Supabase database.
+- [ ] Update your `FRONTEND_URL` so the app works online.
+- [ ] Make sure your website uses a secure padlock (HTTPS).
 
 ---
 
 ## 📄 Documentation
 
-- **[PRODUCTION.md](./PRODUCTION.md)** - Complete production deployment guide
-- **[.env.example](./.env.example)** - Environment variable reference
+- **[PRODUCTION.md](./PRODUCTION.md)** - Full guide for real setup.
+- **[.env.example](./.env.example)** - List of all settings you can use.
 
 ---
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📝 License
-
-MIT License - see [LICENSE](./LICENSE) for details.
-
----
-
-## 🆘 Support
-
-For issues or questions:
-1. Check [PRODUCTION.md](./PRODUCTION.md) troubleshooting section
-2. Open a GitHub issue
-3. Contact the development team
+1. Fork the project.
+2. Make a new branch (`git checkout -b feature/new-stuff`).
+3. Add your changes and commit (`git commit -m 'Added something cool'`).
+4. Push and open a request to merge.
 
 ---
 
