@@ -197,6 +197,17 @@ app.use('/api/auth', authRoutes);
 app.use('/api/protected', protectedRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api', profileRoutes);
+// --- DEBUG: CATCH-ALL LOGOUT ---
+app.post('/api/logout', async (req, res) => {
+  console.log('[DEBUG] Hit /api/logout fallback');
+  try {
+    const sid = req.cookies?.['movex.sid'];
+    if (sid) await require('./session').destroySession(sid);
+    res.clearCookie('movex.sid', { path: '/' });
+    res.json({ success: true, message: 'Fallback logout success' });
+  } catch (e) { console.error(e); }
+});
+
 app.use('/api/shipments', shipmentRoutes);
 
 /* ═══════════════════════════════════════════════════════════

@@ -181,13 +181,18 @@
         const token = getToken();
 
         try {
+            // Try PRIMARY endpoint
             await fetch(`${API_BASE}/api/dashboard/logout`, {
                 method: 'POST',
                 credentials: 'include',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+            });
+
+            // Try FALLBACK endpoint (Safety Net)
+            await fetch(`${API_BASE}/api/logout`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
             });
         } catch (err) {
             console.error('Logout error:', err);
