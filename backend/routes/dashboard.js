@@ -785,4 +785,18 @@ router.post('/admin/staff/status', validateSession, requireRole('admin'), async 
     }
 });
 
+router.post('/logout', async (req, res) => {
+    try {
+        const sid = req.cookies?.['movex.sid'];
+        if (sid) {
+            await sessionStore.destroySession(sid);
+        }
+        res.clearCookie('movex.sid', { path: '/' });
+        res.json({ success: true, message: 'Logged out successfully' });
+    } catch (err) {
+        console.error("Logout Error:", err);
+        res.status(500).json({ success: false, error: 'Logout failed' });
+    }
+});
+
 module.exports = router;

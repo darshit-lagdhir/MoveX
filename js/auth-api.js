@@ -7,7 +7,37 @@
   const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
   const API_BASE = isLocal ? 'http://localhost:4000' : 'https://presidential-fly-movex-237428a4.koyeb.app';
   if (isLocal) console.log('🔧 Running in Development Mode');
+  if (isLocal) console.log('🔧 Running in Development Mode');
 
+  // --- AUTO-REDIRECT (Frontend Check) ---
+  // If user lands on login page with active session, bump them to dashboard
+  if (['/', '/index.html'].includes(window.location.pathname) || window.location.pathname === '') {
+    const session = sessionStorage.getItem('movexsecuresession');
+    if (session) {
+      try {
+        const data = JSON.parse(session);
+        if (data && data.data && data.data.token) {
+          // Verify role and redirect
+          const role = data.data.user?.role || 'user';
+          const dashboards = {
+            admin: 'admin/dashboard.html',
+            franchisee: 'dashboards/franchisee.html',
+            staff: 'dashboards/staff.html',
+            user: 'dashboards/user.html'
+          };
+          // Slight delay to allow backend cookie check to race first, but this is the safety net
+          setTimeout(() => {
+            if (document.body) {
+              window.location.href = dashboards[role] || dashboards.user;
+            }
+          }, 100);
+        }
+      } catch (e) {
+        console.warn("Invalid session format", e);
+        sessionStorage.removeItem('movexsecuresession');
+      }
+    }
+  }
   let isProcessing = false;
 
   function debounce(func, wait) {
