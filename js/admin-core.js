@@ -873,8 +873,12 @@ window.MoveXAdmin = (function () {
                         const mStatus = status === 'all status' || s.status.toLowerCase() === status;
                         let mDate = true;
                         if (dateVal) {
-                            const d = new Date(s.date);
-                            mDate = !isNaN(d) && d.toISOString().split('T')[0] === dateVal;
+                            const d = new Date(s.created_at || s.date);
+                            const year = d.getFullYear();
+                            const month = String(d.getMonth() + 1).padStart(2, '0');
+                            const day = String(d.getDate()).padStart(2, '0');
+                            const localDate = `${year}-${month}-${day}`;
+                            mDate = localDate === dateVal;
                         }
                         return mQuery && mStatus && mDate;
                     });

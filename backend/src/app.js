@@ -155,9 +155,42 @@ const protectStaticDashboards = async (req, res, next) => {
   next();
 };
 
-app.use(protectStaticDashboards);
 
+/* ═══════════════════════════════════════════════════════════
+   LOGIN PAGE AUTO-REDIRECT
+   Redirects logged-in users away from the login page
+   ═══════════════════════════════════════════════════════════ */
+app.get(['/', '/index.html'], async (req, res, next) => {
+  try {
+    const sid = req.cookies?.['movex.sid'];
+    const session = sid ? await sessionStore.getSession(sid) : null;
+
+    if (session && session.role) {
+      const dashboards = {
+        admin: '/admin/dashboard.html',
+        franchisee: '/dashboards/franchisee.html',
+        staff: '/dashboards/staff.html',
+        user: '/dashboards/user.html'
+      };
+      const target = dashboards[session.role];
+      if (target) return res.redirect(target);
+    }
+  } catch (err) {
+    console.warn('Auto-redirect check failed (non-critical):', err.message);
+  }
+
+  // If no session or error, serve index.html for root
+  if (req.path === '/') {
+    return res.sendFile(path.join(__dirname, '../../index.html'));
+  }
+  // Otherwise let other handlers (like express.static) handle it
+  next();
+});
+
+app.use(protectStaticDashboards);
 app.use(express.static(path.join(__dirname, '../../'), { extensions: ['html'] }));
+
+
 
 
 app.use('/api/auth', authRoutes);
@@ -171,10 +204,6 @@ app.use('/api/shipments', shipmentRoutes);
    ═══════════════════════════════════════════════════════════ */
 const healthRoutes = require('../routes/health');
 app.use('/api/health', healthRoutes);
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../index.html'));
-});
 
 /* ═══════════════════════════════════════════════════════════
    404 HANDLER (Must be after all routes)

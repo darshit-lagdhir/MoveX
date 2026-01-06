@@ -51,9 +51,9 @@ For MoveX, being "Ready for Real Customers" means the app can:
 - ✅ **Request Limits** on login pages.
 - ✅ **CORS** whitelist (only allows your domain).
 - ✅ **CSP** Browser security layers.
-- ✅ **Input Check** on every page.
+- ✅ **In-Depth Validation** on every page.
 - ✅ **Database Protection** (parameterized queries).
-- ✅ **Smooth Loading** (no flickering screens).
+- ✅ **Role-Based Auto-Redirect** for authenticated users.
 
 ### ❌ What it does NOT mean
 - The app has every feature possible.

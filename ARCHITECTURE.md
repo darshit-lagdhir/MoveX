@@ -31,7 +31,7 @@ We don't use heavy tools like "React" or "Angular." instead, we use a custom **H
 
 ### Pillar 2: The Guarded Backend (Node.js & Express)
 The backend is the "Security Guard" of the app.
-*   **App.js**: This is the main entry point. It sets up the **Environment** (loads secrets) and the **Health Monitor**.
+*   **App.js**: This is the main entry point. It sets up the **Environment**, the **Health Monitor**, and handles **Role-Based Auto-Redirect** (sending logged-in users directly to their dashboard).
 *   **Middleware Stack**: Every request goes through a "Stack" of checks:
     - **CORS Check**: Only allows your own website to talk to the server.
     - **Session Check**: Checks if your "sid" (Session ID) is valid in our database.
