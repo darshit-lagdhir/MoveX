@@ -79,7 +79,10 @@ movex/
 ├── js/                    # Frontend JavaScript files
 ├── styles/                # CSS design files
 ├── index.html             # Main login page
-└── PRODUCTION.md          # Guide for real online setup
+├── SETUP.md               # Guide for real online setup
+├── API.md                 # Detailed server connection guide
+├── ARCHITECTURE.md        # How the system is built
+└── README.md              # This file
 ```
 
 ### Important Folders
@@ -179,7 +182,7 @@ DB_NAME=movex_auth
 
 ### Supabase (Recommended for Production)
 
-See **[PRODUCTION.md](./PRODUCTION.md)** for the full setup guide.
+See **[SETUP.md](./SETUP.md)** for the full setup guide.
 
 ### Local PostgreSQL
 
@@ -268,7 +271,9 @@ MoveX uses Supabase Storage for parcel photos:
 
 ## 📄 Documentation
 
-- **[PRODUCTION.md](./PRODUCTION.md)** - Full guide for real setup.
+- **[SETUP.md](./SETUP.md)** - Full guide for real setup.
+- **[API.md](./API.md)** - Full list of server paths and data.
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Deep dive into how code is organized.
 - **[.env.example](./.env.example)** - List of all settings you can use.
 
 ---
