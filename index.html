@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoveX - Next Generation Logistics Platform</title>
 
-    <link rel="icon" type="image/png" href="logo-images/logo1.png">
+
     <link rel="stylesheet" href="styles/base.css?v=4">
     <link rel="stylesheet" href="styles/components.css?v=4">
     <link rel="stylesheet" href="styles/animations.css?v=4">
@@ -34,22 +34,7 @@
 </head>
 
 <body>
-    <!-- Maintenance Mode Check - Checks backend before showing page -->
-    <script>
-        (async function checkMaintenance() {
-            const API_BASE = window.location.hostname === 'localhost' ? '' : 'https://presidential-fly-movex-237428a4.koyeb.app';
-            try {
-                const res = await fetch(`${API_BASE}/api/maintenance`);
-                const data = await res.json();
-                if (data.maintenance === true && !window.location.pathname.includes('maintenance')) {
-                    window.location.href = '/maintenance/';
-                }
-            } catch (e) {
-                // If API fails, continue showing the site
-                console.log('Maintenance check skipped');
-            }
-        })();
-    </script>
+
 
     <!-- Shared SVG Defs -->
     <svg style="width:0; height:0; position:absolute;" aria-hidden="true" focusable="false">
@@ -62,7 +47,7 @@
     </svg>
 
     <!-- Particle Canvas Background -->
-    <canvas id="particleCanvas" class="particle-canvas"></canvas>
+
 
     <!-- Animated Background -->
     <div class="background">
@@ -112,7 +97,7 @@
                                     <div class="brand-header">
                                         <a href="/" class="nav-logo"
                                             style="justify-content: center; margin-bottom: 0.5rem;">
-                                            <img src="logo-images/logo2.png" alt="MoveX Logo" class="logo-icon">
+
                                             <span class="logo-text">MoveX</span>
                                         </a>
                                         <p class="tagline">Next-Gen Logistics Management</p>
@@ -244,7 +229,7 @@
                                     <div class="brand-header">
                                         <a href="/" class="nav-logo"
                                             style="justify-content: center; margin-bottom: 0.5rem;">
-                                            <img src="logo-images/logo2.png" alt="MoveX Logo" class="logo-icon">
+
                                             <span class="logo-text">MoveX</span>
                                         </a>
                                         <p class="tagline">Account Recovery</p>
@@ -386,7 +371,7 @@
                             <!-- Brand Header -->
                             <div class="brand-header">
                                 <a href="/" class="nav-logo" style="justify-content: center; margin-bottom: 0.5rem;">
-                                    <img src="logo-images/logo2.png" alt="MoveX Logo" class="logo-icon">
+
                                     <span class="logo-text">MoveX</span>
                                 </a>
                                 <p class="tagline">Next-Gen Logistics Management</p>
@@ -581,32 +566,9 @@
     <!-- Confetti Container -->
     <div class="confetti-container" id="confettiContainer"></div>
 
-    <!-- MFA Challenge Modal -->
-    <div id="mfaModal" class="mfa-modal">
-        <div class="mfa-container">
-            <div class="mfa-icon">🔐</div>
-            <h2 class="mfa-title">Two-Factor Authentication</h2>
-            <p class="mfa-subtitle">Enter the 6-digit code from your authenticator app</p>
-            <div class="mfa-code-inputs">
-                <input type="text" maxlength="1" class="mfa-digit" id="mfa-1" inputmode="numeric">
-                <input type="text" maxlength="1" class="mfa-digit" id="mfa-2" inputmode="numeric">
-                <input type="text" maxlength="1" class="mfa-digit" id="mfa-3" inputmode="numeric">
-                <input type="text" maxlength="1" class="mfa-digit" id="mfa-4" inputmode="numeric">
-                <input type="text" maxlength="1" class="mfa-digit" id="mfa-5" inputmode="numeric">
-                <input type="text" maxlength="1" class="mfa-digit" id="mfa-6" inputmode="numeric">
-            </div>
-            <button type="button" id="mfaVerifyBtn" class="btn-login magnetic-btn">
-                <span class="btn-content">
-                    <span class="btn-text">Verify Code</span>
-                </span>
-            </button>
-            <button type="button" id="mfaCancelBtn" class="mfa-cancel-btn">Cancel</button>
-        </div>
-    </div>
+
 
     <!-- Scripts - API AUTH VERSION -->
-    <script src="js/particles.js"></script>
-    <script src="js/animations.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/auth-api.js"></script>
 

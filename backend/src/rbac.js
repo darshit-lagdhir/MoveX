@@ -9,11 +9,11 @@ const Roles = Object.freeze({
 
 function requireRole(...allowed) {
   return (req, res, next) => {
-    const role = req.session?.role;
-    if (!role || !allowed.includes(role)) {
-      return res.status(403).json({ message: 'Forbidden' });
+    // Simple check: Does session role match?
+    if (req.session && allowed.includes(req.session.role)) {
+      return next();
     }
-    next();
+    return res.status(403).json({ message: 'Forbidden' });
   };
 }
 

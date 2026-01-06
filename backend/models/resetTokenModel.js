@@ -1,4 +1,4 @@
-const db = require('../db');
+const db = require('../src/config/db');
 const crypto = require('crypto');
 
 module.exports = {

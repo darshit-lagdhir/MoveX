@@ -20,8 +20,6 @@ if (JWT_SECRET.length < 32) {
 }
 const ALLOWED_LOGIN_FIELDS = ['username', 'password', 'role'];
 const ALLOWED_REGISTER_FIELDS = ['username', 'password', 'securityAnswers', 'full_name', 'phone', 'role'];
-const ALLOWED_FORGOT_FIELDS = ['username'];
-const ALLOWED_VERIFY_FIELDS = ['username', 'securityAnswers'];
 const ALLOWED_RESET_FIELDS = ['token', 'password'];
 const RESET_TOKEN_TTL_MINUTES = 15;
 
@@ -288,32 +286,23 @@ exports.forgotPassword = async (req, res) => {
 exports.checkRecoveryEligibility = async (req, res) => {
   try {
     const { username } = req.body || {};
-    if (!username) {
-      return res.status(400).json({ message: 'Username is required.' });
-    }
+    if (!username) return res.status(400).json({ message: 'Username is required.' });
 
-    const normalizedUsername = username.trim().toLowerCase();
+    const normalized = username.trim().toLowerCase();
+    const { rows } = await pool.query('SELECT id, role FROM users WHERE username = $1', [normalized]);
 
-    const { rows } = await pool.query(
-      'SELECT id, role FROM users WHERE username = $1',
-      [normalizedUsername]
-    );
-    const user = rows[0];
-
-    // SECURITY: Return same response whether user exists or not (anti-enumeration)
-    if (!user) {
-      // Fake delay to match DB lookup timing
-      await new Promise(r => setTimeout(r, 100));
+    if (rows.length === 0) {
+      // Security: Fake success to prevent username enumeration
       return res.status(200).json({ message: 'Eligible.' });
     }
 
+    const user = rows[0];
     if (['admin', 'staff', 'franchisee'].includes(user.role)) {
-      return res.status(403).json({ message: 'Contact Administrator to reset password.' });
+      return res.status(403).json({ message: 'Contact Administrator.' });
     }
 
     return res.status(200).json({ message: 'Eligible.' });
   } catch (err) {
-    console.error('Check recovery eligibility error:', err);
     return res.status(500).json({ message: 'Server error.' });
   }
 };
@@ -340,9 +329,8 @@ exports.resetPassword = async (req, res) => {
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
     const { rows } = await pool.query(
-      `SELECT pr.id, pr.user_id, pr.expires_at, pr.used, u.username
+      `SELECT pr.id, pr.username, pr.expires_at, pr.used
        FROM password_resets pr
-       JOIN users u ON u.id = pr.user_id
        WHERE pr.token_hash = $1`,
       [tokenHash]
     );

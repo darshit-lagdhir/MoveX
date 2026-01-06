@@ -17,13 +17,9 @@ const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/auth.routes');
 const protectedRoutes = require('./routes/protected.routes');
-const mfaRoutes = require('../routes/mfa');
 const dashboardRoutes = require('../routes/dashboard');
 const profileRoutes = require('../routes/profile');
 const shipmentRoutes = require('./routes/shipment.routes');
-// DISABLED: Photo storage not needed currently.
-// To enable: 1) Uncomment this line  2) Uncomment app.use below  3) Set up Supabase Storage
-// const photosRoutes = require('../routes/photos');
 
 const app = express();
 
@@ -77,17 +73,7 @@ app.use((req, res, next) => {
   next();
 });
 
-/* ═══════════════════════════════════════════════════════════
-   MAINTENANCE MODE ENDPOINT
-   Toggle by setting MAINTENANCE_MODE=true in Koyeb Dashboard
-   ═══════════════════════════════════════════════════════════ */
-app.get('/api/maintenance', (req, res) => {
-  const isMaintenanceMode = process.env.MAINTENANCE_MODE === 'true';
-  res.json({
-    maintenance: isMaintenanceMode,
-    message: isMaintenanceMode ? 'Site is under maintenance' : 'Site is live'
-  });
-});
+
 
 /* ═══════════════════════════════════════════════════════════
    COOKIE PARSING (MUST BE BEFORE AUTH MIDDLEWARE)
@@ -178,11 +164,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/protected', protectedRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api', profileRoutes);
-app.use('/api', profileRoutes);
 app.use('/api/shipments', shipmentRoutes);
-app.use('/api/mfa', mfaRoutes);
-// DISABLED: Photo storage - uncomment when ready to use Supabase Storage
-// app.use('/api/photos', photosRoutes);
 
 /* ═══════════════════════════════════════════════════════════
    HEALTH CHECK ROUTES (Production Monitoring)
