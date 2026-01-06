@@ -198,14 +198,37 @@ app.use('/api/protected', protectedRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api', profileRoutes);
 // --- DEBUG: CATCH-ALL LOGOUT ---
+// --- DEBUG: CATCH-ALL LOGOUT ---
 app.post('/api/logout', async (req, res) => {
   console.log('[DEBUG] Hit /api/logout fallback');
   try {
+    const sessionStore = require('./session');
+    const jwt = require('jsonwebtoken');
+
+    // 1. Try Cookie
     const sid = req.cookies?.['movex.sid'];
-    if (sid) await require('./session').destroySession(sid);
-    res.clearCookie('movex.sid', { path: '/' });
+    if (sid) {
+      await sessionStore.destroySession(sid);
+      console.log('[DEBUG] Destroyed via Cookie');
+    }
+
+    // 2. Try Auth Header (for Brave/Privacy blocks)
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (decoded && decoded.username) {
+          await sessionStore.destroySessionsForUser(decoded.username);
+          console.log(`[DEBUG] Destroyed all sessions for user: ${decoded.username}`);
+        }
+      } catch (e) { console.warn('Invalid token in logout', e.message); }
+    }
+
+    const { clearSessionCookie } = require('./sessionMiddleware');
+    clearSessionCookie(res);
     res.json({ success: true, message: 'Fallback logout success' });
-  } catch (e) { console.error(e); }
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Logout failed' }); }
 });
 
 app.use('/api/shipments', shipmentRoutes);
