@@ -15,7 +15,7 @@ async function validateSession(req, res, next) {
             try {
                 const result = await db.query(`
                     SELECT u.id, u.username, u.full_name, u.phone, u.role, u.status, 
-                           u.mfa_enabled, u.created_at, u.last_login_at,
+                           u.created_at, u.last_login_at,
                            u.organization_id,
                            o.name as org_name, o.type as org_type, o.non_serviceable_areas, o.status as org_status
                     FROM users u
@@ -28,7 +28,7 @@ async function validateSession(req, res, next) {
                     req.user = {
                         id: row.id, username: row.username, full_name: row.full_name,
                         phone: row.phone, role: row.role, status: row.status,
-                        mfa_enabled: row.mfa_enabled, created_at: row.created_at,
+                        created_at: row.created_at,
                         last_login_at: row.last_login_at, organization_id: row.organization_id
                     };
                     req.organization = row.organization_id ? {
@@ -53,7 +53,7 @@ async function validateSession(req, res, next) {
 
             const result = await db.query(`
                 SELECT u.id, u.username, u.full_name, u.phone, u.role, u.status, 
-                       u.mfa_enabled, u.created_at, u.last_login_at,
+                       u.created_at, u.last_login_at,
                        u.organization_id,
                        o.name as org_name, o.type as org_type, o.non_serviceable_areas, o.status as org_status
                 FROM users u
@@ -66,12 +66,13 @@ async function validateSession(req, res, next) {
                 req.user = {
                     id: row.id, username: row.username, full_name: row.full_name,
                     phone: row.phone, role: row.role, status: row.status,
-                    mfa_enabled: row.mfa_enabled, created_at: row.created_at,
+                    created_at: row.created_at,
                     last_login_at: row.last_login_at, organization_id: row.organization_id
                 };
                 req.organization = row.organization_id ? {
                     id: row.organization_id, name: row.org_name, type: row.org_type,
                     non_serviceable_areas: row.non_serviceable_areas, status: row.org_status
+
                 } : null;
                 return next();
             }
@@ -122,8 +123,6 @@ router.get('/me', validateSession, (req, res) => {
         phone: user.phone,
         role: user.role,
         status: user.status,
-        mfa_enabled: user.mfa_enabled,
-        mfa_enabled: user.mfa_enabled,
         created_at: user.created_at,
         last_login_at: user.last_login_at,
         dashboard: getDashboardForRole(user.role)
@@ -168,7 +167,7 @@ router.put('/me', validateSession, async (req, res) => {
         );
 
         const result = await db.query(`
-            SELECT id, username, full_name, phone, role, status, mfa_enabled, 
+            SELECT id, username, full_name, phone, role, status, 
                    organization_id, created_at, last_login_at
             FROM users WHERE username = $1
         `, [username]);

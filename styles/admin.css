@@ -740,3 +740,84 @@ textarea {
     background: var(--error-soft);
     color: var(--error);
 }
+
+/* Utility Classes to Replace Inline Styles */
+.h-60 {
+    height: 60px;
+}
+
+.b-bottom {
+    border-bottom: 1px solid var(--border-default);
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.gap-1 {
+    gap: 1rem;
+}
+
+.gap-1-5 {
+    gap: 1.5rem;
+}
+
+.p-0 {
+    padding: 0 !important;
+}
+
+.px-1-5 {
+    padding: 0 1.5rem;
+}
+
+.py-2 {
+    padding: 2rem 0;
+}
+
+.mb-2 {
+    margin-bottom: 2rem;
+}
+
+.text-secondary {
+    color: var(--text-secondary);
+}
+
+.text-center {
+    text-align: center;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.bg-surface {
+    background: var(--surface-primary);
+}
+
+.radius-0 {
+    border-radius: 0;
+}
+
+.border-none {
+    border: none;
+}
+
+.block {
+    display: block;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.text-primary {
+    color: var(--text-primary);
+}

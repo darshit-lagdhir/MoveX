@@ -242,7 +242,6 @@ router.get('/admin/bookings', validateSession, requireRole('admin'), async (req,
             ORDER BY created_at ASC
         `);
 
-        // Mock KPI data based on real counts
         const newRequests = pendingRes.rowCount;
         const scheduledToday = await db.query(`
             SELECT COUNT(*) FROM shipments 
@@ -259,10 +258,8 @@ router.get('/admin/bookings', validateSession, requireRole('admin'), async (req,
             bookings: pendingRes.rows.map(row => ({
                 id: row.tracking_id,
                 sender: row.sender_name,
-                sender_type: 'Member', // Placeholder or derive if user_id existed
                 type: parseFloat(row.weight) < 1.0 ? 'Document' : 'Parcel',
                 location: row.origin_address,
-                time_slot: 'Standard Pickup', // Placeholder
                 created_at: row.created_at,
                 weight: row.weight
             }))
@@ -279,11 +276,12 @@ router.get('/admin/bookings', validateSession, requireRole('admin'), async (req,
 // Get All Users
 router.get('/admin/users', validateSession, requireRole('admin'), async (req, res) => {
     try {
-        // Fetch users (excluding password hashes)
+        // Fetch users with organization names
         const result = await db.query(`
-            SELECT id, full_name, username, role, status, phone, created_at 
-            FROM users 
-            ORDER BY created_at DESC
+            SELECT u.id, u.full_name, u.username, u.role, u.status, u.phone, u.created_at, o.name as org_name
+            FROM users u
+            LEFT JOIN organizations o ON u.organization_id = o.id
+            ORDER BY u.created_at DESC
         `);
 
         res.json({
@@ -293,7 +291,7 @@ router.get('/admin/users', validateSession, requireRole('admin'), async (req, re
                 name: u.full_name || u.username,
                 username: u.username,
                 role: u.role,
-                org: 'MoveX HQ', // Placeholder until org linkage is strictly defined
+                org: u.org_name || 'MoveX HQ',
                 status: u.status,
                 joined: new Date(u.created_at).toLocaleDateString()
             }))

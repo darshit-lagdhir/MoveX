@@ -23,7 +23,7 @@
 <body>
     <div class="admin-layout">
         <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header" style="height: 60px; border-bottom: 1px solid var(--border-default);">
+            <div class="sidebar-header h-60 b-bottom">
                 <a href="/admin/dashboard.html" class="nav-logo">
 
                     <span class="logo-text">MoveX</span>
@@ -124,9 +124,8 @@
             </nav>
         </aside>
         <div class="main-content">
-            <header class="top-nav"
-                style="background: var(--surface-primary); border-bottom: 1px solid var(--border-default); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; height: 60px;">
-                <div class="nav-left" style="display: flex; align-items: center; gap: 1rem;">
+            <header class="top-nav px-1-5 flex-between h-60 bg-surface b-bottom">
+                <div class="nav-left flex-center gap-1">
                     <button class="toggle-btn" id="sidebarToggle" title="Toggle Sidebar">
                         <svg fill="none" width="20" height="20" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24">
@@ -134,9 +133,8 @@
                         </svg>
                     </button>
                 </div>
-                <div class="nav-right" style="display: flex; align-items: center; gap: 1.25rem;">
-                    <div class="action-icons"
-                        style="display: flex; align-items: center; gap: 1rem; color: var(--text-secondary);">
+                <div class="nav-right flex-center" style="gap: 1.25rem;">
+                    <div class="action-icons flex-center gap-1 text-secondary">
                         <button class="icon-btn" title="Notifications"
                             style="background:none; border:none; cursor:pointer; color:inherit; padding: 4px; display:flex;">
                             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
@@ -213,7 +211,7 @@
                             style="padding: 1rem; border-bottom: 1px solid var(--border-subtle); display:flex; justify-content: space-between; align-items: center;">
                             <h3 class="card-title" style="margin:0;">Pending Shipment Requests</h3>
                         </div>
-                        <div class="data-table-container" style="border: none; border-radius: 0;">
+                        <div class="data-table-container border-none radius-0">
                             <table class="data-table">
                                 <thead>
                                     <tr>
@@ -227,8 +225,7 @@
                                 </thead>
                                 <tbody id="bookings-table-body">
                                     <tr>
-                                        <td colspan="6"
-                                            style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                        <td colspan="6" class="text-center text-secondary py-2">
                                             Loading
                                             requests...</td>
                                     </tr>

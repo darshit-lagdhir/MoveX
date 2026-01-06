@@ -311,9 +311,9 @@ window.MoveXAdmin = (function () {
     function handleServiceabilityCheck() {
         createModal('Check Serviceability', `
             <div style="padding:1rem;">
-                <label style="display:block; margin-bottom:0.8rem; font-weight:600; color:var(--text-primary);">Enter Area Name or Pincode</label>
+                <label class="block mb-2 font-bold text-primary">Enter Area Name or Pincode</label>
                 <div style="position:relative;">
-                    <input type="text" id="pincode_search_input" placeholder="e.g. Mumbai or Pincode" style="width:100%; padding:14px; border:1px solid var(--border-default); border-radius:12px; font-size:1rem; transition: all 0.3s ease; box-shadow: var(--shadow-sm); outline:none;" onfocus="this.style.borderColor='var(--brand-primary)'; this.style.boxShadow='0 0 0 4px var(--brand-primary-soft)'" onblur="this.style.borderColor='var(--border-default)'; this.style.boxShadow='var(--shadow-sm)'">
+                    <input type="text" id="pincode_search_input" placeholder="e.g. Mumbai or Pincode" class="w-full" style="padding:14px; border-radius:12px; box-shadow: var(--shadow-sm);" onfocus="this.style.borderColor='var(--brand-primary)'; this.style.boxShadow='0 0 0 4px var(--brand-primary-soft)'" onblur="this.style.borderColor='var(--border-default)'; this.style.boxShadow='var(--shadow-sm)'">
                     <div id="pincode_live_status" style="position:absolute; right:15px; top:50%; transform:translateY(-50%); display:none;">
                         <div class="spinner-small" style="width:20px; height:20px; border-top-color:var(--brand-primary);"></div>
                     </div>
@@ -427,6 +427,68 @@ window.MoveXAdmin = (function () {
             if (serviceBtn) {
                 serviceBtn.onclick = () => window.MoveXAdmin.handleServiceabilityCheck();
             }
+        },
+
+        'bookings': async () => {
+            const tableBody = document.getElementById('bookings-table-body');
+            if (!tableBody) return;
+
+            const fetchBookings = async () => {
+                try {
+                    const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                    const token = session.data?.token;
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                    const res = await fetch(`${API_BASE}/api/dashboard/admin/bookings`, {
+                        credentials: 'include',
+                        headers: headers
+                    });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        // Update KPIs
+                        const { newRequests, scheduledToday } = data.stats;
+                        const reqEl = document.getElementById('kpi-new-requests');
+                        const schedEl = document.getElementById('kpi-scheduled'); // Mapped to 'Created Today'
+
+                        if (reqEl) animateValue(reqEl, 0, newRequests, 1000);
+                        if (schedEl) animateValue(schedEl, 0, scheduledToday, 1000);
+
+                        // Render Table
+                        if (data.bookings.length === 0) {
+                            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-tertiary);">No pending booking requests found.</td></tr>`;
+                        } else {
+                            tableBody.innerHTML = data.bookings.map(row => `
+                                <tr>
+                                    <td style="font-family: monospace; font-weight: 600; color: var(--brand-primary);">${row.id}</td>
+                                    <td>
+                                        <div style="font-weight: 500;">${row.sender}</div>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-default">${row.type}</span>
+                                        <span style="font-size: 0.75rem; color: var(--text-tertiary); margin-left: 6px;">${row.weight} kg</span>
+                                    </td>
+                                    <td style="max-width: 250px;">
+                                        <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${row.location}">${row.location}</div>
+                                    </td>
+                                    <td>${new Date(row.created_at).toLocaleDateString()}</td>
+                                    <td>
+                                        <button class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="window.MoveXAdmin.viewBooking('${row.id}')">Review</button>
+                                    </td>
+                                </tr>
+                            `).join('');
+                        }
+                    } else {
+                        throw new Error(data.error);
+                    }
+                } catch (err) {
+                    console.error("Fetch Bookings Error:", err);
+                    tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--error);">Failed to load bookings.</td></tr>`;
+                }
+            };
+
+            fetchBookings();
         },
 
         'users': async () => {
