@@ -236,6 +236,45 @@ app.post('/api/logout', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: 'Logout failed' }); }
 });
 
+// --- REDIRECT-BASED LOGOUT (Brave-Safe) ---
+// This uses GET + redirect instead of POST fetch, bypassing Brave's blocking
+app.get('/api/logout-redirect', async (req, res) => {
+  console.log('[LOGOUT] Redirect-based logout triggered');
+  try {
+    const sessionStore = require('./session');
+    const jwt = require('jsonwebtoken');
+    const { clearSessionCookie } = require('./sessionMiddleware');
+
+    // 1. Try Cookie
+    const sid = req.cookies?.['movex.sid'];
+    if (sid) {
+      await sessionStore.destroySession(sid);
+      console.log('[LOGOUT] Destroyed via Cookie');
+    }
+
+    // 2. Try Token from query param
+    const token = req.query.token;
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (decoded && decoded.username) {
+          await sessionStore.destroySessionsForUser(decoded.username);
+          console.log(`[LOGOUT] Destroyed all sessions for: ${decoded.username}`);
+        }
+      } catch (e) { console.warn('[LOGOUT] Token invalid:', e.message); }
+    }
+
+    clearSessionCookie(res);
+
+    // Redirect back to frontend
+    const frontendUrl = process.env.FRONTEND_URL?.split(',')[0]?.trim() || '/';
+    res.redirect(`${frontendUrl}/?logout=true`);
+  } catch (e) {
+    console.error('[LOGOUT] Error:', e);
+    res.redirect('/?logout=true&error=logout_failed');
+  }
+});
+
 app.use('/api/shipments', shipmentRoutes);
 
 /* ═══════════════════════════════════════════════════════════

@@ -178,32 +178,15 @@
     }
 
     window.MoveXLogout = async function () {
-        const token = getToken();
-
-        try {
-            // Try PRIMARY endpoint
-            await fetch(`${API_BASE}/api/dashboard/logout`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-            });
-
-            // Try FALLBACK endpoint (Safety Net)
-            await fetch(`${API_BASE}/api/logout`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-            });
-        } catch (err) {
-            console.error('Logout error:', err);
-        }
-
-        // Clear both possible session cookies
+        // Clear local state immediately
         document.cookie = 'movex_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         document.cookie = 'movex.sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         sessionStorage.removeItem('movexsecuresession');
 
-        window.location.href = '/?logout=true';
+        // Navigate to logout endpoint (bypasses Brave's fetch blocking)
+        // The backend will clear the session and redirect back
+        const token = getToken();
+        window.location.href = `${API_BASE}/api/logout-redirect?token=${encodeURIComponent(token || '')}`;
     };
 
     if (document.readyState === 'loading') {
