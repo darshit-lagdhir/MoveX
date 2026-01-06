@@ -7,11 +7,12 @@
   const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
   const API_BASE = isLocal ? 'http://localhost:4000' : 'https://presidential-fly-movex-237428a4.koyeb.app';
   if (isLocal) console.log('🔧 Running in Development Mode');
-  if (isLocal) console.log('🔧 Running in Development Mode');
-
   // --- AUTO-REDIRECT (Frontend Check) ---
   // If user lands on login page with active session, bump them to dashboard
-  if (['/', '/index.html'].includes(window.location.pathname) || window.location.pathname === '') {
+  // BUT: If ?logout=true or ?auth_message is present, STAY on login page
+  const urlParams = new URLSearchParams(window.location.search);
+  if ((['/', '/index.html'].includes(window.location.pathname) || window.location.pathname === '') &&
+    !urlParams.has('logout') && !urlParams.has('auth_message')) {
     const session = sessionStorage.getItem('movexsecuresession');
     if (session) {
       try {

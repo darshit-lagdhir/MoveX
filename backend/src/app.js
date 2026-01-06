@@ -162,6 +162,11 @@ const protectStaticDashboards = async (req, res, next) => {
    ═══════════════════════════════════════════════════════════ */
 app.get(['/', '/index.html'], async (req, res, next) => {
   try {
+    // If user explicitly logged out or has error message, DO NOT auto-redirect
+    if (req.query.logout || req.query.auth_message) {
+      return next();
+    }
+
     const sid = req.cookies?.['movex.sid'];
     const session = sid ? await sessionStore.getSession(sid) : null;
 

@@ -203,7 +203,7 @@
         document.cookie = 'movex.sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         sessionStorage.removeItem('movexsecuresession');
 
-        window.location.href = '/';
+        window.location.href = '/?logout=true';
     };
 
     if (document.readyState === 'loading') {
