@@ -21,7 +21,8 @@
         const data = JSON.parse(session);
         if (data && data.data && data.data.token) {
           const token = data.data.token;
-          const role = data.data.user?.role || 'user';
+          // Role is directly at data.data.role, NOT data.data.user.role
+          const storedRole = data.data.role || 'user';
           const dashboards = {
             admin: '/admin/dashboard.html',
             franchisee: '/dashboards/franchisee.html',
@@ -29,22 +30,25 @@
             user: '/dashboards/user.html'
           };
 
-          // Verify session with backend before redirecting
+          // Verify session with backend and get authoritative role
           fetch(`${API_BASE}/api/me`, {
             method: 'GET',
             credentials: 'include',
             headers: { 'Authorization': `Bearer ${token}` }
           }).then(res => {
             if (res.ok) {
-              // Session valid, redirect
-              window.location.href = dashboards[role] || dashboards.user;
+              return res.json();
             } else {
-              // Session invalid, clear it
               sessionStorage.removeItem('movexsecuresession');
+              throw new Error('Session invalid');
             }
-          }).catch(() => {
-            // Network error, try redirect anyway (offline support)
+          }).then(result => {
+            // Use role from backend response (most reliable)
+            const role = result.user?.role || storedRole;
             window.location.href = dashboards[role] || dashboards.user;
+          }).catch(() => {
+            // Network error, use stored role
+            window.location.href = dashboards[storedRole] || dashboards.user;
           });
         }
       } catch (e) {
