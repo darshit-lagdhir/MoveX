@@ -42,56 +42,6 @@ npm start
 
 ---
 
-## 📦 Core Modules
-
-MoveX is organized into **6 functional modules** that cover the complete logistics workflow:
-
-### Module 1: User Management
-- User registration and authentication
-- Role-based access control (Admin, Franchisee, Staff, User)
-- Session management with secure cookie handling
-- Password encryption using Bcrypt
-- Profile management and settings
-
-### Module 2: Franchise and Staff Operations
-- Franchise registration and approval workflow
-- Staff assignment to franchises
-- Branch-level operations management
-- Franchise performance tracking
-- Staff role assignment and permissions
-
-### Module 3: Customer Booking and Pricing
-- Online booking portal for customers
-- Dynamic pricing based on weight, distance, and service type
-- Rate card management for different routes
-- Booking confirmation and receipt generation
-- Customer notification system
-
-### Module 4: Pickup and Dispatch Management
-- Pickup request scheduling
-- Dispatch assignment to delivery personnel
-- Route optimization for pickups
-- Real-time pickup status updates
-- Warehouse receiving and sorting
-
-### Module 5: Shipment Tracking and Delivery
-- Real-time shipment tracking with timeline view
-- Status updates at each checkpoint
-- Proof of delivery with photo capture
-- Delivery attempt logging
-- Return and re-delivery handling
-- Barcode-based label printing
-
-### Module 6: Reports and Analytics
-- Dashboard with key performance indicators (KPIs)
-- Revenue and shipment volume reports
-- Franchise-wise performance analysis
-- Delivery success rate tracking
-- Custom date range filtering
-- Export reports to various formats
-
----
-
 ## 🏗️ How the System Works
 
 MoveX uses a **Single-system design built for safety**, made to be an "Iron Fortress" for your delivery data.
