@@ -155,8 +155,9 @@ exports.login = async (req, res) => {
     setSessionCookie(res, session.token);
 
     // Generate JWT for cross-origin fallback (when cookies blocked)
+    // Include sessionToken so logout can work even without cookies
     const token = jwt.sign(
-      { username: user.username, role: user.role },
+      { username: user.username, role: user.role, sessionToken: session.token },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );

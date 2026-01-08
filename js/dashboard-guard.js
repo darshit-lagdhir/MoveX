@@ -178,13 +178,16 @@
     }
 
     window.MoveXLogout = async function () {
-        // Clear local state first
+        // Get token BEFORE clearing storage
+        const token = getToken();
+
+        // Clear local state
         document.cookie = 'movex_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         document.cookie = 'movex.sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         sessionStorage.removeItem('movexsecuresession');
 
-        // Navigate to backend logout (works across origins)
-        window.location.href = `${API_BASE}/api/logout-redirect`;
+        // Navigate to backend logout with token as fallback
+        window.location.href = `${API_BASE}/api/logout-redirect?token=${encodeURIComponent(token || '')}`;
     };
 
     if (document.readyState === 'loading') {

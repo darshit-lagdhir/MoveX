@@ -207,12 +207,29 @@ app.use('/api', profileRoutes);
 app.get('/api/logout-redirect', async (req, res) => {
   try {
     const sessionStore = require('./session');
+    const jwt = require('jsonwebtoken');
     const { clearSessionCookie } = require('./sessionMiddleware');
 
-    // Only destroy the session from the cookie (NOT all sessions for user)
+    let destroyed = false;
+
+    // 1. Try cookie first
     const sid = req.cookies?.['movex.sid'];
     if (sid) {
       await sessionStore.destroySession(sid);
+      destroyed = true;
+    }
+
+    // 2. Try JWT token from query (fallback when cookie not sent)
+    if (!destroyed && req.query.token) {
+      try {
+        const decoded = jwt.verify(req.query.token, process.env.JWT_SECRET);
+        if (decoded && decoded.sessionToken) {
+          await sessionStore.destroySession(decoded.sessionToken);
+          destroyed = true;
+        }
+      } catch (e) {
+        // Token invalid or expired - that's fine
+      }
     }
 
     clearSessionCookie(res);
