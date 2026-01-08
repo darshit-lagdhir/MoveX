@@ -202,6 +202,30 @@ app.use('/api/auth', authRoutes);
 app.use('/api/protected', protectedRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api', profileRoutes);
+
+// Redirect-based logout (works across origins, only destroys CURRENT session)
+app.get('/api/logout-redirect', async (req, res) => {
+  try {
+    const sessionStore = require('./session');
+    const { clearSessionCookie } = require('./sessionMiddleware');
+
+    // Only destroy the session from the cookie (NOT all sessions for user)
+    const sid = req.cookies?.['movex.sid'];
+    if (sid) {
+      await sessionStore.destroySession(sid);
+    }
+
+    clearSessionCookie(res);
+
+    // Redirect back to frontend
+    const frontendUrl = process.env.FRONTEND_URL?.split(',')[0]?.trim() || '/';
+    res.redirect(`${frontendUrl}/?logout=true`);
+  } catch (e) {
+    console.error('Logout redirect error:', e);
+    res.redirect('/?logout=true');
+  }
+});
+
 app.use('/api/shipments', shipmentRoutes);
 
 /* ═══════════════════════════════════════════════════════════
