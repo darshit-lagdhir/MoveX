@@ -7,31 +7,45 @@
   const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
   const API_BASE = isLocal ? 'http://localhost:4000' : 'https://presidential-fly-movex-237428a4.koyeb.app';
   if (isLocal) console.log('🔧 Running in Development Mode');
+
   // --- AUTO-REDIRECT (Frontend Check) ---
-  // If user lands on login page with active session, bump them to dashboard
+  // If user lands on login page with active session, redirect to dashboard
   // BUT: If ?logout=true or ?auth_message is present, STAY on login page
   const urlParams = new URLSearchParams(window.location.search);
   if ((['/', '/index.html'].includes(window.location.pathname) || window.location.pathname === '') &&
     !urlParams.has('logout') && !urlParams.has('auth_message')) {
+
     const session = sessionStorage.getItem('movexsecuresession');
     if (session) {
       try {
         const data = JSON.parse(session);
         if (data && data.data && data.data.token) {
-          // Verify role and redirect
+          const token = data.data.token;
           const role = data.data.user?.role || 'user';
           const dashboards = {
-            admin: 'admin/dashboard.html',
-            franchisee: 'dashboards/franchisee.html',
-            staff: 'dashboards/staff.html',
-            user: 'dashboards/user.html'
+            admin: '/admin/dashboard.html',
+            franchisee: '/dashboards/franchisee.html',
+            staff: '/dashboards/staff.html',
+            user: '/dashboards/user.html'
           };
-          // Slight delay to allow backend cookie check to race first, but this is the safety net
-          setTimeout(() => {
-            if (document.body) {
+
+          // Verify session with backend before redirecting
+          fetch(`${API_BASE}/api/me`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: { 'Authorization': `Bearer ${token}` }
+          }).then(res => {
+            if (res.ok) {
+              // Session valid, redirect
               window.location.href = dashboards[role] || dashboards.user;
+            } else {
+              // Session invalid, clear it
+              sessionStorage.removeItem('movexsecuresession');
             }
-          }, 100);
+          }).catch(() => {
+            // Network error, try redirect anyway (offline support)
+            window.location.href = dashboards[role] || dashboards.user;
+          });
         }
       } catch (e) {
         console.warn("Invalid session format", e);
