@@ -45,7 +45,20 @@ We chose PostgreSQL because it is the "Gold Standard" for safe data.
 
 ---
 
-## 3. The Security Stack (Detailed)
+## 4. Core Functional Modules
+
+| # | Module | Description |
+|---|--------|-------------|
+| 1 | **User Management** | Registration, login, roles, and session handling |
+| 2 | **Franchise and Staff Operations** | Franchise management and staff assignments |
+| 3 | **Customer Booking and Pricing** | Online booking and rate calculation |
+| 4 | **Pickup and Dispatch Management** | Scheduling pickups and assigning deliveries |
+| 5 | **Shipment Tracking and Delivery** | Real-time tracking and proof of delivery |
+| 6 | **Reports and Analytics** | Dashboard metrics and business reports |
+
+---
+
+## 5. The Security Stack (Detailed)
 
 How does MoveX stop hackers?
 
@@ -65,7 +78,7 @@ In `app.js`, we set special instructions for the browser:
 
 ---
 
-## 4. How the Folders are Organized
+## 6. How the Folders are Organized
 
 ```
 movex/
@@ -85,7 +98,7 @@ movex/
 
 ---
 
-## 5. The Path of Data (Step-by-Step)
+## 7. The Path of Data (Step-by-Step)
 
 Imagine you are an Admin changing a Parcel status:
 
@@ -101,7 +114,7 @@ Imagine you are an Admin changing a Parcel status:
 
 ---
 
-## 6. How we manage Photos
+## 8. How we manage Photos
 
 Photos of parcels are big and slow. We don't save them in our server.
 *   We use **Supabase Storage**.
@@ -111,7 +124,7 @@ Photos of parcels are big and slow. We don't save them in our server.
 
 ---
 
-## 7. Scaling (Handling More Users)
+## 9. Scaling (Handling More Users)
 
 Even though MoveX is a Monolith, it can handle many users.
 *   **Connection Pooling (Port 6543)**: We use a tool that allows 1000s of data requests to share the same few connections to the database.
