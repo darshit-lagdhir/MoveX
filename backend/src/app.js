@@ -212,23 +212,37 @@ app.get('/api/logout-redirect', async (req, res) => {
 
     let destroyed = false;
 
-    // 1. Try cookie first
+    // 1. Try cookie first (best method)
     const sid = req.cookies?.['movex.sid'];
     if (sid) {
       await sessionStore.destroySession(sid);
       destroyed = true;
     }
 
-    // 2. Try JWT token from query (fallback when cookie not sent)
+    // 2. Try JWT token from query
     if (!destroyed && req.query.token) {
       try {
         const decoded = jwt.verify(req.query.token, process.env.JWT_SECRET);
+
+        // 2a. New JWTs have sessionToken - use it directly
         if (decoded && decoded.sessionToken) {
           await sessionStore.destroySession(decoded.sessionToken);
           destroyed = true;
         }
+        // 2b. Old JWTs only have username - find their most recent session
+        else if (decoded && decoded.username) {
+          const db = require('./config/db');
+          const result = await db.query(
+            'SELECT token FROM sessions WHERE username = $1 ORDER BY last_accessed_at DESC LIMIT 1',
+            [decoded.username]
+          );
+          if (result.rows.length > 0) {
+            await sessionStore.destroySession(result.rows[0].token);
+            destroyed = true;
+          }
+        }
       } catch (e) {
-        // Token invalid or expired - that's fine
+        // Token invalid or expired
       }
     }
 

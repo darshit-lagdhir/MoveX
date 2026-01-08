@@ -3,10 +3,11 @@ const sessionStore = require('./session');
 
 const COOKIE_NAME = 'movex.sid';
 const isProd = process.env.NODE_ENV === 'production';
-// Normalize 'None' to 'none' (Express is lowercase preferred) and default to 'none' in prod if not set
-const sameSiteEnv = (process.env.SESSION_SAME_SITE || '').toLowerCase();
-const sameSite = sameSiteEnv === 'none' ? 'none' : (isProd ? 'none' : 'lax');
-const secureCookie = process.env.SESSION_SECURE === 'true' || isProd;
+
+// Production: secure cookies with SameSite=None for cross-origin
+// Development: relaxed settings for localhost
+const sameSite = isProd ? 'none' : 'lax';
+const secureCookie = isProd;
 
 function setSessionCookie(res, sessionId) {
   res.cookie(COOKIE_NAME, sessionId, {

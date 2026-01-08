@@ -286,10 +286,6 @@ JWT_SECRET=your_secret_key_here
 SESSION_SECRET=another_secret_key_here
 SESSION_MAX_AGE=3600000                # 1 hour in milliseconds
 
-# SECURITY SETTINGS
-SESSION_SECURE=true                    # Use only with HTTPS website
-SESSION_SAME_SITE=Strict               # Extra security for cookies
-
 # RATE LIMITS (Stops hackers from guessing passwords)
 RATE_LIMIT_LOGIN=5                     # Max login tries in 15 mins
 RATE_LIMIT_REGISTER=3                  # Max signups in 15 mins
