@@ -178,14 +178,15 @@
     }
 
     window.MoveXLogout = async function () {
-        // Clear local state immediately
+        // IMPORTANT: Get token BEFORE clearing storage!
+        const token = getToken();
+
+        // Clear local state
         document.cookie = 'movex_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         document.cookie = 'movex.sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         sessionStorage.removeItem('movexsecuresession');
 
         // Navigate to logout endpoint (bypasses Brave's fetch blocking)
-        // The backend will clear the session and redirect back
-        const token = getToken();
         window.location.href = `${API_BASE}/api/logout-redirect?token=${encodeURIComponent(token || '')}`;
     };
 
@@ -195,3 +196,4 @@
         guardDashboard();
     }
 })();
+
