@@ -42,6 +42,21 @@ npm start
 
 ---
 
+## 📦 Core Modules
+
+MoveX is organized into **6 functional modules**:
+
+| # | Module | Description |
+|---|--------|-------------|
+| 1 | **User Management** | Registration, login, roles, and session handling |
+| 2 | **Franchise and Staff Operations** | Franchise management and staff assignments |
+| 3 | **Customer Booking and Pricing** | Online booking and rate calculation |
+| 4 | **Pickup and Dispatch Management** | Scheduling pickups and assigning deliveries |
+| 5 | **Shipment Tracking and Delivery** | Real-time tracking and proof of delivery |
+| 6 | **Reports and Analytics** | Dashboard metrics and business reports |
+
+---
+
 ## 🏗️ How the System Works
 
 MoveX uses a **Single-system design built for safety**, made to be an "Iron Fortress" for your delivery data.
