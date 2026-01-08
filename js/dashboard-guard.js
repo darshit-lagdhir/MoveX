@@ -178,16 +178,27 @@
     }
 
     window.MoveXLogout = async function () {
-        // IMPORTANT: Get token BEFORE clearing storage!
         const token = getToken();
+
+        try {
+            await fetch(`${API_BASE}/api/dashboard/logout`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+        } catch (err) {
+            console.error('Logout error:', err);
+        }
 
         // Clear local state
         document.cookie = 'movex_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         document.cookie = 'movex.sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         sessionStorage.removeItem('movexsecuresession');
 
-        // Navigate to logout endpoint (bypasses Brave's fetch blocking)
-        window.location.href = `${API_BASE}/api/logout-redirect?token=${encodeURIComponent(token || '')}`;
+        window.location.href = '/';
     };
 
     if (document.readyState === 'loading') {
@@ -196,4 +207,3 @@
         guardDashboard();
     }
 })();
-

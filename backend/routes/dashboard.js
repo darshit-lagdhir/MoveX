@@ -785,31 +785,18 @@ router.post('/admin/staff/status', validateSession, requireRole('admin'), async 
     }
 });
 
-// Logout with Fallback Strategy
+// Logout - destroy current session only
 router.post('/logout', validateSession, async (req, res) => {
     try {
-        let destroyed = false;
-
-        // 1. Try to destroy specific session from cookie
         const sid = req.cookies?.['movex.sid'];
         if (sid) {
             await sessionStore.destroySession(sid);
-            destroyed = true;
-            console.log(`[Logout] Destroyed specific session cookie: ${sid.substring(0, 6)}...`);
         }
-
-        // 2. If cookie was missing (Brave/privacy block), use the authenticated user info
-        if (!destroyed && req.session && req.session.username) {
-            await sessionStore.destroySessionsForUser(req.session.username);
-            console.log(`[Logout] Privacy Block Detected. Wiped all sessions for user: ${req.session.username}`);
-        }
-
         clearSessionCookie(res);
         res.json({ success: true, message: 'Logged out successfully' });
     } catch (err) {
         console.error("Logout Error:", err);
-        // Even if error, tell frontend it succeeded so it clears local state
-        res.json({ success: true, message: 'Logged out (forced)' });
+        res.status(500).json({ success: false, error: 'Logout failed' });
     }
 });
 
