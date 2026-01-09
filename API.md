@@ -126,6 +126,15 @@ These paths are used by the Admin to manage the whole business.
 *   **Details:** This creates **two things at once**: a new Branch (Organization) and a new Owner (User).
 *   **What to send:** Branch name, Address, Pincodes covered, and Owner's personal details.
 
+### ✏️ Update Franchise Details
+*   **Path:** `POST /api/dashboard/admin/franchises/update`
+*   **What to send:** `id` and updated fields (e.g. `name`, `pincodes`, `performance`).
+
+### 🛡️ Disable Franchise Branch
+*   **Path:** `POST /api/dashboard/admin/franchises/status`
+*   **What to send:** `{"id": 123, "status": "disabled"}`.
+*   **Effect:** Disables the branch operations (tracking/booking).
+
 ---
 
 ## 👥 4. Staff Management (Logistics Team)
