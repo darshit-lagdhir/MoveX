@@ -84,7 +84,7 @@
 
         if (window.MoveXAdmin) {
             console.log('Layout Manager: Triggering core init for', currentPath);
-            window.MoveXAdmin.init(currentPath); // init handles stripping too, but good to be safe
+            window.MoveXAdmin.init(currentPath.toLowerCase());
         }
 
         // Final step: Reveal the UI once everything is stable

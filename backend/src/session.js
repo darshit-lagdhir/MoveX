@@ -104,7 +104,7 @@ class SessionStore {
         // console.log(`[Sessions] Cleaned up ${result.rowCount} expired session(s)`);
       }
     } catch (err) {
-      console.error("Session cleanup failed", err);
+      // console.error("Session cleanup failed", err); // Silenced background noise
     }
   }
 

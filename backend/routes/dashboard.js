@@ -877,4 +877,81 @@ router.get('/admin/finance/transactions', validateSession, requireRole('admin'),
     }
 });
 
+// Reports Page Stats
+router.get('/admin/reports/stats', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        let dateClause = '';
+        let params = [];
+
+        // Validate Dates YYYY-MM-DD
+        if (startDate && endDate) {
+            dateClause = 'WHERE DATE(created_at) >= $1 AND DATE(created_at) <= $2';
+            params = [startDate, endDate];
+        }
+
+        // 1. KPI: Delivery Success Rate (Percentage of Delivered vs Total in range)
+        let kpi1Query = `
+            SELECT 
+                COUNT(*) FILTER (WHERE status = 'delivered') as delivered,
+                COUNT(*) as total
+            FROM shipments
+        `;
+        if (dateClause) kpi1Query += ' ' + dateClause;
+
+        const successRes = await db.query(kpi1Query, params);
+        const total = parseInt(successRes.rows[0].total) || 0;
+        const delivered = parseInt(successRes.rows[0].delivered) || 0;
+        const successRate = total > 0 ? ((delivered / total) * 100).toFixed(1) + '%' : '0%';
+
+        // 2. KPI: Avg Delivery Time (Only for items delivered in range)
+        let kpi2Query = `
+            SELECT AVG(EXTRACT(EPOCH FROM (updated_at - created_at))/86400) as avg_days 
+            FROM shipments 
+            WHERE status = 'delivered'
+        `;
+        if (dateClause) kpi2Query += ' AND ' + dateClause.replace('WHERE', ''); // Append date condition
+
+        const timeRes = await db.query(kpi2Query, params);
+        const avgDays = timeRes.rows[0].avg_days
+            ? parseFloat(timeRes.rows[0].avg_days).toFixed(1) + ' Days'
+            : 'N/A';
+
+        // 3. Table: Daily Operations Report
+        let tableQuery = `
+            SELECT 
+                to_char(created_at, 'Mon DD, YYYY') as date,
+                COUNT(*) as total_shipments,
+                COUNT(*) FILTER (WHERE status = 'delivered') as completed,
+                COUNT(*) FILTER (WHERE status IN ('failed', 'returned')) as issues,
+                COALESCE(SUM(price), 0) as revenue
+            FROM shipments
+        `;
+        if (dateClause) tableQuery += ' ' + dateClause;
+
+        tableQuery += `
+            GROUP BY DATE(created_at), to_char(created_at, 'Mon DD, YYYY')
+            ORDER BY DATE(created_at) DESC
+        `;
+
+        // If no filter, limit to 30 days by default
+        if (!dateClause) tableQuery += ' LIMIT 30';
+
+        const historyRes = await db.query(tableQuery, params);
+
+        res.json({
+            success: true,
+            data: {
+                successRate,
+                avgDeliveryTime: avgDays,
+                history: historyRes.rows
+            }
+        });
+
+    } catch (err) {
+        console.error('Error fetching reports stats:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
 module.exports = router;

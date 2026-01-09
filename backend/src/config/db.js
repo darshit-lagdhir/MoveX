@@ -71,9 +71,10 @@ function buildPoolConfig() {
   const baseConfig = {
     // Connection pool settings (conservative for production)
     max: parseInt(process.env.DB_POOL_MAX, 10) || 10, // Maximum connections
-    min: parseInt(process.env.DB_POOL_MIN, 10) || 2,  // Minimum connections
-    idleTimeoutMillis: 30000,                          // Close idle connections after 30s
-    connectionTimeoutMillis: 10000,                    // Timeout for new connections (10s)
+    min: 0,                                            // Allow all connections to close if idle
+    idleTimeoutMillis: 15000,                          // Close idle connections after 15s
+    connectionTimeoutMillis: 5000,                     // Fail fast (5s)
+    keepAlive: true,                                   // Keep TCP connection healthy
     // Note: statement_timeout is NOT supported by Supabase connection pooler (port 6543)
     // If you need query timeouts, set them per-query or use direct connection (port 5432)
   };

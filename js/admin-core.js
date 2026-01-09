@@ -603,6 +603,96 @@ window.MoveXAdmin = (function () {
             if (statusFilter) statusFilter.onchange = filterUsers;
         },
 
+        'reports': async () => {
+            const successEl = document.getElementById('kpi-success-rate');
+            const avgEl = document.getElementById('kpi-avg-time');
+            const tbody = document.getElementById('reports-table-real');
+            const filterBtn = document.getElementById('report-filter-btn');
+            const startInput = document.getElementById('report-start');
+            const endInput = document.getElementById('report-end');
+
+            if (!tbody) return;
+
+            const loadData = async (start = '', end = '') => {
+                // Visual confirmation
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading Data...</td></tr>';
+                if (successEl) successEl.textContent = 'Loading...';
+                if (avgEl) avgEl.textContent = 'Loading...';
+
+                try {
+                    const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                    const token = session.data?.token;
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                    let url = `${API_BASE}/api/dashboard/admin/reports/stats`;
+                    if (start && end) {
+                        url += `?startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`;
+                    }
+
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+                    const res = await fetch(url, {
+                        credentials: 'include',
+                        headers: headers,
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    const data = await res.json();
+
+                    if (data.success) {
+                        if (successEl) successEl.textContent = data.data.successRate;
+                        if (avgEl) avgEl.textContent = data.data.avgDeliveryTime;
+
+                        if (data.data.history.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:1rem;">No data found for this period</td></tr>';
+                        } else {
+                            tbody.innerHTML = data.data.history.map(row => `
+                                <tr>
+                                    <td>${row.date}</td>
+                                    <td>${row.total_shipments}</td>
+                                    <td>${row.completed}</td>
+                                    <td style="color: ${row.issues > 0 ? 'var(--warning)' : 'inherit'}">${row.issues}</td>
+                                    <td>₹${parseInt(row.revenue).toLocaleString()}</td>
+                                </tr>
+                            `).join('');
+                        }
+                    } else {
+                        if (successEl) successEl.textContent = 'Err';
+                        if (avgEl) avgEl.textContent = 'Err';
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--error);">Error loading data</td></tr>';
+                        showToast('Failed to load report data', 'error');
+                    }
+                } catch (err) {
+                    console.error('Reports load error:', err);
+                    if (successEl) successEl.textContent = 'Err';
+                    if (avgEl) avgEl.textContent = 'Err';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--error);">Connection Failed</td></tr>';
+                }
+            };
+
+            // Attach Listener
+            if (filterBtn && startInput && endInput) {
+                filterBtn.onclick = () => {
+                    const sVal = startInput.value;
+                    const eVal = endInput.value;
+                    if (!sVal || !eVal) {
+                        showToast('Please select both Start and End dates', 'info');
+                        return;
+                    }
+                    if (new Date(sVal) > new Date(eVal)) {
+                        showToast('Start date cannot be after End date', 'error');
+                        return;
+                    }
+                    loadData(sVal, eVal);
+                };
+            }
+
+            // Initial Load (Default)
+            loadData();
+        },
+
         'franchises': async () => {
             const tableBody = document.getElementById('franchise-table-body');
             if (!tableBody) return;
@@ -1179,20 +1269,7 @@ window.MoveXAdmin = (function () {
             } catch (e) { console.error('Chart load failed', e); }
         },
 
-        'reports': function () {
-            const buttons = document.querySelectorAll('.page-header button');
-            if (buttons.length >= 2) {
-                buttons[0].onclick = () => showToast('Date range selector opened', 'info');
-                buttons[1].onclick = () => showToast('Exporting report as PDF...', 'success');
-            }
-            const tbody = document.querySelector('.data-table tbody');
-            if (tbody) {
-                tbody.innerHTML = `
-                    <tr><td>Oct 24, 2025</td><td>1,240</td><td>1,150</td><td style="color: var(--warning);">5</td><td>₹24,500</td></tr>
-                    <tr><td>Oct 23, 2025</td><td>1,180</td><td>1,100</td><td style="color: var(--warning);">2</td><td>₹22,100</td></tr>
-                `;
-            }
-        },
+        /* Duplicate 'reports' initializer removed to allow real API logic to run */
         'bookings': async () => {
             const tBody = document.getElementById('bookings-table-body');
             if (!tBody) return;
