@@ -952,7 +952,12 @@ window.MoveXAdmin = (function () {
                     // Fetch franchises for the dropdown
                     let franchises = [];
                     try {
-                        const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises`);
+                        const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                        const token = session.data?.token;
+                        const headers = { 'Content-Type': 'application/json' };
+                        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                        const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises`, { credentials: 'include', headers });
                         const fData = await res.json();
                         franchises = fData.franchises || [];
                     } catch (e) { console.error('Failed to pre-fetch hubs', e); }
@@ -1009,9 +1014,15 @@ window.MoveXAdmin = (function () {
                                 }
 
                                 try {
+                                    const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                                    const token = session.data?.token;
+                                    const headers = { 'Content-Type': 'application/json' };
+                                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
                                     const res = await fetch(`${API_BASE}/api/dashboard/admin/staff/create`, {
                                         method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
+                                        headers: headers,
+                                        credentials: 'include',
                                         body: JSON.stringify(payload)
                                     });
                                     const result = await res.json();
@@ -1607,7 +1618,12 @@ window.MoveXAdmin = (function () {
         // Fetch franchises for the dropdown
         let franchises = [];
         try {
-            const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises`);
+            const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+            const token = session.data?.token;
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises`, { credentials: 'include', headers });
             const fData = await res.json();
             franchises = fData.franchises || [];
         } catch (e) { console.error('Failed to pre-fetch hubs', e); }
@@ -1667,9 +1683,15 @@ window.MoveXAdmin = (function () {
                     };
 
                     try {
+                        const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                        const token = session.data?.token;
+                        const headers = { 'Content-Type': 'application/json' };
+                        if (token) headers['Authorization'] = `Bearer ${token}`;
+
                         const res = await fetch(`${API_BASE}/api/dashboard/admin/staff/update`, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: headers,
+                            credentials: 'include',
                             body: JSON.stringify(payload)
                         });
                         const result = await res.json();
@@ -1692,9 +1714,15 @@ window.MoveXAdmin = (function () {
                 if (!confirm(`Are you sure you want to ${newStatus === 'active' ? 'enable' : 'disable'} this account?`)) return;
 
                 try {
+                    const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                    const token = session.data?.token;
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
                     const res = await fetch(`${API_BASE}/api/dashboard/admin/staff/status`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: headers,
+                        credentials: 'include',
                         body: JSON.stringify({ id: s.id, status: newStatus })
                     });
                     const result = await res.json();
