@@ -1044,23 +1044,139 @@ window.MoveXAdmin = (function () {
         },
         'bookings': function () { renderBookingTable(); },
 
-        'finance': function () {
-            const kpis = document.querySelectorAll('.card-value');
-            if (kpis.length >= 3) {
-                // Mock stats for finance currently
-                kpis[0].textContent = '₹' + (450000).toLocaleString();
-                kpis[1].textContent = '₹45,200';
-                kpis[2].textContent = '₹128k';
+        'finance': async function () {
+            // Helper for Auth Fetches
+            const fetchSecure = async (endpoint) => {
+                const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                const token = session.data?.token;
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                // Using API_BASE which defaults to localhost:4000 on local, or prod URL.
+                const res = await fetch(`${API_BASE}${endpoint}`, { credentials: 'include', headers });
+                return await res.json();
+            };
+
+            // 1. Fetch Stats (KPIs)
+            try {
+                const data = await fetchSecure('/api/dashboard/admin/finance/stats');
+
+                const revEl = document.getElementById('fin-total-revenue');
+                const penEl = document.getElementById('fin-pending-cod');
+                const payEl = document.getElementById('fin-franchise-payouts');
+
+                if (data.success) {
+                    const formatCurrency = (val) => {
+                        return val >= 1000000 ? (val / 1000000).toFixed(1) + 'M' : val.toLocaleString();
+                    };
+
+                    if (revEl) revEl.innerText = '₹' + formatCurrency(data.stats.totalRevenue);
+                    if (penEl) penEl.innerText = '₹' + formatCurrency(data.stats.pendingRevenue);
+                    if (payEl) payEl.innerText = '₹' + formatCurrency(data.stats.payouts);
+                } else {
+                    if (revEl) revEl.innerText = '0';
+                    if (penEl) penEl.innerText = '0';
+                    if (payEl) payEl.innerText = '0';
+                }
+            } catch (e) {
+                console.error('Stats load failed', e);
+                const els = ['fin-total-revenue', 'fin-pending-cod', 'fin-franchise-payouts'];
+                els.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerText = 'Error';
+                });
             }
-            const tbody = document.querySelector('.data-table tbody');
-            if (tbody) {
-                tbody.innerHTML = `
-                    <tr><td style="font-family: monospace;">TX-9901</td><td>Oct 24, 10:30 AM</td><td>Shipment Payment</td><td>Client: Alice</td><td style="color: var(--success);">+₹45.00</td><td><span class="status-badge status-active">Paid</span></td></tr>
-                    <tr><td style="font-family: monospace;">TX-9902</td><td>Oct 24, 09:15 AM</td><td>Franchise Payout</td><td>Mumbai Hub</td><td style="color: var(--text-primary);">-₹1,250.00</td><td><span class="status-badge status-warn">Processing</span></td></tr>
-                `;
+
+            // 2. Fetch Transactions (Recent)
+            try {
+                const data = await fetchSecure('/api/dashboard/admin/finance/transactions');
+                const tbody = document.getElementById('fin-transactions-body');
+                if (tbody) {
+                    if (data.success && data.transactions && data.transactions.length > 0) {
+                        tbody.innerHTML = data.transactions.map(t => `
+                            <tr>
+                                <td style="font-family: monospace; font-weight:600; color:var(--brand-primary);">${t.ref_id}</td>
+                                <td>${new Date(t.date).toLocaleDateString()}</td>
+                                <td>${t.type}</td>
+                                <td>${t.entity}</td>
+                                <td style="font-weight:600; color: ${t.type.includes('Payout') ? 'var(--text-primary)' : 'var(--success)'};">
+                                    ${t.type.includes('Payout') ? '-' : '+'}₹${t.amount.toLocaleString()}
+                                </td>
+                                <td><span class="status-badge ${t.status === 'Paid' ? 'status-active' : 'status-warn'}">${t.status}</span></td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem;">No recent transactions.</td></tr>';
+                    }
+                }
+            } catch (e) {
+                console.error('Transactions load failed', e);
+                const tbody = document.getElementById('fin-transactions-body');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:1rem;">Failed to load transactions.</td></tr>';
             }
-            const exportBtn = document.querySelector('.page-header button');
-            if (exportBtn) exportBtn.onclick = () => showToast('Financial report exported', 'success');
+
+            // 3. Render Chart (CSS Bar Chart)
+            try {
+                const data = await fetchSecure('/api/dashboard/admin/finance/history');
+                if (data.success) {
+                    const container = document.getElementById('fin-revenue-chart');
+                    if (container) {
+                        container.innerHTML = '';
+                        container.style.display = 'flex';
+                        container.style.alignItems = 'flex-end';
+                        container.style.justifyContent = 'space-between';
+                        container.style.padding = '20px 20px';
+                        container.style.gap = '15px';
+
+                        const max = Math.max(...data.data, 1000); // Minimum scale 1000
+
+                        if (data.data.length === 0 || data.data.every(v => v === 0)) {
+                            container.innerHTML = '<div style="color:var(--text-tertiary); width:100%; text-align:center;">No revenue data for charts yet</div>';
+                        } else {
+                            data.labels.forEach((label, i) => {
+                                const val = data.data[i];
+                                const heightPct = (val / max) * 80; // Max 80% height to leave room for labels
+                                const barColor = 'var(--brand-primary)';
+
+                                const barGroup = document.createElement('div');
+                                barGroup.style.display = 'flex';
+                                barGroup.style.flexDirection = 'column';
+                                barGroup.style.alignItems = 'center';
+                                barGroup.style.height = '100%';
+                                barGroup.style.justifyContent = 'flex-end';
+                                barGroup.style.flex = '1';
+                                barGroup.style.cursor = 'default';
+
+                                // Custom Tooltip structure
+                                barGroup.innerHTML = `
+                                    <div class="bar-val" style="font-size:0.75rem; font-weight:700; color:var(--text-primary); margin-bottom:8px; opacity:0; transform:translateY(10px); transition:all 0.3s; background:var(--surface-primary); padding:2px 6px; border-radius:4px; box-shadow:var(--shadow-sm);">₹${val.toLocaleString()}</div>
+                                    <div class="bar-visual" style="width: 100%; max-width: 40px; height: 0%; background: ${barColor}; border-radius: 6px 6px 0 0; transition: height 1s var(--easing-spring); position:relative;"></div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 12px; font-weight:600;">${label}</div>
+                                `;
+
+                                container.appendChild(barGroup);
+
+                                // Delayed Animation
+                                setTimeout(() => {
+                                    const bar = barGroup.querySelector('.bar-visual');
+                                    if (bar) bar.style.height = `${Math.max(heightPct, 2)}%`;
+
+                                    // Interactive Events
+                                    barGroup.onmouseenter = () => {
+                                        barGroup.querySelector('.bar-val').style.opacity = '1';
+                                        barGroup.querySelector('.bar-val').style.transform = 'translateY(0)';
+                                        bar.style.filter = 'brightness(1.2)';
+                                    };
+                                    barGroup.onmouseleave = () => {
+                                        barGroup.querySelector('.bar-val').style.opacity = '0';
+                                        barGroup.querySelector('.bar-val').style.transform = 'translateY(10px)';
+                                        bar.style.filter = 'none';
+                                    };
+                                }, 150 + (i * 100));
+                            });
+                        }
+                    }
+                }
+            } catch (e) { console.error('Chart load failed', e); }
         },
 
         'reports': function () {

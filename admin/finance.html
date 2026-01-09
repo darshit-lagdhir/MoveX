@@ -197,62 +197,23 @@
 
                     <div class="grid-kpi">
                         <div class="card">
-                            <div class="card-title">Total Revenue (YTD)</div>
-                            <div class="card-value">₹2.4M</div>
-                            <div class="card-trend trend-up"><span>+14% vs last year</span></div>
+                            <div class="card-title">Total Revenue</div>
+                            <div class="card-value" id="fin-total-revenue">Loading...</div>
+                            <div class="card-trend trend-up"><span>Lifetime</span></div>
                         </div>
                         <div class="card">
-                            <div class="card-title">Pending COD</div>
-                            <div class="card-value">₹45,200</div>
-                            <div class="card-trend"><span>To be remitted</span></div>
+                            <div class="card-title">Pending Revenue</div>
+                            <div class="card-value" id="fin-pending-cod">Loading...</div>
+                            <div class="card-trend"><span>Not yet delivered</span></div>
                         </div>
                         <div class="card">
-                            <div class="card-title">Franchise Payouts</div>
-                            <div class="card-value">₹128k</div>
-                            <div class="card-trend"><span>Next payout: Oct 30</span></div>
+                            <div class="card-title">Est. Payouts</div>
+                            <div class="card-value" id="fin-franchise-payouts">Loading...</div>
+                            <div class="card-trend"><span>Calculated</span></div>
                         </div>
                     </div>
 
-                    <div class="dashboard-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
-                        <div class="card">
-                            <h3 class="card-title">Revenue History</h3>
-                            <div
-                                style="height: 300px; background: var(--surface-secondary); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); color: var(--text-tertiary);">
-                                [Chart: Monthly Revenue]
-                            </div>
-                        </div>
-                        <div class="card">
-                            <h3 class="card-title">Revenue by Service</h3>
-                            <div style="margin-top: 1rem;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                    <span>Standard Delivery</span>
-                                    <span>65%</span>
-                                </div>
-                                <div
-                                    style="width: 100%; height: 8px; background: var(--surface-secondary); border-radius: 4px; overflow: hidden; margin-bottom: 1.5rem;">
-                                    <div style="width: 65%; height: 100%; background: var(--brand-primary);"></div>
-                                </div>
-
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                    <span>Express</span>
-                                    <span>25%</span>
-                                </div>
-                                <div
-                                    style="width: 100%; height: 8px; background: var(--surface-secondary); border-radius: 4px; overflow: hidden; margin-bottom: 1.5rem;">
-                                    <div style="width: 25%; height: 100%; background: var(--accent-purple);"></div>
-                                </div>
-
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                    <span>Priority Delivery</span>
-                                    <span>10%</span>
-                                </div>
-                                <div
-                                    style="width: 100%; height: 8px; background: var(--surface-secondary); border-radius: 4px; overflow: hidden;">
-                                    <div style="width: 10%; height: 100%; background: var(--accent-cyan);"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Charts Removed for Simplicity -->
 
                     <div class="card" style="margin-top: 2rem;">
                         <h3 class="card-title" style="margin-bottom: 1rem;">Recent Transactions</h3>
@@ -268,22 +229,11 @@
                                         <th>Status</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="fin-transactions-body">
                                     <tr>
-                                        <td style="font-family: monospace;">TX-9901</td>
-                                        <td>Oct 24, 10:30 AM</td>
-                                        <td>Shipment Payment</td>
-                                        <td>Client: Alice</td>
-                                        <td style="color: var(--success);">+₹45.00</td>
-                                        <td><span class="status-badge status-active">Paid</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td style="font-family: monospace;">TX-9902</td>
-                                        <td>Oct 24, 09:15 AM</td>
-                                        <td>Franchise Payout</td>
-                                        <td>Mumbai Hub</td>
-                                        <td style="color: var(--text-primary);">-₹1,250.00</td>
-                                        <td><span class="status-badge status-warn">Processing</span></td>
+                                        <td colspan="6"
+                                            style="text-align:center; padding:2rem; color:var(--text-tertiary);">Loading
+                                            transactions...</td>
                                     </tr>
                                 </tbody>
                             </table>

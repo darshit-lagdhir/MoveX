@@ -13,10 +13,10 @@ const jwt = require('jsonwebtoken');
             ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_role TEXT;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_status TEXT DEFAULT 'Active';
             UPDATE users SET staff_role = 'Warehouse Staff' WHERE staff_role = 'Warehouse Manager';
-        `);
-        console.log('[Migration] Staff columns verified.');
+`);
+        // console.log('[Migration] Staff columns verified.');
     } catch (e) {
-        console.warn('[Migration] Staff columns check failed (might already exist):', e.message);
+        // console.warn('[Migration] Staff columns check failed (might already exist):', e.message);
     }
 })();
 
@@ -49,7 +49,7 @@ router.get('/admin/stats', validateSession, requireRole('admin'), async (req, re
                 failedDeliveries: parseFloat(failedPercentage),
                 pendingShipments: parseInt(pendingCount.rows[0].count),
                 shipmentsToday: parseInt(todayCount.rows[0].count),
-                shipmentTrend: `+${parseInt(todayCount.rows[0].count)} Today`,
+                shipmentTrend: `+ ${parseInt(todayCount.rows[0].count)} Today`,
                 franchiseTrend: 'Active count',
                 revenueTrend: 'Lifetime',
                 failedTrend: 'Failure Rate'
@@ -68,11 +68,11 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
         const limit = req.query.limit === 'all' ? null : (parseInt(req.query.limit) || 10);
 
         let queryText = `
-            SELECT id, tracking_id, status, 
-                   sender_name, sender_mobile, sender_address, sender_pincode,
-                   receiver_name, receiver_mobile, receiver_address, receiver_pincode,
-                   origin_address, destination_address, 
-                   price, weight, created_at, updated_at, estimated_delivery
+            SELECT id, tracking_id, status,
+    sender_name, sender_mobile, sender_address, sender_pincode,
+    receiver_name, receiver_mobile, receiver_address, receiver_pincode,
+    origin_address, destination_address,
+    price, weight, created_at, updated_at, estimated_delivery
             FROM shipments 
             ORDER BY created_at DESC 
         `;
@@ -169,7 +169,7 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
             }
         }
 
-        const trackingId = `MX${String(nextNum).padStart(5, '0')}`;
+        const trackingId = `MX${String(nextNum).padStart(5, '0')} `;
 
         // Calculate estimated delivery
         const createdAt = date ? new Date(date) : new Date();
@@ -178,14 +178,14 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
 
         const queryText = `
             INSERT INTO shipments(
-                tracking_id,
-                sender_name, sender_mobile, sender_address, sender_pincode,
-                receiver_name, receiver_mobile, receiver_address, receiver_pincode,
-                origin_address, destination_address,
-                price, weight, status, created_at, estimated_delivery
-            ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending', $14, $15)
+        tracking_id,
+        sender_name, sender_mobile, sender_address, sender_pincode,
+        receiver_name, receiver_mobile, receiver_address, receiver_pincode,
+        origin_address, destination_address,
+        price, weight, status, created_at, estimated_delivery
+    ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending', $14, $15)
             RETURNING id, tracking_id
-            `;
+    `;
 
         const values = [
             trackingId,
@@ -234,11 +234,11 @@ router.post('/admin/shipments/update-status', validateSession, requireRole('admi
         );
 
         if (result.rowCount === 0) {
-            console.warn(`[Shipment Update] Not Found: ${tracking_id}`);
+            console.warn(`[Shipment Update] Not Found: ${tracking_id} `);
             return res.status(404).json({ success: false, error: 'Shipment not found' });
         }
 
-        console.log(`[Shipment Update] Success: ${tracking_id} -> ${normalizedStatus}`);
+        console.log(`[Shipment Update]Success: ${tracking_id} -> ${normalizedStatus} `);
         res.json({ success: true, message: 'Status updated successfully' });
     } catch (err) {
         console.error("Update Status Error:", err);
@@ -251,17 +251,17 @@ router.post('/admin/shipments/update-status', validateSession, requireRole('admi
 router.get('/admin/bookings', validateSession, requireRole('admin'), async (req, res) => {
     try {
         const pendingRes = await db.query(`
-            SELECT * FROM shipments 
+SELECT * FROM shipments 
             WHERE status = 'pending' 
             ORDER BY created_at ASC
-        `);
+    `);
 
         const newRequests = pendingRes.rowCount;
         const scheduledToday = await db.query(`
             SELECT COUNT(*) FROM shipments 
             WHERE status = 'pending' 
             AND created_at >= CURRENT_DATE
-        `);
+    `);
 
         res.json({
             success: true,
@@ -296,7 +296,7 @@ router.get('/admin/users', validateSession, requireRole('admin'), async (req, re
             FROM users u
             LEFT JOIN organizations o ON u.organization_id = o.id
             ORDER BY u.created_at DESC
-        `);
+    `);
 
         res.json({
             success: true,
@@ -343,8 +343,8 @@ router.post('/admin/users/create', validateSession, requireRole('admin'), async 
         const status = 'active';
 
         await db.query(`
-            INSERT INTO users (full_name, username, password_hash, role, status, phone, created_at)
-            VALUES ($1, $2, $3, $4, $5, $6, NOW())
+            INSERT INTO users(full_name, username, password_hash, role, status, phone, created_at)
+VALUES($1, $2, $3, $4, $5, $6, NOW())
         `, [full_name, username, hash, role, status, phone || null]);
 
         res.json({ success: true, message: 'User created successfully' });
@@ -370,7 +370,7 @@ router.post('/admin/users/status', validateSession, requireRole('admin'), async 
             await sessionStore.destroySessionsForUser(username);
         }
 
-        res.json({ success: true, message: `User ${status}` });
+        res.json({ success: true, message: `User ${status} ` });
     } catch (err) {
         console.error("Update User Status Error:", err);
         res.status(500).json({ success: false, error: 'Failed to update status' });
@@ -502,7 +502,7 @@ router.post('/admin/franchises/status', validateSession, requireRole('admin'), a
         }
 
         await db.query('UPDATE organizations SET status = $1 WHERE id = $2', [status, id]);
-        res.json({ success: true, message: `Franchise status updated to ${status}` });
+        res.json({ success: true, message: `Franchise status updated to ${status} ` });
     } catch (err) {
         console.error("Update Franchise Status Error:", err);
         res.status(500).json({ success: false, error: 'Failed to update status' });
@@ -525,7 +525,7 @@ router.post('/admin/franchises/update', validateSession, requireRole('admin'), a
             UPDATE organizations 
             SET name = $1, non_serviceable_areas = $2, pincodes = $3, performance = $4, full_address = $5, updated_at = NOW() 
             WHERE id = $6
-        `, [name, non_serviceable_areas || '', pincodes || '', performance || 0, full_address || '', id]);
+    `, [name, non_serviceable_areas || '', pincodes || '', performance || 0, full_address || '', id]);
 
         // 2. Update Owner Details (if any are provided)
         if (owner_phone || owner_name || owner_username) {
@@ -534,15 +534,15 @@ router.post('/admin/franchises/update', validateSession, requireRole('admin'), a
             let i = 1;
 
             if (owner_name) {
-                updates.push(`full_name = $${i++}`);
+                updates.push(`full_name = $${i++} `);
                 values.push(owner_name);
             }
             if (owner_username) {
-                updates.push(`username = $${i++}`);
+                updates.push(`username = $${i++} `);
                 values.push(owner_username);
             }
             if (owner_phone) {
-                updates.push(`phone = $${i++}`);
+                updates.push(`phone = $${i++} `);
                 values.push(owner_phone);
             }
 
@@ -553,7 +553,7 @@ router.post('/admin/franchises/update', validateSession, requireRole('admin'), a
                     UPDATE users 
                     SET ${updates.join(', ')}, updated_at = NOW() 
                     WHERE organization_id = $${i} AND role = 'franchisee'
-                `, values);
+    `, values);
             }
         }
 
@@ -576,7 +576,7 @@ router.post('/logout', async (req, res) => {
         // 2. Destroy Server Session via Cookie (Primary method)
         const sid = req.cookies?.['movex.sid'];
         if (sid) {
-            console.log(`[Logout] Destroying session: ${sid}`);
+            console.log(`[Logout] Destroying session: ${sid} `);
             await sessionStore.destroySession(sid);
         } else {
             // 3. FALLBACK: Destroy sessions by User ID if Bearer token is provided
@@ -588,7 +588,7 @@ router.post('/logout', async (req, res) => {
                     const decoded = jwt.verify(token, process.env.JWT_SECRET);
                     const userId = decoded.userId || decoded.id;
                     if (userId) {
-                        console.log(`[Logout] Fallback: Destroying sessions for User ID: ${userId}`);
+                        console.log(`[Logout] Fallback: Destroying sessions for User ID: ${userId} `);
                         await sessionStore.destroySessionsForUser(userId);
                     }
                 } catch (jwtErr) {
@@ -623,19 +623,19 @@ router.get('/public/check-service/:query', async (req, res) => {
             FROM organizations o
             LEFT JOIN users u ON u.organization_id = o.id AND u.role = 'franchisee'
             WHERE o.type = 'franchise' AND o.status = 'active'
-            AND (
-                -- Search by Hub/Area Name
+AND(
+    --Search by Hub / Area Name
                 o.name ILIKE $1 OR
-                -- Search by Pincode (Robust matching for comma-separated list)
-                o.pincodes = $2 OR 
-                o.pincodes LIKE $2 || ',%' OR 
-                o.pincodes LIKE '%, ' || $2 OR 
-                o.pincodes LIKE '%, ' || $2 || ',%' OR
-                o.pincodes LIKE '%,' || $2 OR 
-                o.pincodes LIKE '%,' || $2 || ',%'
+                --Search by Pincode(Robust matching for comma - separated list)
+    o.pincodes = $2 OR
+o.pincodes LIKE $2 || ',%' OR
+o.pincodes LIKE '%, ' || $2 OR
+o.pincodes LIKE '%, ' || $2 || ',%' OR
+o.pincodes LIKE '%,' || $2 OR
+o.pincodes LIKE '%,' || $2 || ',%'
             )
             LIMIT 1
-        `, [`%${query}%`, query]);
+    `, [` % ${query}% `, query]);
 
         if (result.rows.length > 0) {
             res.json({
@@ -665,7 +665,7 @@ router.get('/public/serviceable-cities', async (req, res) => {
 
         if (search) {
             query += ' WHERE name ILIKE $1';
-            params.push(`%${search.trim()}%`);
+            params.push(`% ${search.trim()}% `);
         }
 
         query += ' ORDER BY name ASC LIMIT 50'; // Limit results for performance
@@ -687,8 +687,8 @@ router.get('/public/serviceable-cities', async (req, res) => {
 router.get('/admin/staff', validateSession, requireRole('admin'), async (req, res) => {
     try {
         const result = await db.query(`
-            SELECT u.id, u.full_name, u.username, u.staff_role, u.staff_status, u.phone, u.status as user_status, 
-                   o.name as org_name, o.id as org_id
+            SELECT u.id, u.full_name, u.username, u.staff_role, u.staff_status, u.phone, u.status as user_status,
+    o.name as org_name, o.id as org_id
             FROM users u
             LEFT JOIN organizations o ON u.organization_id = o.id
             WHERE u.role = 'staff'
@@ -699,7 +699,7 @@ router.get('/admin/staff', validateSession, requireRole('admin'), async (req, re
             success: true,
             staff: result.rows.map(s => ({
                 id: s.id,
-                tracking_id: `MXSTF${String(s.id).padStart(3, '0')}`,
+                tracking_id: `MXSTF${String(s.id).padStart(3, '0')} `,
                 name: s.full_name,
                 username: s.username,
                 role: s.staff_role || 'Staff Member',
@@ -733,9 +733,9 @@ router.post('/admin/staff/create', validateSession, requireRole('admin'), async 
         const hash = await bcrypt.hash(password, 12);
 
         await db.query(`
-            INSERT INTO users (full_name, username, password_hash, role, staff_role, phone, organization_id, status, staff_status)
-            VALUES ($1, $2, $3, 'staff', $4, $5, $6, 'active', 'Active')
-        `, [full_name, username, hash, staff_role, phone || null, organization_id || null]);
+            INSERT INTO users(full_name, username, password_hash, role, staff_role, phone, organization_id, status, staff_status)
+VALUES($1, $2, $3, 'staff', $4, $5, $6, 'active', 'Active')
+    `, [full_name, username, hash, staff_role, phone || null, organization_id || null]);
 
         res.json({ success: true, message: 'Staff member created successfully' });
     } catch (err) {
@@ -753,14 +753,14 @@ router.post('/admin/staff/update', validateSession, requireRole('admin'), async 
 
         await db.query(`
             UPDATE users 
-            SET full_name = COALESCE($1, full_name), 
-                staff_role = COALESCE($2, staff_role), 
-                phone = COALESCE($3, phone), 
-                organization_id = $4,
-                staff_status = COALESCE($5, staff_status),
-                updated_at = NOW()
+            SET full_name = COALESCE($1, full_name),
+    staff_role = COALESCE($2, staff_role),
+    phone = COALESCE($3, phone),
+    organization_id = $4,
+    staff_status = COALESCE($5, staff_status),
+    updated_at = NOW()
             WHERE id = $6 AND role = 'staff'
-        `, [full_name, staff_role, phone, organization_id || null, staff_status, id]);
+    `, [full_name, staff_role, phone, organization_id || null, staff_status, id]);
 
         res.json({ success: true, message: 'Staff updated successfully' });
     } catch (err) {
@@ -778,7 +778,7 @@ router.post('/admin/staff/status', validateSession, requireRole('admin'), async 
         }
 
         await db.query("UPDATE users SET status = $1 WHERE id = $2 AND role = 'staff'", [status, id]);
-        res.json({ success: true, message: `Staff account ${status}` });
+        res.json({ success: true, message: `Staff account ${status} ` });
     } catch (err) {
         console.error("Update Staff Status Error:", err);
         res.status(500).json({ success: false, error: 'Failed to update status' });
@@ -797,6 +797,83 @@ router.post('/logout', validateSession, async (req, res) => {
     } catch (err) {
         console.error("Logout Error:", err);
         res.status(500).json({ success: false, error: 'Logout failed' });
+    }
+});
+
+// --- FINANCE & REVENUE ---
+
+// Get Financial Stats
+router.get('/admin/finance/stats', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        // Total Revenue (Sum of all shipment prices)
+        const revenueRes = await db.query('SELECT SUM(price) as total FROM shipments');
+        const totalRevenue = parseFloat(revenueRes.rows[0].total || 0);
+
+        // Pending Revenue (Sum of price for shipments not delivered/cancelled)
+        const pendingRes = await db.query("SELECT SUM(price) as total FROM shipments WHERE status NOT IN ('delivered', 'cancelled', 'returned', 'failed')");
+        const pendingRevenue = parseFloat(pendingRes.rows[0].total || 0);
+
+        // Real Data Payouts: 0 (No table yet, returned as 0 per 'Real Data' rule)
+        const payouts = 0;
+
+        res.json({
+            success: true,
+            stats: {
+                totalRevenue,
+                pendingRevenue,
+                payouts
+            }
+        });
+    } catch (e) {
+        console.error("Finance Stats Error:", e);
+        res.status(500).json({ success: false, error: 'Failed to fetch finance stats' });
+    }
+});
+
+// Get Revenue History (Chart Data) - Last 6 Months
+router.get('/admin/finance/history', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT TO_CHAR(created_at, 'Mon') as month, SUM(price) as revenue
+            FROM shipments
+            WHERE created_at >= NOW() - INTERVAL '6 months'
+            GROUP BY TO_CHAR(created_at, 'Mon'), DATE_TRUNC('month', created_at)
+            ORDER BY DATE_TRUNC('month', created_at) ASC
+    `);
+
+        const labels = result.rows.map(r => r.month);
+        const data = result.rows.map(r => parseFloat(r.revenue || 0));
+
+        res.json({ success: true, labels, data });
+    } catch (e) {
+        console.error("Finance History Error:", e);
+        res.status(500).json({ success: false, error: 'Failed to fetch history' });
+    }
+});
+
+// Get Recent Transactions (Shipments as transactions)
+router.get('/admin/finance/transactions', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT tracking_id, created_at, price, sender_name, status 
+            FROM shipments 
+            ORDER BY created_at DESC 
+            LIMIT 10
+        `);
+
+        const transactions = result.rows.map(r => ({
+            ref_id: r.tracking_id,
+            date: r.created_at,
+            type: 'Shipment Credited',
+            entity: `Client: ${r.sender_name || 'Walk-in'} `,
+            amount: parseFloat(r.price || 0),
+            status: r.status === 'delivered' ? 'Paid' : 'Pending'
+        }));
+
+        res.json({ success: true, transactions });
+    } catch (e) {
+        console.error("Finance Transactions Error:", e);
+        res.status(500).json({ success: false, error: 'Failed to fetch transactions' });
     }
 });
 

@@ -95,10 +95,13 @@ class SessionStore {
   // Cleanup expired sessions from database
   async cleanupExpiredSessions() {
     try {
+      // Console log for verification (Visible proof the timer is working)
+      // console.log('[Sessions] Checking for expired sessions...'); 
+
       const now = Date.now();
       const result = await db.query('DELETE FROM sessions WHERE expires_at <= $1', [now]);
       if (result.rowCount > 0) {
-        console.log(`[Sessions] Cleaned up ${result.rowCount} expired session(s)`);
+        // console.log(`[Sessions] Cleaned up ${result.rowCount} expired session(s)`);
       }
     } catch (err) {
       console.error("Session cleanup failed", err);
@@ -116,7 +119,7 @@ class SessionStore {
     // Then every 15 minutes
     setInterval(() => this.cleanupExpiredSessions(), CLEANUP_INTERVAL);
 
-    console.log('[Sessions] Automatic cleanup scheduled (every 15 min)');
+    // console.log('[Sessions] Automatic cleanup scheduled (every 15 min)');
   }
 }
 
