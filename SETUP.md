@@ -502,6 +502,11 @@ cd backend && npm start
 
 ## Appendix C: History (Changelog)
 
+### v1.1.1 (January 9, 2026)
+- **Security**: Removed experimental MFA and OAuth code to streamline the authentication flow.
+- **Session**: Implemented robust cross-origin logout and auto-redirects using Hybrid JWT Tokens.
+- **Stability**: Fixed role-based redirect logic and cleaned up residual CSS/JS artifacts.
+
 ### v1.1.0 (January 2, 2026)
 - **Print Labels**: Added a way to print labels with barcodes.
 - **Weight**: Added tracking for parcel weight.

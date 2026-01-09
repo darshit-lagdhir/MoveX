@@ -65,11 +65,11 @@ How does MoveX stop hackers?
 ### 1. Scrambled Passwords (Bcrypt)
 If someone breaks into your database, they will find long, random strings of text instead of passwords. It would take a supercomputer millions of years to figure out one password.
 
-### 2. Opaque Session Keys
-Instead of using JWT tokens (which can be hard to take back), we use **Opaque Keys**.
-*   We give the user a random ID like `5f9d...`.
-*   We save that ID in our database along with the user's name.
-*   If we want to log someone out, we just delete that ID from our database. Their browser instantly loses access.
+### 2. Hybrid Session Architecture
+We use a **Hybrid** approach to handle logins across different domains:
+*   **Primary (HttpOnly Cookie):** The browser saves a secure, opaque session ID (`movex.sid`). This is the safest way to log in.
+*   **Secondary (JWT Fallback):** For cross-origin situations (like redirection), we generate a signed JWT containing the session ID. This ensures functionality even when third-party cookies are blocked.
+*   **Centralized Control:** We can revoke any session from the database, instantly locking the user out, regardless of the method used.
 
 ### 3. Header Defense
 In `app.js`, we set special instructions for the browser:
