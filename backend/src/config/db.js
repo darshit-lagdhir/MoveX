@@ -75,6 +75,8 @@ function buildPoolConfig() {
     idleTimeoutMillis: 15000,                          // Close idle connections after 15s
     connectionTimeoutMillis: 5000,                     // Fail fast (5s)
     keepAlive: true,                                   // Keep TCP connection healthy
+    // Force IPv4 to prevent Render/Supabase IPv6 resolution issues (ENETUNREACH)
+    family: 4,
     // Note: statement_timeout is NOT supported by Supabase connection pooler (port 6543)
     // If you need query timeouts, set them per-query or use direct connection (port 5432)
   };
