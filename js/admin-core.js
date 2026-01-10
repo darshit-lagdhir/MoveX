@@ -7,9 +7,9 @@
 window.MoveXAdmin = (function () {
     'use strict';
 
-    // Auto-detect: localhost/127.0.0.1 for dev, Koyeb for production
-    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-    const API_BASE = isLocal ? 'http://localhost:4000' : 'https://presidential-fly-movex-237428a4.koyeb.app';
+    // Auto-detect: localhost/127.0.0.1 for dev (e.g. port 5500), Origin for production (Render)
+    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname) && window.location.port !== '4000';
+    const API_BASE = isLocal ? 'http://localhost:4000' : window.location.origin;
 
     // Pagination State
     let SHIP_PAGE = 1;

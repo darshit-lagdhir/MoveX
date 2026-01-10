@@ -75,6 +75,28 @@ These paths are used by the Admin to manage the whole business.
     *   `failedDeliveries`: Percentage of failures.
     *   `shipmentsToday`: How many new parcels came today.
 
+### 📊 Reports Statistics (Filtered)
+*   **Path:** `GET /api/dashboard/admin/reports/stats`
+*   **Settings:**
+    *   `startDate`: (Optional) Filter from this date (YYYY-MM-DD).
+    *   `endDate`: (Optional) Filter to this date (YYYY-MM-DD).
+    *   If missing, defaults to **Last 30 Days**.
+*   **What you get:**
+    *   `successRate`: Percentage of successful deliveries.
+    *   `avgDeliveryTime`: Average days taken for delivery.
+    *   `history`: Daily breakdown of Shipments, Completed, Issues, and Revenue.
+
+### 💰 Finance Statistics
+*   **Path:** `GET /api/dashboard/admin/finance/stats`
+*   **What you get:**
+    *   `totalRevenue`: Total all-time revenue (₹).
+    *   `pendingRevenue`: Revenue from undelivered shipments.
+    *   `payouts`: Pending payouts (currently 0).
+
+###  Recent Transactions
+*   **Path:** `GET /api/dashboard/admin/finance/transactions`
+*   **What you get:** List of recent 10 transactions with sender and amount.
+
 ### 📦 Recent Parcels List
 *   **Path:** `GET /api/dashboard/admin/shipments`
 *   **Settings:** Add `?limit=10` for a short list or `?limit=all` for everything.
