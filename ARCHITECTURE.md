@@ -4,17 +4,19 @@ This guide takes a deep look into the "Engine Room" of MoveX. It is written for 
 
 ---
 
-## 1. The Core Design: A "Security-First Monolith"
+## 1. The Core Design: A "Split-Stack" Architecture
 
-MoveX is built as a **Monolith**. This means the Frontend and the Backend live together in one project.
+MoveX uses a modern **Split Architecture**. This means the Frontend and Backend are hosted separately for better speed and scalability.
 
-### Why a Monolith?
-*   **Speed:** No need to jump between different servers to find code.
-*   **Safety:** The Backend can directly protect the Frontend files.
-*   **Simple Setup:** You only need one `.env` file and one command to start the whole app.
+### Why Split?
+*   **Speed:** The Frontend (Cloudflare) is on the Edge, loading instantly worldwide.
+*   **Scalability:** The Backend (Render) only handles data, not serving HTML files.
+*   **Flexibility:** You can update the frontend text/images without restarting the backend server.
 
 ### The "Iron Fortress" Philosophy
 We built MoveX with the idea that the **Server is the Master**. The browser (Frontend) can never be trusted. Every single click you make is checked by the server before any data is shown or saved.
+
+
 
 ---
 
@@ -93,6 +95,7 @@ movex/
 │   │   └── controllers/    # Calculations and business rules
 │   └── sql/                # THE BLUEPRINTS (Table structures)
 ├── js/                     # Frontend scripts (How the UI works)
+│   ├── config.js           # Public Frontend Settings (API URL)
 └── styles/                 # Designing the premium look (CSS)
 ```
 
@@ -126,10 +129,12 @@ Photos of parcels are big and slow. We don't save them in our server.
 
 ## 9. Scaling (Handling More Users)
 
-Even though MoveX is a Monolith, it can handle many users.
-*   **Connection Pooling (Port 6543)**: We use a tool that allows 1000s of data requests to share the same few connections to the database.
-*   **PM2**: We use a process manager that restarts the server instantly if it ever crashes.
-*   **Caching**: We tell the browser to "remember" the CSS and Images for 1 year, so they only have to be downloaded once.
+## 9. Scaling (Handling More Users)
+
+MoveX is designed to scale horizontally.
+*   **Connection Pooling (Supabase Transaction Mode)**: We connect via **Port 6543**. This allows thousands of users to share a few active database connections. It also provides an **IPv4** address, which is required for Render deployments.
+*   **PM2 (Backend)**: Restarts the server instantly if it crashes.
+*   **Edge Caching (Frontend)**: Cloudflare handles all the static files (images, CSS), so your backend only focuses on API data.
 
 ---
 

@@ -405,27 +405,42 @@ shipment-photos/                    # Main storage bucket
 
 ## Section 8: Putting it Online (Deployment)
 
-### Way 1: Railway (Recommended)
-1. Connect your GitHub.
-2. Add your settings (from `.env`) in the Railway dashboard.
-3. Railway will put your app online automatically.
+### Architecture
+- **Frontend**: Cloudflare Pages / Workers (Static Site)
+- **Backend**: Render (Node.js Web Service)
+- **Database**: Supabase (PostgreSQL)
 
-### Way 2: Render
-1. Create a "New Web Service".
-2. Set build command to: `cd backend && npm install`.
-3. Set start command to: `cd backend && npm start`.
-4. Add your settings (Variables).
+### Step 1: Backend Deployment (Render)
+1. Create a **New Web Service** on Render.
+2. Connect your GitHub Repo.
+3. **Settings**:
+   - **Root Directory**: `backend`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+4. **Environment Variables**:
+   - `NODE_ENV`: `production`
+   - `DATABASE_URL`: **IMPORTANT**: Use the **Transaction Pooler URL** from Supabase.
+     - Go to Supabase -> Settings -> Database -> Connection String -> **Session/Transaction Mode**.
+     - It typically looks like: `postgres://...aws-0-[region].pooler.supabase.com:6543/...`
+     - **Reason**: Render often cannot reach Supabase IPv6 addresses. The Pooler supports IPv4.
+   - `JWT_SECRET`, `SESSION_SECRET`: Generage strong random keys.
+   - `FRONTEND_URL`: Your Cloudflare URL (e.g., `https://movex.pages.dev`).
 
-### Way 3: VPS (DigitalOcean, AWS, etc.)
-1. Install Node.js 18+.
-2. Use **PM2** to keep the app running even if it crashes:
-   ```bash
-   npm install -g pm2
-   cd backend
-   pm2 start src/app.js --name movex
-   pm2 save
-   ```
-3. Setup Nginx to handle the web traffic.
+### Step 2: Frontend Deployment (Cloudflare)
+1. Go to Cloudflare Dashboard -> **Workers & Pages**.
+2. Click **Create Application** -> **Pages** -> **Connect to Git**.
+3. Select your Repo.
+4. **Build Settings**:
+   - **Framework Preset**: None (Static HTML/JS)
+   - **Build Command**: (Leave empty)
+   - **Output Directory**: `.` (Root) or just leave default.
+5. Deploy.
+
+### Step 3: Connect Frontend to Backend
+1. Once Backend is live, copy its URL (e.g., `https://movex-ffqu.onrender.com`).
+2. Update your source code: **Edit `js/config.js`**.
+3. Change `API_URL` to your new Backend URL.
+4. Commit and Push. Cloudflare will auto-redeploy.
 
 ---
 

@@ -54,7 +54,7 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.warn(`[SECURITY] CORS request from: ${origin}. Allowing for now, but PLEASE set FRONTEND_URL in Koyeb settings.`);
+      console.warn(`[SECURITY] CORS request from: ${origin}. Allowing for now, but PLEASE set FRONTEND_URL in Environment Variables.`);
       callback(null, true);
     }
   },

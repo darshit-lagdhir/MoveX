@@ -270,11 +270,13 @@ MoveX uses Supabase Storage for parcel photos:
 
 ## 🚢 Putting it Online (Deployment)
 
-### Recommended Platforms
+### Recommended Platforms (Split Architecture)
 
-- **Railway** - Easiest way to put the app online.
-- **Render** - Good second choice.
-- **DigitalOcean** - For advanced users.
+- **Backend**: **Render** (Node.js Web Service)
+- **Frontend**: **Cloudflare** (Pages / Workers)
+- **Database**: **Supabase** (PostgreSQL)
+
+Configuring the connection between them is handled via `js/config.js` (Frontend) and Environment Variables (Backend).
 
 ### Checklist before going live
 
