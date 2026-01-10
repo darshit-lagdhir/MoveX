@@ -7,9 +7,8 @@
 window.MoveXAdmin = (function () {
     'use strict';
 
-    // Auto-detect: localhost/127.0.0.1 for dev (e.g. port 5500), Origin for production (Render)
-    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname) && window.location.port !== '4000';
-    const API_BASE = isLocal ? 'http://localhost:4000' : window.location.origin;
+    // Use Central Config
+    const API_BASE = window.MoveXConfig ? window.MoveXConfig.API_URL : 'https://movex-ffqu.onrender.com';
 
     // Pagination State
     let SHIP_PAGE = 1;

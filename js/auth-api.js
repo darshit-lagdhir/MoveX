@@ -3,10 +3,8 @@
 (function () {
   'use strict';
 
-  // Auto-detect: localhost/127.0.0.1 for dev (e.g. port 5500), Origin for production (Render)
-  const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname) && window.location.port !== '4000';
-  const API_BASE = isLocal ? 'http://localhost:4000' : window.location.origin;
-  if (isLocal) console.log('🔧 Running in Development Mode');
+  // Auto-detect: localhost for dev, otherwise Render Backend
+  const API_BASE = window.MoveXConfig ? window.MoveXConfig.API_URL : 'https://movex-ffqu.onrender.com';
 
   // --- AUTO-REDIRECT (Frontend Check) ---
   // If user lands on login page with active session, redirect to dashboard
