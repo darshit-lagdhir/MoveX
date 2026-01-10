@@ -12,6 +12,7 @@
 
 const { Pool } = require('pg');
 const path = require('path');
+const dns = require('dns'); // Required for custom lookup
 require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
 
 // ═══════════════════════════════════════════════════════════
@@ -86,7 +87,19 @@ function buildPoolConfig() {
     return {
       ...baseConfig,
       connectionString: process.env.DATABASE_URL,
-      ssl: getSSLConfig(process.env.DATABASE_URL)
+      ssl: getSSLConfig(process.env.DATABASE_URL),
+      // CUSTOM LOOKUP: Force IPv4 for Render (Nuclear Option)
+      lookup: (hostname, options, callback) => {
+        // If options is a function (backward compatibility), fix arguments
+        if (typeof options === 'function') {
+          callback = options;
+          options = {};
+        }
+        options = options || {};
+        options.family = 4; // FORCE IPv4
+        options.all = false;
+        dns.lookup(hostname, options, callback);
+      }
     };
   }
 
