@@ -68,7 +68,7 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
         const limit = req.query.limit === 'all' ? null : (parseInt(req.query.limit) || 10);
 
         let queryText = `
-            SELECT id, tracking_id, status,
+            SELECT shipment_id, tracking_id, status,
     sender_name, sender_mobile, sender_address, sender_pincode,
     receiver_name, receiver_mobile, receiver_address, receiver_pincode,
     origin_address, destination_address,
@@ -292,16 +292,16 @@ router.get('/admin/users', validateSession, requireRole('admin'), async (req, re
     try {
         // Fetch users with organization names
         const result = await db.query(`
-            SELECT u.id, u.full_name, u.username, u.role, u.status, u.phone, u.created_at, o.name as org_name
+            SELECT u.user_id, u.full_name, u.username, u.role, u.status, u.phone, u.created_at, o.name as org_name
             FROM users u
-            LEFT JOIN organizations o ON u.organization_id = o.id
+            LEFT JOIN organizations o ON u.organization_id = o.organization_id
             ORDER BY u.created_at DESC
     `);
 
         res.json({
             success: true,
             users: result.rows.map(u => ({
-                id: u.id,
+                id: u.user_id,
                 name: u.full_name || u.username,
                 username: u.username,
                 role: u.role,
@@ -326,7 +326,7 @@ router.post('/admin/users/create', validateSession, requireRole('admin'), async 
         }
 
         // Check if username exists
-        const existing = await db.query('SELECT id FROM users WHERE username = $1', [username]);
+        const existing = await db.query('SELECT user_id FROM users WHERE username = $1', [username]);
         if (existing.rows.length > 0) {
             return res.status(400).json({ success: false, error: 'Username already taken' });
         }
@@ -466,10 +466,10 @@ router.post('/admin/franchises/create', validateSession, requireRole('admin'), a
 
         // 1. Create Organization
         const orgResult = await client.query(
-            'INSERT INTO organizations (name, type, non_serviceable_areas, pincodes, full_address, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+            'INSERT INTO organizations (name, type, non_serviceable_areas, pincodes, full_address, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING organization_id',
             [name, 'franchise', non_serviceable_areas || '', pincodes || '', full_address || '', 'active']
         );
-        const orgId = orgResult.rows[0].id;
+        const orgId = orgResult.rows[0].organization_id;
 
         // 2. Create Franchisee User
         const hash = await bcrypt.hash(owner_password, 12);
@@ -501,7 +501,7 @@ router.post('/admin/franchises/status', validateSession, requireRole('admin'), a
             return res.status(400).json({ success: false, error: 'Invalid parameters' });
         }
 
-        await db.query('UPDATE organizations SET status = $1 WHERE id = $2', [status, id]);
+        await db.query('UPDATE organizations SET status = $1 WHERE organization_id = $2', [status, id]);
         res.json({ success: true, message: `Franchise status updated to ${status} ` });
     } catch (err) {
         console.error("Update Franchise Status Error:", err);
@@ -524,7 +524,7 @@ router.post('/admin/franchises/update', validateSession, requireRole('admin'), a
         await client.query(`
             UPDATE organizations 
             SET name = $1, non_serviceable_areas = $2, pincodes = $3, performance = $4, full_address = $5, updated_at = NOW() 
-            WHERE id = $6
+            WHERE organization_id = $6
     `, [name, non_serviceable_areas || '', pincodes || '', performance || 0, full_address || '', id]);
 
         // 2. Update Owner Details (if any are provided)
@@ -687,10 +687,10 @@ router.get('/public/serviceable-cities', async (req, res) => {
 router.get('/admin/staff', validateSession, requireRole('admin'), async (req, res) => {
     try {
         const result = await db.query(`
-            SELECT u.id, u.full_name, u.username, u.staff_role, u.staff_status, u.phone, u.status as user_status,
-    o.name as org_name, o.id as org_id
+            SELECT u.user_id, u.full_name, u.username, u.staff_role, u.staff_status, u.phone, u.status as user_status,
+    o.name as org_name, o.organization_id as org_id
             FROM users u
-            LEFT JOIN organizations o ON u.organization_id = o.id
+            LEFT JOIN organizations o ON u.organization_id = o.organization_id
             WHERE u.role = 'staff'
             ORDER BY u.created_at DESC
         `);
@@ -698,8 +698,8 @@ router.get('/admin/staff', validateSession, requireRole('admin'), async (req, re
         res.json({
             success: true,
             staff: result.rows.map(s => ({
-                id: s.id,
-                tracking_id: `MXSTF${String(s.id).padStart(3, '0')} `,
+                id: s.user_id,
+                tracking_id: `MXSTF${String(s.user_id).padStart(3, '0')} `,
                 name: s.full_name,
                 username: s.username,
                 role: s.staff_role || 'Staff Member',
@@ -725,7 +725,7 @@ router.post('/admin/staff/create', validateSession, requireRole('admin'), async 
             return res.status(400).json({ success: false, error: 'Name, Username, Password, and Role are required' });
         }
 
-        const existing = await db.query('SELECT id FROM users WHERE username = $1', [username]);
+        const existing = await db.query('SELECT user_id FROM users WHERE username = $1', [username]);
         if (existing.rows.length > 0) {
             return res.status(400).json({ success: false, error: 'Username already taken' });
         }
@@ -759,7 +759,7 @@ router.post('/admin/staff/update', validateSession, requireRole('admin'), async 
     organization_id = $4,
     staff_status = COALESCE($5, staff_status),
     updated_at = NOW()
-            WHERE id = $6 AND role = 'staff'
+            WHERE user_id = $6 AND role = 'staff'
     `, [full_name, staff_role, phone, organization_id || null, staff_status, id]);
 
         res.json({ success: true, message: 'Staff updated successfully' });
@@ -777,7 +777,7 @@ router.post('/admin/staff/status', validateSession, requireRole('admin'), async 
             return res.status(400).json({ success: false, error: 'Invalid parameters' });
         }
 
-        await db.query("UPDATE users SET status = $1 WHERE id = $2 AND role = 'staff'", [status, id]);
+        await db.query("UPDATE users SET status = $1 WHERE user_id = $2 AND role = 'staff'", [status, id]);
         res.json({ success: true, message: `Staff account ${status} ` });
     } catch (err) {
         console.error("Update Staff Status Error:", err);

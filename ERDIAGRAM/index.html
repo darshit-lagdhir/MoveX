@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoveX - ER Diagram</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --entity-fill: #BBDEFB;
+            --entity-stroke: #1565C0;
+            --attr-fill: #FFF8E1;
+            --attr-stroke: #EF6C00;
+            --pk-fill: #FFECB3;
+            --pk-stroke: #FF8F00;
+            --fk-fill: #E8F5E9;
+            --fk-stroke: #43A047;
+            --rel-fill: #C8E6C9;
+            --rel-stroke: #2E7D32;
+            --weak-fill: #F8BBD9;
+            --weak-stroke: #AD1457;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+            background: #FAFAFA;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Title */
+        .title {
+            text-align: center;
+            padding: 5px;
+            background: white;
+            border-bottom: 2px solid #E0E0E0;
+            flex-shrink: 0;
+        }
+
+        .title h1 {
+            font-size: 16px;
+            color: #1565C0;
+        }
+
+        .title p {
+            font-size: 9px;
+            color: #666;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            justify-content: center;
+            padding: 5px 10px;
+            background: white;
+            border-bottom: 2px solid #E0E0E0;
+            font-size: 9px;
+            flex-shrink: 0;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .l-rect {
+            width: 20px;
+            height: 12px;
+            background: var(--entity-fill);
+            border: 1.5px solid var(--entity-stroke);
+        }
+
+        .l-weak {
+            width: 20px;
+            height: 12px;
+            background: var(--weak-fill);
+            border: 2px double var(--weak-stroke);
+        }
+
+        .l-oval {
+            width: 20px;
+            height: 12px;
+            background: var(--attr-fill);
+            border: 1px solid var(--attr-stroke);
+            border-radius: 50%;
+        }
+
+        .l-pk {
+            width: 20px;
+            height: 12px;
+            background: var(--pk-fill);
+            border: 1.5px solid var(--pk-stroke);
+            border-radius: 50%;
+        }
+
+        .l-fk {
+            width: 20px;
+            height: 12px;
+            background: var(--fk-fill);
+            border: 2px dashed var(--fk-stroke);
+            border-radius: 50%;
+        }
+
+        .l-diamond {
+            width: 14px;
+            height: 14px;
+            background: var(--rel-fill);
+            border: 1.5px solid var(--rel-stroke);
+            transform: rotate(45deg);
+        }
+
+        .l-id-diamond {
+            width: 14px;
+            height: 14px;
+            background: var(--weak-fill);
+            border: 2px double var(--weak-stroke);
+            transform: rotate(45deg);
+        }
+
+        /* Canvas */
+        .canvas {
+            flex: 1;
+            position: relative;
+            background: white;
+            overflow: hidden;
+        }
+
+        .lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Entity */
+        .e {
+            position: absolute;
+            background: var(--entity-fill);
+            border: 2px solid var(--entity-stroke);
+            padding: 6px 12px;
+            font-weight: 700;
+            font-size: 10px;
+            color: #0D47A1;
+            z-index: 10;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .e.weak {
+            background: var(--weak-fill);
+            border: 3px double var(--weak-stroke);
+            color: #880E4F;
+        }
+
+        /* Attribute */
+        .a {
+            position: absolute;
+            background: var(--attr-fill);
+            border: 1px solid var(--attr-stroke);
+            border-radius: 50%;
+            padding: 3px 7px;
+            font-size: 7px;
+            font-weight: 500;
+            color: #E65100;
+            z-index: 5;
+            white-space: nowrap;
+        }
+
+        .a.pk {
+            background: var(--pk-fill);
+            border: 1.5px solid var(--pk-stroke);
+            font-weight: 700;
+        }
+
+        .a.pk span {
+            text-decoration: underline;
+        }
+
+        .a.fk {
+            background: var(--fk-fill);
+            border: 2px dashed var(--fk-stroke);
+            color: #2E7D32;
+            font-weight: 600;
+        }
+
+        /* Relationship */
+        .r {
+            position: absolute;
+            z-index: 8;
+        }
+
+        .r-box {
+            width: 44px;
+            height: 44px;
+            background: var(--rel-fill);
+            border: 2px solid var(--rel-stroke);
+            transform: rotate(45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .r.id .r-box {
+            background: var(--weak-fill);
+            border: 3px double var(--weak-stroke);
+        }
+
+        .r-text {
+            transform: rotate(-45deg);
+            font-size: 7px;
+            font-weight: 700;
+            color: #1B5E20;
+            text-transform: uppercase;
+        }
+
+        .r.id .r-text {
+            color: #880E4F;
+        }
+
+        /* Cardinality */
+        .c {
+            position: absolute;
+            font-size: 10px;
+            font-weight: 800;
+            color: #C62828;
+            z-index: 15;
+        }
+
+        /* Footer Note */
+        .footer {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 7px;
+            color: #888;
+            text-align: center;
+        }
+
+        @media print {
+
+            .e,
+            .a,
+            .r-box {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Title -->
+        <div class="title">
+            <h1>MoveX - Entity Relationship Diagram</h1>
+            <p>Chen Notation | PostgreSQL | Logistics Management System</p>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="l-rect"></div><span>Entity (Rectangle)</span>
+            </div>
+            <div class="legend-item">
+                <div class="l-weak"></div><span>Weak Entity</span>
+            </div>
+            <div class="legend-item">
+                <div class="l-oval"></div><span>Attribute (Ellipse)</span>
+            </div>
+            <div class="legend-item">
+                <div class="l-pk"></div><span><u>Primary Key</u></span>
+            </div>
+            <div class="legend-item">
+                <div class="l-fk"></div><span>Foreign Key (Dashed)</span>
+            </div>
+            <div class="legend-item">
+                <div class="l-diamond"></div><span>Relationship</span>
+            </div>
+            <div class="legend-item">
+                <div class="l-id-diamond"></div><span>Identifying Rel.</span>
+            </div>
+            <div class="legend-item">
+                <span style="font-weight:800;color:#C62828;">1, N</span><span>&nbsp;Cardinality</span>
+            </div>
+        </div>
+
+        <!-- Canvas -->
+        <div class="canvas" id="canvas">
+            <svg class="lines" id="lines"></svg>
+
+            <!-- ═══════════ ORGANIZATIONS ═══════════ -->
+            <div class="e" id="e-org" style="left: 8%; top: 24%;">Organizations</div>
+
+            <div class="a pk" id="a-org-id" style="left: 3%; top: 12%;"><span>organization_id</span></div>
+            <div class="a" id="a-org-name" style="left: 10%; top: 9%;">name</div>
+            <div class="a" id="a-org-type" style="left: 18%; top: 12%;">type</div>
+            <div class="a" id="a-org-status" style="left: 21%; top: 20%;">status</div>
+            <div class="a" id="a-org-pincodes" style="left: 20%; top: 28%;">pincodes</div>
+            <div class="a" id="a-org-address" style="left: 13%; top: 35%;">full_address</div>
+            <div class="a" id="a-org-perf" style="left: 3%; top: 34%;">performance</div>
+            <div class="a" id="a-org-created" style="left: 1%; top: 26%;">created_at</div>
+
+
+            <!-- ═══════════ USERS ═══════════ -->
+            <div class="e" id="e-users" style="left: 44%; top: 24%;">Users</div>
+
+            <div class="a pk" id="a-usr-username" style="left: 40%; top: 9%;"><span>username</span></div>
+            <div class="a" id="a-usr-id" style="left: 49%; top: 9%;">user_id</div>
+            <div class="a" id="a-usr-fullname" style="left: 55%; top: 12%;">full_name</div>
+            <div class="a" id="a-usr-phone" style="left: 59%; top: 18%;">phone</div>
+            <div class="a" id="a-usr-password" style="left: 59%; top: 26%;">password_hash</div>
+            <div class="a" id="a-usr-role" style="left: 57%; top: 33%;">role</div>
+            <div class="a" id="a-usr-status" style="left: 48%; top: 36%;">status</div>
+            <div class="a" id="a-usr-security" style="left: 38%; top: 36%;">security_answers</div>
+            <div class="a" id="a-usr-staffrole" style="left: 30%; top: 32%;">staff_role</div>
+            <div class="a" id="a-usr-created" style="left: 30%; top: 25%;">created_at</div>
+            <div class="a" id="a-usr-login" style="left: 32%; top: 18%;">last_login_at</div>
+            <div class="a fk" id="a-usr-orgid" style="left: 35%; top: 12%;">organization_id</div>
+
+
+            <!-- ═══════════ BELONGS_TO (Users → Organizations) ═══════════ -->
+            <div class="r" id="r-belongs" style="left: 26%; top: 21%;">
+                <div class="r-box"><span class="r-text">Belongs</span></div>
+            </div>
+            <div class="c" style="left: 22%; top: 23%;">N</div>
+            <div class="c" style="left: 33%; top: 23%;">1</div>
+
+
+            <!-- ═══════════ SESSIONS (Weak Entity) ═══════════ -->
+            <div class="e weak" id="e-sessions" style="left: 80%; top: 24%;">Sessions</div>
+
+            <div class="a pk" id="a-sess-id" style="left: 76%; top: 11%;"><span>session_id</span></div>
+            <div class="a" id="a-sess-token" style="left: 83%; top: 9%;">token</div>
+            <div class="a" id="a-sess-role" style="left: 90%; top: 13%;">role</div>
+            <div class="a" id="a-sess-expires" style="left: 93%; top: 21%;">expires_at</div>
+            <div class="a" id="a-sess-created" style="left: 92%; top: 29%;">created_at</div>
+            <div class="a" id="a-sess-last" style="left: 86%; top: 35%;">last_accessed</div>
+            <div class="a fk" id="a-sess-username" style="left: 77%; top: 35%;">username</div>
+
+
+            <!-- ═══════════ CREATES (Users → Sessions) ═══════════ -->
+            <div class="r id" id="r-creates-sess" style="left: 64%; top: 21%;">
+                <div class="r-box"><span class="r-text">Creates</span></div>
+            </div>
+            <div class="c" style="left: 60%; top: 23%;">1</div>
+            <div class="c" style="left: 71%; top: 23%;">N</div>
+
+
+            <!-- ═══════════ PASSWORD_RESETS (Weak Entity) ═══════════ -->
+            <div class="e weak" id="e-password" style="left: 80%; top: 58%;">Password_Resets</div>
+
+            <div class="a pk" id="a-pass-id" style="left: 76%; top: 50%;"><span>reset_id</span></div>
+            <div class="a" id="a-pass-token" style="left: 84%; top: 48%;">token_hash</div>
+            <div class="a" id="a-pass-expires" style="left: 93%; top: 53%;">expires_at</div>
+            <div class="a" id="a-pass-used" style="left: 94%; top: 62%;">used</div>
+            <div class="a" id="a-pass-created" style="left: 91%; top: 69%;">created_at</div>
+            <div class="a fk" id="a-pass-username" style="left: 82%; top: 71%;">username</div>
+
+
+            <!-- ═══════════ REQUESTS (Users → Password_Resets) ═══════════ -->
+            <div class="r id" id="r-requests" style="left: 64%; top: 44%;">
+                <div class="r-box"><span class="r-text">Requests</span></div>
+            </div>
+            <div class="c" style="left: 60%; top: 40%;">1</div>
+            <div class="c" style="left: 72%; top: 53%;">N</div>
+
+
+            <!-- ═══════════ SHIPMENTS ═══════════ -->
+            <div class="e" id="e-shipments" style="left: 38%; top: 75%; padding: 7px 16px; font-size: 11px;">Shipments
+            </div>
+
+            <!-- Left side attrs - moved away from HANDLES line -->
+            <div class="a pk" id="a-ship-tracking" style="left: 32%; top: 60%;"><span>tracking_id</span></div>
+            <div class="a" id="a-ship-id" style="left: 24%; top: 64%;">shipment_id</div>
+            <div class="a fk" id="a-ship-orgid" style="left: 20%; top: 58%;">organization_id</div>
+            <div class="a" id="a-ship-origin" style="left: 20%; top: 70%;">origin_address</div>
+            <div class="a" id="a-ship-weight" style="left: 18%; top: 78%;">weight</div>
+            <div class="a" id="a-ship-price" style="left: 22%; top: 84%;">price</div>
+            <div class="a" id="a-ship-status" style="left: 30%; top: 88%;">status</div>
+            <div class="a" id="a-ship-dest" style="left: 40%; top: 92%;">destination</div>
+            <div class="a" id="a-ship-created" style="left: 20%; top: 90%;">created_at</div>
+
+            <!-- Right side attrs - moved away from CREATES line -->
+            <div class="a fk" id="a-ship-creator" style="left: 54%; top: 60%;">creator_username</div>
+            <div class="a" id="a-ship-sendername" style="left: 60%; top: 66%;">sender_name</div>
+            <div class="a" id="a-ship-sendermob" style="left: 68%; top: 70%;">sender_mobile</div>
+            <div class="a" id="a-ship-senderpin" style="left: 74%; top: 75%;">sender_pincode</div>
+            <div class="a" id="a-ship-recvname" style="left: 74%; top: 81%;">receiver_name</div>
+            <div class="a" id="a-ship-recvmob" style="left: 70%; top: 86%;">receiver_mobile</div>
+            <div class="a" id="a-ship-recvpin" style="left: 62%; top: 90%;">receiver_pincode</div>
+            <div class="a" id="a-ship-estdel" style="left: 52%; top: 92%;">estimated_delivery</div>
+
+
+            <!-- ═══════════ CREATES (Users → Shipments) ═══════════ -->
+            <div class="r" id="r-creates-ship" style="left: 48%; top: 50%;">
+                <div class="r-box"><span class="r-text">Creates</span></div>
+            </div>
+            <div class="c" style="left: 46%; top: 44%;">1</div>
+            <div class="c" style="left: 52%; top: 64%;">N</div>
+
+
+            <!-- ═══════════ HANDLES (Organizations → Shipments) ═══════════ -->
+            <div class="r" id="r-handles" style="left: 12%; top: 50%;">
+                <div class="r-box"><span class="r-text">Handles</span></div>
+            </div>
+            <div class="c" style="left: 10%; top: 44%;">1</div>
+            <div class="c" style="left: 18%; top: 64%;">N</div>
+
+
+            <!-- ═══════════ SERVICEABLE_CITIES (Standalone) ═══════════ -->
+            <div class="e" id="e-cities" style="left: 2%; top: 52%;">Serviceable_Cities</div>
+
+            <div class="a pk" id="a-cities-id" style="left: 2%; top: 44%;"><span>city_id</span></div>
+            <div class="a" id="a-cities-name" style="left: 10%; top: 44%;">name</div>
+
+
+            <!-- Footer -->
+            <div class="footer">
+                <strong>PRIMARY KEYS:</strong> username (users), organization_id (organizations), session_id (sessions),
+                reset_id (password_resets), city_id (serviceable_cities), tracking_id (shipments) &nbsp;|&nbsp;
+                <strong>FOREIGN KEYS:</strong> organization_id → organizations, username → users, creator_username →
+                users
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function drawLines() {
+            const svg = document.getElementById('lines');
+            svg.innerHTML = '';
+            const canvas = document.getElementById('canvas').getBoundingClientRect();
+
+            function center(id) {
+                const el = document.getElementById(id);
+                if (!el) return null;
+                const r = el.getBoundingClientRect();
+                return { x: r.left + r.width / 2 - canvas.left, y: r.top + r.height / 2 - canvas.top };
+            }
+
+            function line(from, to, thick = false, color = '#90A4AE') {
+                const p1 = center(from), p2 = center(to);
+                if (!p1 || !p2) return;
+                const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                l.setAttribute('x1', p1.x);
+                l.setAttribute('y1', p1.y);
+                l.setAttribute('x2', p2.x);
+                l.setAttribute('y2', p2.y);
+                l.setAttribute('stroke', color);
+                l.setAttribute('stroke-width', thick ? '2' : '1');
+                svg.appendChild(l);
+            }
+
+            // Organization attrs
+            ['a-org-id', 'a-org-name', 'a-org-type', 'a-org-status', 'a-org-pincodes',
+                'a-org-address', 'a-org-perf', 'a-org-created']
+                .forEach(a => line(a, 'e-org'));
+
+            // Users attrs
+            ['a-usr-username', 'a-usr-id', 'a-usr-fullname', 'a-usr-phone', 'a-usr-password',
+                'a-usr-role', 'a-usr-status', 'a-usr-security', 'a-usr-staffrole', 'a-usr-created',
+                'a-usr-login', 'a-usr-orgid']
+                .forEach(a => line(a, 'e-users'));
+
+            // Sessions attrs
+            ['a-sess-id', 'a-sess-token', 'a-sess-role', 'a-sess-expires', 'a-sess-created',
+                'a-sess-last', 'a-sess-username']
+                .forEach(a => line(a, 'e-sessions'));
+
+            // Password attrs
+            ['a-pass-id', 'a-pass-token', 'a-pass-expires', 'a-pass-used', 'a-pass-created', 'a-pass-username']
+                .forEach(a => line(a, 'e-password'));
+
+            // Shipments attrs
+            ['a-ship-id', 'a-ship-tracking', 'a-ship-origin', 'a-ship-weight', 'a-ship-price', 'a-ship-status',
+                'a-ship-dest', 'a-ship-created', 'a-ship-sendername', 'a-ship-sendermob',
+                'a-ship-senderpin', 'a-ship-recvname', 'a-ship-recvmob', 'a-ship-recvpin',
+                'a-ship-estdel', 'a-ship-creator', 'a-ship-orgid']
+                .forEach(a => line(a, 'e-shipments'));
+
+            // Cities attrs
+            ['a-cities-id', 'a-cities-name'].forEach(a => line(a, 'e-cities'));
+
+            // ========== ENTITY RELATIONSHIPS ==========
+
+            // Organizations ←── Belongs ──→ Users
+            line('e-org', 'r-belongs', true, '#1565C0');
+            line('r-belongs', 'e-users', true, '#1565C0');
+
+            // Users ←── Creates ──→ Sessions (Identifying)
+            line('e-users', 'r-creates-sess', true, '#AD1457');
+            line('r-creates-sess', 'e-sessions', true, '#AD1457');
+
+            // Users ←── Requests ──→ Password_Resets (Identifying)
+            line('e-users', 'r-requests', true, '#AD1457');
+            line('r-requests', 'e-password', true, '#AD1457');
+
+            // Users ←── Creates ──→ Shipments
+            line('e-users', 'r-creates-ship', true, '#1565C0');
+            line('r-creates-ship', 'e-shipments', true, '#1565C0');
+
+            // Organizations ←── Handles ──→ Shipments
+            line('e-org', 'r-handles', true, '#1565C0');
+            line('r-handles', 'e-shipments', true, '#1565C0');
+        }
+
+        window.addEventListener('load', drawLines);
+        window.addEventListener('resize', drawLines);
+    </script>
+</body>
+
+</html>

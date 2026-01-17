@@ -2,13 +2,12 @@
 -- MoveX Security Policies (RLS)
 -- ═══════════════════════════════════════════════════════════════════════════════
 
--- 1. Enable RLS on all tables
+-- 1. Enable RLS on all tables (6 tables - shipment_photos removed)
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE password_resets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE shipments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE shipment_photos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE serviceable_cities ENABLE ROW LEVEL SECURITY;
 
 -- 2. Define Service Role Policy (Unrestricted Access for Backend)
@@ -16,7 +15,7 @@ ALTER TABLE serviceable_cities ENABLE ROW LEVEL SECURITY;
 
 DO $$ 
 DECLARE 
-    tables TEXT[] := ARRAY['users', 'organizations', 'sessions', 'password_resets', 'shipments', 'shipment_photos', 'serviceable_cities'];
+    tables TEXT[] := ARRAY['users', 'organizations', 'sessions', 'password_resets', 'shipments', 'serviceable_cities'];
     tbl TEXT;
 BEGIN
     FOREACH tbl IN ARRAY tables LOOP

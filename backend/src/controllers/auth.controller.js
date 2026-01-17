@@ -66,7 +66,7 @@ exports.register = async (req, res) => {
     }
 
     const existing = await pool.query(
-      'SELECT id FROM users WHERE username = $1',
+      'SELECT user_id FROM users WHERE username = $1',
       [normalizedUsername]
     );
     if (existing.rows.length > 0) {
@@ -119,7 +119,7 @@ exports.login = async (req, res) => {
 
     const normalizedUsername = username.trim().toLowerCase();
     const { rows } = await pool.query(
-      'SELECT id, username, password_hash, role, status FROM users WHERE username = $1',
+      'SELECT user_id, username, password_hash, role, status FROM users WHERE username = $1',
       [normalizedUsername]
     );
 
@@ -166,7 +166,7 @@ exports.login = async (req, res) => {
       message: 'Login successful.',
       token, // For cross-origin auth
       user: {
-        id: user.id,
+        id: user.user_id,
         username: user.username,
         role: user.role
       }
@@ -222,7 +222,7 @@ exports.verifyQuestions = async (req, res) => {
 
     // Get user and stored answers
     const { rows } = await pool.query(
-      'SELECT id, role, security_answers FROM users WHERE username = $1',
+      'SELECT user_id, role, security_answers FROM users WHERE username = $1',
       [normalizedUsername]
     );
     const user = rows[0];
@@ -290,7 +290,7 @@ exports.checkRecoveryEligibility = async (req, res) => {
     if (!username) return res.status(400).json({ message: 'Username is required.' });
 
     const normalized = username.trim().toLowerCase();
-    const { rows } = await pool.query('SELECT id, role FROM users WHERE username = $1', [normalized]);
+    const { rows } = await pool.query('SELECT user_id, role FROM users WHERE username = $1', [normalized]);
 
     if (rows.length === 0) {
       // Security: Fake success to prevent username enumeration
@@ -330,7 +330,7 @@ exports.resetPassword = async (req, res) => {
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
     const { rows } = await pool.query(
-      `SELECT pr.id, pr.username, pr.expires_at, pr.used
+      `SELECT pr.reset_id, pr.username, pr.expires_at, pr.used
        FROM password_resets pr
        WHERE pr.token_hash = $1`,
       [tokenHash]
@@ -346,7 +346,7 @@ exports.resetPassword = async (req, res) => {
 
     await pool.query('BEGIN');
     await pool.query('UPDATE users SET password_hash = $1 WHERE username = $2', [hash, reset.username]);
-    await pool.query('UPDATE password_resets SET used = true WHERE id = $1', [reset.id]);
+    await pool.query('UPDATE password_resets SET used = true WHERE reset_id = $1', [reset.reset_id]);
     await pool.query('COMMIT');
 
     // Invalidate all sessions for this user

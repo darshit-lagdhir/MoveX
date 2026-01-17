@@ -14,19 +14,19 @@ async function validateSession(req, res, next) {
         if (session) {
             try {
                 const result = await db.query(`
-                    SELECT u.id, u.username, u.full_name, u.phone, u.role, u.status, 
+                    SELECT u.user_id, u.username, u.full_name, u.phone, u.role, u.status, 
                            u.created_at, u.last_login_at,
                            u.organization_id,
                            o.name as org_name, o.type as org_type, o.non_serviceable_areas, o.status as org_status
                     FROM users u
-                    LEFT JOIN organizations o ON u.organization_id = o.id
+                    LEFT JOIN organizations o ON u.organization_id = o.organization_id
                     WHERE u.username = $1
                 `, [session.username]);
 
                 if (result.rows.length > 0 && result.rows[0].status === 'active') {
                     const row = result.rows[0];
                     req.user = {
-                        id: row.id, username: row.username, full_name: row.full_name,
+                        id: row.user_id, username: row.username, full_name: row.full_name,
                         phone: row.phone, role: row.role, status: row.status,
                         created_at: row.created_at,
                         last_login_at: row.last_login_at, organization_id: row.organization_id
@@ -52,19 +52,19 @@ async function validateSession(req, res, next) {
             const userIdentifier = decoded.username || decoded.userId || decoded.id;
 
             const result = await db.query(`
-                SELECT u.id, u.username, u.full_name, u.phone, u.role, u.status, 
+                SELECT u.user_id, u.username, u.full_name, u.phone, u.role, u.status, 
                        u.created_at, u.last_login_at,
                        u.organization_id,
                        o.name as org_name, o.type as org_type, o.non_serviceable_areas, o.status as org_status
                 FROM users u
-                LEFT JOIN organizations o ON u.organization_id = o.id
-                WHERE u.username = $1 OR u.id::text = $1
+                LEFT JOIN organizations o ON u.organization_id = o.organization_id
+                WHERE u.username = $1 OR u.user_id::text = $1
             `, [String(userIdentifier)]);
 
             if (result.rows.length > 0 && result.rows[0].status === 'active') {
                 const row = result.rows[0];
                 req.user = {
-                    id: row.id, username: row.username, full_name: row.full_name,
+                    id: row.user_id, username: row.username, full_name: row.full_name,
                     phone: row.phone, role: row.role, status: row.status,
                     created_at: row.created_at,
                     last_login_at: row.last_login_at, organization_id: row.organization_id
@@ -167,7 +167,7 @@ router.put('/me', validateSession, async (req, res) => {
         );
 
         const result = await db.query(`
-            SELECT id, username, full_name, phone, role, status, 
+            SELECT user_id, username, full_name, phone, role, status, 
                    organization_id, created_at, last_login_at
             FROM users WHERE username = $1
         `, [username]);
@@ -196,8 +196,8 @@ router.get('/organization/me', validateSession, async (req, res) => {
 
     try {
         const result = await db.query(`
-            SELECT id, name, type, non_serviceable_areas, status, created_at
-            FROM organizations WHERE id = $1
+            SELECT organization_id, name, type, non_serviceable_areas, status, created_at
+            FROM organizations WHERE organization_id = $1
         `, [orgId]);
 
         if (result.rows.length === 0) {
@@ -222,10 +222,10 @@ router.get('/organization/users', validateSession, requireRole('admin', 'franchi
 
         if (user.role === 'admin') {
             query = `
-                SELECT u.id, u.username, u.full_name, u.phone, u.role, u.status, 
+                SELECT u.user_id, u.username, u.full_name, u.phone, u.role, u.status, 
                        u.created_at, u.last_login_at, o.name as org_name
                 FROM users u
-                LEFT JOIN organizations o ON u.organization_id = o.id
+                LEFT JOIN organizations o ON u.organization_id = o.organization_id
                 ORDER BY u.created_at DESC
             `;
             params = [];
@@ -235,7 +235,7 @@ router.get('/organization/users', validateSession, requireRole('admin', 'franchi
             }
 
             query = `
-                SELECT u.id, u.username, u.full_name, u.phone, u.role, u.status, 
+                SELECT u.user_id, u.username, u.full_name, u.phone, u.role, u.status, 
                        u.created_at, u.last_login_at
                 FROM users u
                 WHERE u.organization_id = $1
@@ -261,7 +261,7 @@ router.get('/organizations', validateSession, requireRole('admin'), async (req, 
     try {
         const result = await db.query(`
             SELECT o.*, 
-                   (SELECT COUNT(*) FROM users WHERE organization_id = o.id) as user_count
+                   (SELECT COUNT(*) FROM users WHERE organization_id = o.organization_id) as user_count
             FROM organizations o
             ORDER BY o.created_at DESC
         `);
