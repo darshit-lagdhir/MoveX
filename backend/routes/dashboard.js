@@ -406,7 +406,7 @@ router.get('/admin/franchises', validateSession, requireRole('admin'), async (re
         const result = await db.query(`
             SELECT o.*, u.username as owner_username, u.full_name as owner_name, u.phone as owner_phone
             FROM organizations o
-            LEFT JOIN users u ON u.organization_id = o.id AND u.role = 'franchisee'
+            LEFT JOIN users u ON u.organization_id = o.organization_id AND u.role = 'franchisee'
             WHERE o.type = 'franchise'
             ORDER BY o.created_at DESC
         `);
