@@ -290,7 +290,7 @@
                 const nameEl = document.getElementById('topBarUserName');
                 const roleEl = document.getElementById('topBarRole');
                 if (nameEl) {
-                    nameEl.textContent = (window.MoveXUser.role || 'Admin').replace(/^\w/, c => c.toUpperCase());
+                    nameEl.textContent = window.MoveXUser.full_name || 'Admin';
                     nameEl.style.background = 'none';
                     nameEl.style.textAlign = 'right';
                     nameEl.style.color = 'var(--brand-primary)';
@@ -298,7 +298,7 @@
                     nameEl.style.fontSize = '1.1rem';
                     nameEl.style.letterSpacing = '0.5px';
                 }
-                if (roleEl) roleEl.style.display = 'none'; // Hide the secondary role text since main text is now the role
+                if (roleEl) roleEl.style.display = 'none';
             } else {
                 setTimeout(update, 500);
             }

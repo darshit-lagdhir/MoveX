@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="../styles/admin.css?v=4">
     <script src="../js/config.js?v=1"></script>
     <script src="../js/dashboard-guard.js?v=3"></script>
+    <script src="../js/admin-core.js?v=4"></script>
 </head>
 
 <body>
@@ -195,60 +196,99 @@
                         <h1 class="page-title">System Settings</h1>
                     </div>
 
-                    <div class="dashboard-grid" style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
-                        <!-- Settings Sidebar -->
-                        <div class="card" style="padding: 1rem; align-self: start;">
-                            <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                <a href="#"
-                                    style="padding: 0.75rem; background: var(--brand-primary-soft); color: var(--brand-primary); border-radius: var(--radius-sm); font-weight: 500; text-decoration: none;">General</a>
-                                <a href="#"
-                                    style="padding: 0.75rem; color: var(--text-secondary); border-radius: var(--radius-sm); font-weight: 500; text-decoration: none;">Notifications</a>
-                                <a href="#"
-                                    style="padding: 0.75rem; color: var(--text-secondary); border-radius: var(--radius-sm); font-weight: 500; text-decoration: none;">Security</a>
-                                <a href="#"
-                                    style="padding: 0.75rem; color: var(--text-secondary); border-radius: var(--radius-sm); font-weight: 500; text-decoration: none;">API
-                                    Keys</a>
-                            </nav>
-                        </div>
+                    <div style="max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 2rem;">
+                        <!-- Profile Settings -->
+                        <div class="card">
+                            <h3 class="card-title"
+                                style="margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24" style="color: var(--brand-primary);">
+                                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                    </path>
+                                </svg>
+                                Personal Profile
+                            </h3>
 
-                        <!-- Settings Content -->
-                        <div style="display: flex; flex-direction: column; gap: 2rem;">
-                            <div class="card">
-                                <h3 class="card-title" style="margin-bottom: 1.5rem;">Platform Configuration</h3>
-
-                                <div style="margin-bottom: 1.5rem;">
-                                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;">Platform
-                                        Name</label>
-                                    <input type="text" value="MoveX Logistics"
-                                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-sm);">
+                            <div
+                                style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                                <div style="grid-column: span 2;">
+                                    <label
+                                        style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Your
+                                        Full Name</label>
+                                    <input type="text" id="profile_full_name" placeholder="Loading..."
+                                        style="width: 100%;">
                                 </div>
 
-                                <div style="margin-bottom: 1.5rem;">
-                                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;">Support
-                                        Email</label>
-                                    <input type="email" value="support@movex.com"
-                                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-sm);">
-                                </div>
-
-                                <div style="margin-bottom: 1.5rem;">
-                                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;">Default
-                                        Currency</label>
-                                    <select disabled
-                                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-default); border-radius: var(--radius-sm); background: var(--surface-secondary); cursor: not-allowed; opacity: 0.7;">
-                                        <option selected>INR (₹)</option>
-                                    </select>
-                                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                                        Platform is locked to Indian Rupee.</div>
-                                </div>
-
-                                <div style="display: flex; justify-content: flex-end;">
-                                    <button
-                                        style="background: var(--brand-primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">Save
-                                        Changes</button>
+                                <div style="grid-column: span 2;">
+                                    <label
+                                        style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Phone
+                                        Number</label>
+                                    <input type="text" id="profile_phone" placeholder="Loading..." style="width: 100%;">
                                 </div>
                             </div>
 
+                            <div
+                                style="padding-top: 1.5rem; border-top: 1px solid var(--border-default); display: flex; justify-content: flex-end;">
+                                <button id="btn-save-profile" class="btn-primary"
+                                    style="height: 46px; background: var(--brand-primary); color: white; border: none; padding: 0 2rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">Update
+                                    Profile</button>
+                            </div>
+                        </div>
 
+                        <!-- Security Settings -->
+                        <div class="card">
+                            <h3 class="card-title"
+                                style="margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24" style="color: var(--brand-primary);">
+                                    <path
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                    </path>
+                                </svg>
+                                Change Password
+                            </h3>
+
+                            <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2rem;">
+                                <div>
+                                    <label
+                                        style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Current
+                                        Password</label>
+                                    <input type="password" id="old_password" placeholder="••••••••"
+                                        style="width: 100%;">
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                                    <div>
+                                        <label
+                                            style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">New
+                                            Password</label>
+                                        <input type="password" id="new_password" placeholder="At least 8 characters"
+                                            style="width: 100%;">
+                                    </div>
+                                    <div>
+                                        <label
+                                            style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Confirm
+                                            New Password</label>
+                                        <input type="password" id="confirm_password" placeholder="Confirm new password"
+                                            style="width: 100%;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                style="padding-top: 1.5rem; border-top: 1px solid var(--border-default); display: flex; justify-content: flex-end;">
+                                <button id="btn-save-password" class="btn-primary"
+                                    style="height: 46px; background: var(--brand-primary); color: white; border: none; padding: 0 2rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer;">Save
+                                    Password</button>
+                            </div>
+                        </div>
+
+                        <div class="card" style="border-left: 4px solid #ef4444;">
+                            <h3 class="card-title" style="margin-bottom: 1rem; color: #b91c1c;">Account Security</h3>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                                Password changes will apply immediately to your next login.
+                                Make sure to use a strong, unique password for your account.
+                            </p>
                         </div>
                     </div>
                 </div>

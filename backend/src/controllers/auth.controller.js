@@ -359,3 +359,44 @@ exports.resetPassword = async (req, res) => {
     return res.status(400).json({ message: 'Reset failed. Please try again.' });
   }
 };
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const username = req.user.username;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ success: false, error: 'Missing password information' });
+    }
+
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ success: false, error: `New password must be at least ${MIN_PASSWORD_LENGTH} characters.` });
+    }
+
+    // Get current hash
+    const { rows } = await pool.query('SELECT password_hash FROM users WHERE username = $1', [username]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    const match = await bcrypt.compare(oldPassword, rows[0].password_hash);
+    if (!match) {
+      return res.status(400).json({ success: false, error: 'Current password is incorrect.' });
+    }
+
+    // Hash new password
+    const hash = await bcrypt.hash(newPassword, 12);
+
+    // Update DB
+    await pool.query('UPDATE users SET password_hash = $1 WHERE username = $2', [hash, username]);
+
+    // Optional: Destroy all sessions for this user EXCEPT the current one? 
+    // Or just let it be. Usually we logout everywhere for security.
+    // await sessionStore.destroySessionsForUser(username);
+
+    res.json({ success: true, message: 'Password updated successfully!' });
+  } catch (err) {
+    console.error('Change password error:', err);
+    res.status(500).json({ success: false, error: 'Failed to update password.' });
+  }
+};

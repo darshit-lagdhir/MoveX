@@ -419,12 +419,149 @@ window.MoveXAdmin = (function () {
                 serviceBtn.onclick = () => window.MoveXAdmin.handleServiceabilityCheck();
             }
         },
+        'settings': async function () {
+            const nameInput = document.getElementById('profile_full_name');
+            const phoneInput = document.getElementById('profile_phone');
+            const btnSaveProfile = document.getElementById('btn-save-profile');
+            const btnSavePassword = document.getElementById('btn-save-password');
+
+            const populateData = (user) => {
+                if (nameInput) {
+                    nameInput.value = user.full_name || '';
+                    nameInput.placeholder = 'Enter your full name';
+                }
+                if (phoneInput) {
+                    phoneInput.value = user.phone || '';
+                    phoneInput.placeholder = 'Enter phone number';
+                }
+            };
+
+            // 1. Initial Load from window.MoveXUser or API
+            if (window.MoveXUser) {
+                populateData(window.MoveXUser);
+            } else {
+                try {
+                    const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                    const token = session.data?.token;
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                    const res = await fetch(`${API_BASE}/api/me`, { headers });
+                    const data = await res.json();
+                    if (data.success) populateData(data.user);
+                } catch (err) {
+                    console.error('Failed to load profile:', err);
+                }
+            }
+
+            // 2. Handle Profile Update
+            if (btnSaveProfile) {
+                btnSaveProfile.onclick = async () => {
+                    const full_name = nameInput.value.trim();
+                    const phone = phoneInput.value.trim();
+
+                    if (!full_name) return showToast('Name cannot be empty', 'error');
+
+                    btnSaveProfile.textContent = 'Saving...';
+                    btnSaveProfile.disabled = true;
+
+                    try {
+                        const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                        const token = session.data?.token;
+                        const headers = { 'Content-Type': 'application/json' };
+                        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                        const res = await fetch(`${API_BASE}/api/me`, {
+                            method: 'PUT',
+                            headers,
+                            body: JSON.stringify({ full_name, phone })
+                        });
+                        const data = await res.json();
+
+                        if (data.success) {
+                            showToast('Profile updated successfully!', 'success');
+
+                            // SYNC UI
+                            const topBarName = document.getElementById('topBarUserName');
+                            if (topBarName) topBarName.textContent = full_name;
+
+                            if (window.MoveXUser) {
+                                window.MoveXUser.full_name = full_name;
+                                window.MoveXUser.phone = phone;
+                            }
+
+                            // PERSIST in sessionStorage
+                            if (session.data && session.data.user) {
+                                session.data.user.full_name = full_name;
+                                session.data.user.phone = phone;
+                                sessionStorage.setItem('movexsecuresession', JSON.stringify(session));
+                            }
+                        } else {
+                            showToast(data.error || 'Failed to update profile', 'error');
+                        }
+                    } catch (err) {
+                        showToast('Communication error', 'error');
+                    } finally {
+                        btnSaveProfile.textContent = 'Update Profile';
+                        btnSaveProfile.disabled = false;
+                    }
+                };
+            }
+
+            // 3. Handle Password Change
+            if (btnSavePassword) {
+                btnSavePassword.onclick = async () => {
+                    const oldPassword = document.getElementById('old_password').value;
+                    const newPassword = document.getElementById('new_password').value;
+                    const confirmPassword = document.getElementById('confirm_password').value;
+
+                    if (!oldPassword || !newPassword) return showToast('Please fill all fields', 'error');
+                    if (newPassword !== confirmPassword) return showToast('New passwords do not match', 'error');
+                    if (newPassword.length < 8) return showToast('Password must be 8+ characters', 'error');
+
+                    btnSavePassword.textContent = 'Updating...';
+                    btnSavePassword.disabled = true;
+
+                    try {
+                        const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                        const token = session.data?.token;
+                        const headers = { 'Content-Type': 'application/json' };
+                        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                        const res = await fetch(`${API_BASE}/api/auth/change-password`, {
+                            method: 'POST',
+                            headers,
+                            body: JSON.stringify({ oldPassword, newPassword })
+                        });
+                        const data = await res.json();
+
+                        if (data.success) {
+                            showToast('Password changed successfully! Re-logging...', 'success');
+                            // Forced re-login
+                            setTimeout(() => {
+                                if (window.MoveXLogout) window.MoveXLogout();
+                                else window.location.href = '/';
+                            }, 1500);
+                        } else {
+                            showToast(data.error || 'Failed to change password', 'error');
+                        }
+                    } catch (err) {
+                        showToast('Communication error', 'error');
+                    } finally {
+                        btnSavePassword.textContent = 'Save Password';
+                        btnSavePassword.disabled = false;
+                    }
+                };
+            }
+        },
 
         'bookings': async () => {
             const tableBody = document.getElementById('bookings-table-body');
             if (!tableBody) return;
 
             const fetchBookings = async () => {
+                tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-tertiary);">Loading Bookings...</td></tr>`;
+
                 try {
                     const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
                     const token = session.data?.token;
@@ -441,7 +578,7 @@ window.MoveXAdmin = (function () {
                         // Update KPIs
                         const { newRequests, scheduledToday } = data.stats;
                         const reqEl = document.getElementById('kpi-new-requests');
-                        const schedEl = document.getElementById('kpi-scheduled'); // Mapped to 'Created Today'
+                        const schedEl = document.getElementById('kpi-scheduled');
 
                         if (reqEl) animateValue(reqEl, 0, newRequests, 1000);
                         if (schedEl) animateValue(schedEl, 0, scheduledToday, 1000);
@@ -455,6 +592,7 @@ window.MoveXAdmin = (function () {
                                     <td style="font-family: monospace; font-weight: 600; color: var(--brand-primary);">${row.id}</td>
                                     <td>
                                         <div style="font-weight: 500;">${row.sender}</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-tertiary);">${row.sender_type || 'Individual'}</div>
                                     </td>
                                     <td>
                                         <span class="status-badge status-default">${row.type}</span>
@@ -465,21 +603,32 @@ window.MoveXAdmin = (function () {
                                     </td>
                                     <td>${new Date(row.created_at).toLocaleDateString()}</td>
                                     <td>
-                                        <button class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="window.MoveXAdmin.viewBooking('${row.id}')">Review</button>
+                                        <button class="action-btn process-booking-btn" data-model='${JSON.stringify(row)}'
+                                            style="background: var(--brand-primary); color: white; border: none; padding: 4px 12px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 0.85rem;">
+                                            Process
+                                        </button>
                                     </td>
                                 </tr>
                             `).join('');
+
+                            // Bind Process Buttons
+                            tableBody.querySelectorAll('.process-booking-btn').forEach(btn => {
+                                btn.onclick = () => {
+                                    const booking = JSON.parse(btn.getAttribute('data-model'));
+                                    window.MoveXAdmin.updateShipmentStatus({ id: booking.id, status: 'Pending' });
+                                };
+                            });
                         }
                     } else {
                         throw new Error(data.error);
                     }
                 } catch (err) {
-                    console.error("Fetch Bookings Error:", err);
-                    tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--error);">Failed to load bookings.</td></tr>`;
+                    console.error("Booking Error:", err);
+                    tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--error);">Error loading bookings.</td></tr>`;
                 }
             };
 
-            fetchBookings();
+            await fetchBookings();
         },
 
         'users': async () => {
@@ -1131,230 +1280,6 @@ window.MoveXAdmin = (function () {
                 };
             }
         },
-        'bookings': function () { renderBookingTable(); },
-
-        'finance': async function () {
-            // Helper for Auth Fetches
-            const fetchSecure = async (endpoint) => {
-                const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                const token = session.data?.token;
-                const headers = { 'Content-Type': 'application/json' };
-                if (token) headers['Authorization'] = `Bearer ${token}`;
-                // Using API_BASE which defaults to localhost:4000 on local, or prod URL.
-                const res = await fetch(`${API_BASE}${endpoint}`, { credentials: 'include', headers });
-                return await res.json();
-            };
-
-            // 1. Fetch Stats (KPIs)
-            try {
-                const data = await fetchSecure('/api/dashboard/admin/finance/stats');
-
-                const revEl = document.getElementById('fin-total-revenue');
-                const penEl = document.getElementById('fin-pending-cod');
-                const payEl = document.getElementById('fin-franchise-payouts');
-
-                if (data.success) {
-                    const formatCurrency = (val) => {
-                        return val >= 1000000 ? (val / 1000000).toFixed(1) + 'M' : val.toLocaleString();
-                    };
-
-                    if (revEl) revEl.innerText = '₹' + formatCurrency(data.stats.totalRevenue);
-                    if (penEl) penEl.innerText = '₹' + formatCurrency(data.stats.pendingRevenue);
-                    if (payEl) payEl.innerText = '₹' + formatCurrency(data.stats.payouts);
-                } else {
-                    if (revEl) revEl.innerText = '0';
-                    if (penEl) penEl.innerText = '0';
-                    if (payEl) payEl.innerText = '0';
-                }
-            } catch (e) {
-                console.error('Stats load failed', e);
-                const els = ['fin-total-revenue', 'fin-pending-cod', 'fin-franchise-payouts'];
-                els.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.innerText = 'Error';
-                });
-            }
-
-            // 2. Fetch Transactions (Recent)
-            try {
-                const data = await fetchSecure('/api/dashboard/admin/finance/transactions');
-                const tbody = document.getElementById('fin-transactions-body');
-                if (tbody) {
-                    if (data.success && data.transactions && data.transactions.length > 0) {
-                        tbody.innerHTML = data.transactions.map(t => `
-                            <tr>
-                                <td style="font-family: monospace; font-weight:600; color:var(--brand-primary);">${t.ref_id}</td>
-                                <td>${new Date(t.date).toLocaleDateString()}</td>
-                                <td>${t.type}</td>
-                                <td>${t.entity}</td>
-                                <td style="font-weight:600; color: ${t.type.includes('Payout') ? 'var(--text-primary)' : 'var(--success)'};">
-                                    ${t.type.includes('Payout') ? '-' : '+'}₹${t.amount.toLocaleString()}
-                                </td>
-                                <td><span class="status-badge ${t.status === 'Paid' ? 'status-active' : 'status-warn'}">${t.status}</span></td>
-                            </tr>
-                        `).join('');
-                    } else {
-                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem;">No recent transactions.</td></tr>';
-                    }
-                }
-            } catch (e) {
-                console.error('Transactions load failed', e);
-                const tbody = document.getElementById('fin-transactions-body');
-                if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:1rem;">Failed to load transactions.</td></tr>';
-            }
-
-            // 3. Render Chart (CSS Bar Chart)
-            try {
-                const data = await fetchSecure('/api/dashboard/admin/finance/history');
-                if (data.success) {
-                    const container = document.getElementById('fin-revenue-chart');
-                    if (container) {
-                        container.innerHTML = '';
-                        container.style.display = 'flex';
-                        container.style.alignItems = 'flex-end';
-                        container.style.justifyContent = 'space-between';
-                        container.style.padding = '20px 20px';
-                        container.style.gap = '15px';
-
-                        const max = Math.max(...data.data, 1000); // Minimum scale 1000
-
-                        if (data.data.length === 0 || data.data.every(v => v === 0)) {
-                            container.innerHTML = '<div style="color:var(--text-tertiary); width:100%; text-align:center;">No revenue data for charts yet</div>';
-                        } else {
-                            data.labels.forEach((label, i) => {
-                                const val = data.data[i];
-                                const heightPct = (val / max) * 80; // Max 80% height to leave room for labels
-                                const barColor = 'var(--brand-primary)';
-
-                                const barGroup = document.createElement('div');
-                                barGroup.style.display = 'flex';
-                                barGroup.style.flexDirection = 'column';
-                                barGroup.style.alignItems = 'center';
-                                barGroup.style.height = '100%';
-                                barGroup.style.justifyContent = 'flex-end';
-                                barGroup.style.flex = '1';
-                                barGroup.style.cursor = 'default';
-
-                                // Custom Tooltip structure
-                                barGroup.innerHTML = `
-                                    <div class="bar-val" style="font-size:0.75rem; font-weight:700; color:var(--text-primary); margin-bottom:8px; opacity:0; transform:translateY(10px); transition:all 0.3s; background:var(--surface-primary); padding:2px 6px; border-radius:4px; box-shadow:var(--shadow-sm);">₹${val.toLocaleString()}</div>
-                                    <div class="bar-visual" style="width: 100%; max-width: 40px; height: 0%; background: ${barColor}; border-radius: 6px 6px 0 0; transition: height 1s var(--easing-spring); position:relative;"></div>
-                                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 12px; font-weight:600;">${label}</div>
-                                `;
-
-                                container.appendChild(barGroup);
-
-                                // Delayed Animation
-                                setTimeout(() => {
-                                    const bar = barGroup.querySelector('.bar-visual');
-                                    if (bar) bar.style.height = `${Math.max(heightPct, 2)}%`;
-
-                                    // Interactive Events
-                                    barGroup.onmouseenter = () => {
-                                        barGroup.querySelector('.bar-val').style.opacity = '1';
-                                        barGroup.querySelector('.bar-val').style.transform = 'translateY(0)';
-                                        bar.style.filter = 'brightness(1.2)';
-                                    };
-                                    barGroup.onmouseleave = () => {
-                                        barGroup.querySelector('.bar-val').style.opacity = '0';
-                                        barGroup.querySelector('.bar-val').style.transform = 'translateY(10px)';
-                                        bar.style.filter = 'none';
-                                    };
-                                }, 150 + (i * 100));
-                            });
-                        }
-                    }
-                }
-            } catch (e) { console.error('Chart load failed', e); }
-        },
-
-        /* Duplicate 'reports' initializer removed to allow real API logic to run */
-        'bookings': async () => {
-            const tBody = document.getElementById('bookings-table-body');
-            if (!tBody) return;
-
-            try {
-                const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                const token = session.data?.token;
-                const headers = { 'Content-Type': 'application/json' };
-                if (token) headers['Authorization'] = `Bearer ${token}`;
-
-                const res = await fetch(`${API_BASE}/api/dashboard/admin/bookings`, {
-                    credentials: 'include',
-                    headers: headers
-                });
-                const data = await res.json();
-
-                if (!data.success) throw new Error(data.error);
-
-                // Update KPIs
-                const kpiNew = document.getElementById('kpi-new-requests');
-                const kpiScheduled = document.getElementById('kpi-scheduled');
-                if (kpiNew) kpiNew.textContent = data.stats.newRequests;
-                if (kpiScheduled) kpiScheduled.textContent = data.stats.scheduledToday;
-
-                if (data.bookings.length === 0) {
-                    tBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-secondary);">No pending requests found.</td></tr>`;
-                    return;
-                }
-
-                tBody.innerHTML = data.bookings.map(row => `
-                     <tr>
-                        <td style="font-family: monospace; font-weight: 600;">${row.id}</td>
-                        <td>
-                            <div>${row.sender}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary);">${row.sender_type}</div>
-                        </td>
-                        <td>
-                            <div>${row.type}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary);">${row.weight} KG</div>
-                        </td>
-                        <td>${row.location ? row.location.split(',')[0] : 'N/A'}</td>
-                        <td>
-                             <div>${new Date(row.created_at).toLocaleDateString()}</div>
-                             <div style="font-size: 0.75rem; color: var(--text-secondary);">Requested</div>
-                        </td>
-                        <td>
-                            <button class="action-btn process-booking-btn" data-id="${row.id}" data-model='${JSON.stringify(row)}'
-                                style="background: var(--brand-primary); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 0.85rem;">
-                                Process
-                            </button>
-                        </td>
-                     </tr>
-                `).join('');
-
-                // Bind click events
-                document.querySelectorAll('.process-booking-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        // Find the button (target might be inner text)
-                        const button = e.target.closest('button');
-                        if (!button) return;
-
-                        const raw = button.getAttribute('data-model');
-                        const booking = JSON.parse(raw);
-                        // Convert booking model to shipment model for the update modal
-                        const shipmentModel = {
-                            id: booking.id,
-                            status: 'Pending'
-                        };
-                        showUpdateStatusModal(shipmentModel);
-                    });
-                });
-
-            } catch (err) {
-                console.error(err);
-                tBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--danger);">Failed to load bookings.</td></tr>`;
-            }
-        },
-
-        'settings': function () {
-            const saveBtn = document.querySelector('button[style*="background: var(--brand-primary)"]');
-            if (saveBtn) saveBtn.onclick = () => showToast('Settings saved successfully', 'success');
-            document.querySelectorAll('input[type="checkbox"]').forEach(t => {
-                t.onchange = () => showToast(`${t.parentElement.textContent.trim()} ${t.checked ? 'enabled' : 'disabled'}`, 'success');
-            });
-        },
-
         'audit-logs': function () {
             renderAuditLogs();
             const filterBtn = document.querySelector('.card button');
@@ -2212,208 +2137,142 @@ window.MoveXAdmin = (function () {
 
 
 
-    return {
-        init: function (page) {
-            console.log('MoveX Core: Initializing', page);
-
-            // Apply page fade-in
-            const container = document.querySelector('.dashboard-container');
-            if (container) {
-                container.classList.add('page-fade-in');
-            }
-
-            if (initializers[page]) {
-                initializers[page]();
-            }
-
-            // Initialize custom UI elements
-            initCustomSelects();
-
-            // Initialize Flatpickr for any date inputs
-            // Initialize Flatpickr for any date inputs - DISABLED FOR NATIVE UI
-            /* 
-            if (window.flatpickr) {
-                const dateInputs = document.querySelectorAll('input[type="date"]');
-                dateInputs.forEach(input => {
-                    input.type = 'text';
-                    input.placeholder = 'Select Date...';
-                    window.flatpickr(input, {
-                        dateFormat: "Y-m-d"
-                    });
-                });
-            }
-            */
-        },
-        toast: showToast,
-        modal: createModal,
-        handleServiceabilityCheck: handleServiceabilityCheck,
-        createShipment: function () {
-            createModal('Create New Shipment', `
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
-                    
-                    <!-- Sender Section -->
-                    <div style="grid-column: span 2; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 0.5rem;">
-                        <div style="font-size: 0.95rem; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.02em;">SENDER DETAILS</div>
-                    </div>
-                    <div style="grid-column: span 2;">
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Name <span style="color:red">*</span></label>
-                        <input type="text" id="ship_sender_name" placeholder="Full Name" style="width:100%;" autocomplete="off">
-                    </div>
-                    <div>
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Mobile <span style="color:red">*</span></label>
-                        <input type="tel" id="ship_sender_mobile" placeholder="+91 9876543210" style="width:100%;" autocomplete="off">
-                    </div>
-                    <div>
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Pincode <span style="color:red">*</span></label>
-                        <input type="text" id="ship_sender_pincode" placeholder="6-digit Pincode" maxlength="6" style="width:100%;" autocomplete="off">
-                    </div>
-                    <div style="grid-column: span 2;">
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Address <span style="color:red">*</span></label>
-                        <textarea id="ship_sender_address" placeholder="Complete address" rows="2" style="width:100%; resize: vertical;"></textarea>
-                    </div>
-
-                    <!-- Receiver Section -->
-                    <div style="grid-column: span 2; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 0.5rem; margin-top: 0.5rem;">
-                        <div style="font-size: 0.95rem; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.02em;">RECEIVER DETAILS</div>
-                    </div>
-                    <div style="grid-column: span 2;">
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Name <span style="color:red">*</span></label>
-                        <input type="text" id="ship_receiver_name" placeholder="Full Name" style="width:100%;" autocomplete="off">
-                    </div>
-                    <div>
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Mobile <span style="color:red">*</span></label>
-                        <input type="tel" id="ship_receiver_mobile" placeholder="+91 9876543210" style="width:100%;" autocomplete="off">
-                    </div>
-                    <div>
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Pincode <span style="color:red">*</span></label>
-                        <input type="text" id="ship_receiver_pincode" placeholder="6-digit Pincode" maxlength="6" style="width:100%;" autocomplete="off">
-                    </div>
-                    <div style="grid-column: span 2;">
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Address <span style="color:red">*</span></label>
-                        <textarea id="ship_receiver_address" placeholder="Complete address" rows="2" style="width:100%; resize: vertical;"></textarea>
-                    </div>
-
-                    <!-- Shipment Logisitcs -->
-                    <div style="grid-column: span 2; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 0.5rem; margin-top: 0.5rem;">
-                         <div style="font-size: 0.95rem; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.02em;">SHIPMENT INFO</div>
-                    </div>
-                    <div style="position: relative;">
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Origin City <span style="color:red">*</span></label>
-                        <input type="text" id="loc_origin_val" placeholder="Select City" style="width:100%;" autocomplete="new-password" name="no-fill-origin">
-                    </div>
-                    <div style="position: relative;">
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Destination City <span style="color:red">*</span></label>
-                        <input type="text" id="loc_dest_val" placeholder="Select City" style="width:100%;" autocomplete="new-password" name="no-fill-destination">
-                    </div>
-                    <div>
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Amount (₹) <span style="color:red">*</span></label>
-                        <input type="number" id="ship_amount" placeholder="0.00" style="width:100%;" autocomplete="off">
-                    </div>
-                    <div>
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Weight (Kg) <span style="color:red">*</span></label>
-                        <input type="number" id="ship_weight" placeholder="1.0" step="0.1" style="width:100%;" autocomplete="off">
-                    </div>
-                    <div style="grid-column: span 2;">
-                        <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Ship Date <span style="color:red">*</span></label>
-                        <input type="date" id="ship_date" style="width:100%;">
-                    </div>
+    function showCreateShipmentModal() {
+        createModal('Create New Shipment', `
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+                
+                <!-- Sender Section -->
+                <div style="grid-column: span 2; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 0.5rem;">
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.02em;">SENDER DETAILS</div>
                 </div>
-            `, [
-                { label: 'Cancel', onClick: (close) => close() },
-                {
-                    label: 'Create Shipment', primary: true, onClick: async (close) => {
-                        // Gather Data
-                        const sender_name = document.getElementById('ship_sender_name').value.trim();
-                        const sender_mobile = document.getElementById('ship_sender_mobile').value.trim();
-                        const sender_address = document.getElementById('ship_sender_address').value.trim();
-                        const sender_pincode = document.getElementById('ship_sender_pincode').value.trim();
+                <div style="grid-column: span 2;">
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Name <span style="color:red">*</span></label>
+                    <input type="text" id="ship_sender_name" placeholder="Full Name" style="width:100%;" autocomplete="off">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Mobile <span style="color:red">*</span></label>
+                    <input type="tel" id="ship_sender_mobile" placeholder="+91 9876543210" style="width:100%;" autocomplete="off">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Pincode <span style="color:red">*</span></label>
+                    <input type="text" id="ship_sender_pincode" placeholder="6-digit Pincode" maxlength="6" style="width:100%;" autocomplete="off">
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Address <span style="color:red">*</span></label>
+                    <textarea id="ship_sender_address" placeholder="Complete address" rows="2" style="width:100%; resize: vertical;"></textarea>
+                </div>
 
-                        const receiver_name = document.getElementById('ship_receiver_name').value.trim();
-                        const receiver_mobile = document.getElementById('ship_receiver_mobile').value.trim();
-                        const receiver_address = document.getElementById('ship_receiver_address').value.trim();
-                        const receiver_pincode = document.getElementById('ship_receiver_pincode').value.trim();
+                <!-- Receiver Section -->
+                <div style="grid-column: span 2; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 0.5rem; margin-top: 0.5rem;">
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.02em;">RECEIVER DETAILS</div>
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Name <span style="color:red">*</span></label>
+                    <input type="text" id="ship_receiver_name" placeholder="Full Name" style="width:100%;" autocomplete="off">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Mobile <span style="color:red">*</span></label>
+                    <input type="tel" id="ship_receiver_mobile" placeholder="+91 9876543210" style="width:100%;" autocomplete="off">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Pincode <span style="color:red">*</span></label>
+                    <input type="text" id="ship_receiver_pincode" placeholder="6-digit Pincode" maxlength="6" style="width:100%;" autocomplete="off">
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Address <span style="color:red">*</span></label>
+                    <textarea id="ship_receiver_address" placeholder="Complete address" rows="2" style="width:100%; resize: vertical;"></textarea>
+                </div>
 
-                        const origin = document.getElementById('loc_origin_val').dataset.value || document.getElementById('loc_origin_val').value;
-                        const destination = document.getElementById('loc_dest_val').dataset.value || document.getElementById('loc_dest_val').value;
-                        const price = document.getElementById('ship_amount').value.trim();
-                        const weight = document.getElementById('ship_weight').value.trim();
-                        const date = document.getElementById('ship_date').value;
+                <!-- Shipment Logisitcs -->
+                <div style="grid-column: span 2; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 0.5rem; margin-top: 0.5rem;">
+                     <div style="font-size: 0.95rem; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.02em;">SHIPMENT INFO</div>
+                </div>
+                <div style="position: relative;">
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Origin City <span style="color:red">*</span></label>
+                    <input type="text" id="loc_origin_val" placeholder="Select City" style="width:100%;" autocomplete="new-password" name="no-fill-origin">
+                </div>
+                <div style="position: relative;">
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Destination City <span style="color:red">*</span></label>
+                    <input type="text" id="loc_dest_val" placeholder="Select City" style="width:100%;" autocomplete="new-password" name="no-fill-destination">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Amount (₹) <span style="color:red">*</span></label>
+                    <input type="number" id="ship_amount" placeholder="0.00" style="width:100%;" autocomplete="off">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Weight (Kg) <span style="color:red">*</span></label>
+                    <input type="number" id="ship_weight" placeholder="1.0" step="0.1" style="width:100%;" autocomplete="off">
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Ship Date <span style="color:red">*</span></label>
+                    <input type="date" id="ship_date" style="width:100%;">
+                </div>
+            </div>
+        `, [
+            { label: 'Cancel', onClick: (close) => close() },
+            {
+                label: 'Create Shipment', primary: true, onClick: async (close) => {
+                    const sender_name = document.getElementById('ship_sender_name').value.trim();
+                    const sender_mobile = document.getElementById('ship_sender_mobile').value.trim();
+                    const sender_address = document.getElementById('ship_sender_address').value.trim();
+                    const sender_pincode = document.getElementById('ship_sender_pincode').value.trim();
 
-                        // Mandatory Check
-                        if (!sender_name || !sender_mobile || !sender_address || !sender_pincode ||
-                            !receiver_name || !receiver_mobile || !receiver_address || !receiver_pincode ||
-                            !origin || !destination || !price || !weight || !date) {
-                            return showToast('All fields are mandatory', 'error');
-                        }
+                    const receiver_name = document.getElementById('ship_receiver_name').value.trim();
+                    const receiver_mobile = document.getElementById('ship_receiver_mobile').value.trim();
+                    const receiver_address = document.getElementById('ship_receiver_address').value.trim();
+                    const receiver_pincode = document.getElementById('ship_receiver_pincode').value.trim();
 
-                        // Validation
-                        // Allow spaces in names
-                        if (!/^[a-zA-Z\s]+$/.test(sender_name) || !/^[a-zA-Z\s]+$/.test(receiver_name)) {
-                            return showToast('Names must contain only letters', 'error');
-                        }
-                        if (!/^[0-9+]+$/.test(sender_mobile) || !/^[0-9+]+$/.test(receiver_mobile)) {
-                            return showToast('Mobile numbers must contain only numbers and +', 'error');
-                        }
-                        if (!/^\d{6}$/.test(sender_pincode) || !/^\d{6}$/.test(receiver_pincode)) {
-                            return showToast('Pincodes must be exactly 6 digits', 'error');
-                        }
-                        if (isNaN(price) || parseFloat(price) <= 0) {
-                            return showToast('Invalid amount', 'error');
-                        }
+                    const origin = document.getElementById('loc_origin_val').dataset.value || document.getElementById('loc_origin_val').value;
+                    const destination = document.getElementById('loc_dest_val').dataset.value || document.getElementById('loc_dest_val').value;
+                    const price = document.getElementById('ship_amount').value.trim();
+                    const weight = document.getElementById('ship_weight').value.trim();
+                    const date = document.getElementById('ship_date').value;
 
-                        try {
-                            const payload = {
-                                sender_name, sender_mobile, sender_address, sender_pincode,
-                                receiver_name, receiver_mobile, receiver_address, receiver_pincode,
-                                origin, destination, price, weight, date
-                            };
+                    if (!sender_name || !sender_mobile || !sender_address || !sender_pincode ||
+                        !receiver_name || !receiver_mobile || !receiver_address || !receiver_pincode ||
+                        !origin || !destination || !price || !weight || !date) {
+                        return showToast('All fields are mandatory', 'error');
+                    }
 
-                            // Get token for cross-origin auth
-                            const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                            const token = session.data?.token;
-                            const headers = { 'Content-Type': 'application/json' };
-                            if (token) headers['Authorization'] = `Bearer ${token}`;
+                    try {
+                        const payload = {
+                            sender_name, sender_mobile, sender_address, sender_pincode,
+                            receiver_name, receiver_mobile, receiver_address, receiver_pincode,
+                            origin, destination, price, weight, date
+                        };
 
-                            const res = await fetch(`${API_BASE}/api/dashboard/admin/shipments/create`, {
-                                method: 'POST',
-                                headers: headers,
-                                credentials: 'include',
-                                body: JSON.stringify(payload)
-                            });
+                        const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                        const token = session.data?.token;
+                        const headers = { 'Content-Type': 'application/json' };
+                        if (token) headers['Authorization'] = `Bearer ${token}`;
 
-                            const data = await res.json();
-                            if (data.success) {
-                                showToast(`Shipment ${data.shipment.tracking_id} created successfully!`, 'success');
-                                close();
-                                // Reload shipments if currently viewing them
-                                if (document.querySelector('a[href="shipments"].active') || window.location.pathname.endsWith('shipments')) {
-                                    if (initializers['shipments']) initializers['shipments']();
-                                } else {
-                                    // Navigate to shipments page see new data
-                                    setTimeout(() => {
-                                        const shipmentsLink = document.querySelector('a[href="shipments"]');
-                                        if (shipmentsLink) shipmentsLink.click();
-                                    }, 1000);
-                                }
-                            } else {
-                                showToast(data.error || 'Failed to create shipment', 'error');
+                        const res = await fetch(`${API_BASE}/api/dashboard/admin/shipments/create`, {
+                            method: 'POST',
+                            headers: headers,
+                            credentials: 'include',
+                            body: JSON.stringify(payload)
+                        });
+
+                        const data = await res.json();
+                        if (data.success) {
+                            showToast(`Shipment ${data.shipment.tracking_id} created successfully!`, 'success');
+                            close();
+                            if (window.location.pathname.endsWith('shipments') && initializers['shipments']) {
+                                initializers['shipments']();
                             }
-                        } catch (err) {
-                            console.error(err);
-                            showToast('Network error while creating shipment', 'error');
+                        } else {
+                            showToast(data.error || 'Failed to create shipment', 'error');
                         }
+                    } catch (err) {
+                        showToast('Communication error', 'error');
                     }
                 }
-            ]);
+            }
+        ]);
 
-            // Initialize custom city pickers with updated IDs
-            initCityPicker('loc_origin_val');
-            initCityPicker('loc_dest_val');
-
-            // Re-init flatpickr inside modal
-            if (this.init) this.init('modal-date');
-        }
-    };
+        initCityPicker('loc_origin_val');
+        initCityPicker('loc_dest_val');
+    }
 
 
 
@@ -2464,7 +2323,7 @@ window.MoveXAdmin = (function () {
                     }
 
                     try {
-                        const response = await fetch('/api/dashboard/admin/shipments/update-status', {
+                        const response = await fetch(`${API_BASE}/api/dashboard/admin/shipments/update-status`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ tracking_id: s.id, status: newStatus })
@@ -2514,4 +2373,41 @@ window.MoveXAdmin = (function () {
         ]);
     }
 
+    return {
+        init: function (page) {
+            console.log('MoveX Core: Initializing', page);
+
+            // Apply page fade-in
+            const container = document.querySelector('.dashboard-container');
+            if (container) {
+                container.classList.add('page-fade-in');
+            }
+
+            if (initializers[page]) {
+                initializers[page]();
+            }
+
+            // Initialize custom UI elements
+            initCustomSelects();
+
+            // Re-init flatpickr for any inputs marked as date
+            if (window.flatpickr) {
+                window.flatpickr('input[type="date"]', {
+                    dateFormat: 'Y-m-d',
+                    altInput: true,
+                    altFormat: 'F j, Y'
+                });
+            }
+        },
+        toast: showToast,
+        modal: createModal,
+        handleServiceabilityCheck: handleServiceabilityCheck,
+        createShipment: showCreateShipmentModal,
+        viewBooking: (id) => {
+            showToast(`Viewing Booking ${id}`, 'info');
+        },
+        updateShipmentStatus: (shipment) => {
+            showUpdateStatusModal(shipment);
+        }
+    };
 })();

@@ -14,6 +14,7 @@ router.post('/reset-password', authController.resetPassword);
 
 // Session utilities
 router.get('/me', requireSession, whoami);
+router.post('/change-password', requireSession, authController.changePassword);
 
 module.exports = router;
 
