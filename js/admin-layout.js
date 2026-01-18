@@ -41,7 +41,9 @@
 
         // 1. Fetch and Inject Sidebar if not present
         if (!document.getElementById('sidebar')) {
-            const sidebarHTML = await fetchPartial('/partials/admin-sidebar.html');
+            const isFranchisee = window.location.pathname.includes('/franchisee/');
+            const sidebarUrl = isFranchisee ? '/partials/franchisee-sidebar.html' : '/partials/admin-sidebar.html';
+            const sidebarHTML = await fetchPartial(sidebarUrl);
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = sidebarHTML;
             const sidebar = tempDiv.firstElementChild;
@@ -72,7 +74,6 @@
 
         setupEventListeners();
         updateActiveState();
-        initTheme();
         updateUserInfo();
 
         // 3. SECURE INITIALIZATION: Wait for core JS before calling init
@@ -106,11 +107,19 @@
             document.head.appendChild(script);
         }
 
-        if (window.MoveXAdmin) return;
+        const isFranchisee = window.location.pathname.includes('/franchisee/');
+        const expectedCore = isFranchisee ? '/js/franchisee-core.js' : '/js/admin-core.js';
+
+        // If wrong core is loaded or no core, load the right one
+        if (window.MoveXAdmin && window.MoveXAdmin._source === expectedCore) return;
+
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = '/js/admin-core.js';
-            script.onload = resolve;
+            script.src = expectedCore;
+            script.onload = () => {
+                if (window.MoveXAdmin) window.MoveXAdmin._source = expectedCore;
+                resolve();
+            };
             script.onerror = reject;
             document.head.appendChild(script);
         });
@@ -252,37 +261,7 @@
         });
     }
 
-    function initTheme() {
-        const themeBtn = document.getElementById('themeToggle');
-        if (!themeBtn) return;
-
-        const sunIcon = themeBtn.querySelector('.sun-icon');
-        const moonIcon = themeBtn.querySelector('.moon-icon');
-        const html = document.documentElement;
-
-        const applyTheme = (isDark) => {
-            if (isDark) {
-                html.setAttribute('data-theme', 'dark');
-                if (sunIcon) sunIcon.style.display = 'block';
-                if (moonIcon) moonIcon.style.display = 'none';
-            } else {
-                html.removeAttribute('data-theme');
-                if (sunIcon) sunIcon.style.display = 'none';
-                if (moonIcon) moonIcon.style.display = 'block';
-            }
-        };
-
-        const savedTheme = localStorage.getItem('movex-theme') === 'dark';
-        applyTheme(savedTheme);
-
-        themeBtn.onclick = null;
-        themeBtn.addEventListener('click', () => {
-            const isDark = html.getAttribute('data-theme') === 'dark';
-            const newTheme = !isDark;
-            applyTheme(newTheme);
-            localStorage.setItem('movex-theme', newTheme ? 'dark' : 'light');
-        });
-    }
+    // Theme toggle removed - light mode only
 
     function updateUserInfo() {
         const update = () => {

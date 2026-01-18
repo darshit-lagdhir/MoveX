@@ -539,6 +539,17 @@ cd backend && npm start
 
 ## Appendix C: History (Changelog)
 
+### v1.3.0 (January 18, 2026) - Franchisee Refinement & UI Clean-up
+- **UI**: Completely removed Dark Theme (CSS, JS, Toggles) - Application is now Light Mode only.
+- **UI**: Removed "Notifications" button from Admin Header and all Dashboard pages.
+- **Franchisee Backend**: Added new APIs for Franchise Operations:
+  - `GET /api/dashboard/franchisee/pickup-requests`: Pincode-based filtering.
+  - `POST .../approve` & `.../reject`: Pickup request workflow.
+  - `POST .../create`: Enhanced validation (Serviceable Pincode Check).
+- **Franchisee Frontend**: Refined Dashboard UI, improved Pickup Request handling, and added Pincode Validation.
+- **Settings**: Fixed "Loading..." issue by updating `/api/me` to return `full_address` and `pincodes`.
+- **Profile**: Updated Profile Update to use `PUT` method.
+
 ### v1.2.0 (January 18, 2026)
 - **Database**: Renamed all `id` columns to table-specific names:
   - `organizations.id` → `organization_id`

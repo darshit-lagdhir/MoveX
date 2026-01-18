@@ -1230,7 +1230,7 @@ window.MoveXAdmin = (function () {
                                 <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Assign to Franchise (Hub)</label>
                                 <select id="stf_org" style="width:100%;">
                                     <option value="">None (HQ Staff)</option>
-                                    ${franchises.map(f => `<option value="${f.id}">${f.name}</option>`).join('')}
+                                    ${franchises.map(f => `<option value="${f.organization_id}">${f.name}</option>`).join('')}
                                 </select>
                             </div>
                         </div>
@@ -1280,11 +1280,6 @@ window.MoveXAdmin = (function () {
                 };
             }
         },
-        'audit-logs': function () {
-            renderAuditLogs();
-            const filterBtn = document.querySelector('.card button');
-            if (filterBtn) filterBtn.onclick = () => showToast('Logs filtered', 'info');
-        }
     };
 
     function renderUserTable(data = MOCK_DATA.users) {
@@ -1776,7 +1771,7 @@ window.MoveXAdmin = (function () {
                     <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Franchise (Hub)</label>
                     <select id="edit_stf_org" style="width:100%;">
                         <option value="">None (HQ Staff)</option>
-                        ${franchises.map(f => `<option value="${f.id}" ${s.org_id == f.id ? 'selected' : ''}>${f.name}</option>`).join('')}
+                        ${franchises.map(f => `<option value="${f.organization_id}" ${s.org_id == f.organization_id ? 'selected' : ''}>${f.name}</option>`).join('')}
                     </select>
                 </div>
                 <div style="grid-column: span 2; padding-top:10px; border-top: 1px solid var(--border-subtle);">
@@ -1888,7 +1883,7 @@ window.MoveXAdmin = (function () {
         if (!tbody) return;
 
         if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--text-secondary);">No franchises found.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-secondary);">No franchises found.</td></tr>`;
             return;
         }
 
@@ -1896,7 +1891,7 @@ window.MoveXAdmin = (function () {
             <tr class="staggered-item visible">
                 <td>
                     <div style="font-weight: 700; color: var(--text-primary);">${f.name}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-tertiary);">ID: FR-${String(f.id).padStart(3, '0')}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-tertiary);">ID: FR-${String(f.organization_id).padStart(3, '0')}</div>
                     <div style="font-size: 0.7rem; color: var(--text-tertiary); margin-top:4px; max-width:200px;" title="${f.full_address || ''}">
                         <i class="fas fa-map-marker-alt" style="margin-right:4px;"></i>${f.full_address || 'No address set'}
                     </div>
@@ -1924,25 +1919,24 @@ window.MoveXAdmin = (function () {
                     </span>
                 </td>
                 <td>
-                    <div style="font-weight: 700; color: ${(f.performance || 0) > 95 ? 'var(--success)' : (f.performance || 0) > 85 ? 'var(--warning)' : 'var(--error)'};">
-                        ${f.performance || '0.00'}%
-                    </div>
-                    <div style="font-size: 0.7rem; color: var(--text-tertiary);">SLA Match</div>
-                </td>
-                <td>
-                    <div style="display: flex; gap: 0.5rem;">
-                         <button class="action-btn-small edit-franchise" data-id="${f.id}"
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                         <button class="action-btn-small edit-franchise" data-id="${f.organization_id}"
                             style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-default); background: var(--surface-primary); cursor: pointer; font-size: 0.75rem;">
                             Edit
                         </button>
-                         <button class="action-btn-small status-toggle" data-id="${f.id}" data-status="${f.status}"
+                         <button class="action-btn-small status-toggle" data-id="${f.organization_id}" data-status="${f.status}"
                             style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-default); background: ${f.status === 'active' ? 'var(--surface-primary)' : 'var(--brand-primary-soft)'}; cursor: pointer; font-size: 0.75rem;">
                             ${f.status === 'active' ? 'Disable' : 'Enable'}
+                        </button>
+                         <button class="action-btn-small delete-franchise" data-id="${f.organization_id}" data-name="${f.name}"
+                            style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--error); background: rgba(239, 68, 68, 0.1); color: var(--error); cursor: pointer; font-size: 0.75rem; font-weight: 600;">
+                            Delete
                         </button>
                     </div>
                 </td>
             </tr>
         `).join('');
+
 
         // Bind events
         tbody.querySelectorAll('.status-toggle').forEach(btn => {
@@ -1952,9 +1946,15 @@ window.MoveXAdmin = (function () {
                 const newStatus = currentStatus === 'active' ? 'disabled' : 'active';
 
                 try {
-                    const res = await fetch('/api/dashboard/admin/franchises/status', {
+                    const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                    const token = session.data?.token;
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                    const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises/status`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        headers: headers,
                         body: JSON.stringify({ id, status: newStatus })
                     });
                     const result = await res.json();
@@ -1969,9 +1969,42 @@ window.MoveXAdmin = (function () {
             };
         });
 
+        // Delete franchise handler
+        tbody.querySelectorAll('.delete-franchise').forEach(btn => {
+            btn.onclick = async () => {
+                const id = btn.dataset.id;
+                const name = btn.dataset.name;
+
+                if (!confirm(`Are you sure you want to PERMANENTLY DELETE the franchise "${name}"?\n\nThis action cannot be undone. All associated users will be unlinked.`)) {
+                    return;
+                }
+
+                try {
+                    const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                    const token = session.data?.token;
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                    const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises/${id}`, {
+                        method: 'DELETE',
+                        credentials: 'include',
+                        headers: headers
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        showToast(result.message, 'success');
+                        // Refresh
+                        if (initializers.franchises) initializers.franchises();
+                    } else {
+                        showToast(result.error, 'error');
+                    }
+                } catch (e) { showToast('Network Error', 'error'); }
+            };
+        });
+
         tbody.querySelectorAll('.edit-franchise').forEach(btn => {
             btn.onclick = () => {
-                const f = data.find(item => item.id == btn.dataset.id);
+                const f = data.find(item => item.organization_id == btn.dataset.id);
                 if (!f) return;
 
                 createModal(`Edit Franchise: ${f.name}`, `
@@ -1993,10 +2026,6 @@ window.MoveXAdmin = (function () {
                             <input type="text" id="edit_f_pincodes" value="${f.pincodes || ''}" placeholder="Comma separated, e.g. 560048, 560016" style="width:100%;">
                         </div>
                         <div>
-                            <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Performance Score (%)</label>
-                            <input type="number" id="edit_f_perf" value="${f.performance || '0.00'}" step="0.01" min="0" max="100" style="width:100%;">
-                        </div>
-                        <div>
                             <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Owner Full Name</label>
                             <input type="text" id="edit_f_owner_name" value="${f.owner_name || ''}" style="width:100%;">
                         </div>
@@ -2010,7 +2039,7 @@ window.MoveXAdmin = (function () {
                         </div>
                         <div style="padding:1rem; background:var(--surface-secondary); border-radius:var(--radius-md); font-size:0.85rem; border-left: 4px solid var(--warning);">
                             <i class="fas fa-info-circle" style="color:var(--warning); margin-right:8px;"></i>
-                            <strong>Note:</strong> Password management is handled in the <a href="users" onclick="document.querySelector('a[href=\'users\']').click(); return false;" style="color:var(--brand-primary); text-decoration:none; font-weight:600;">Users Section</a>.
+                            <strong>Note:</strong> Password management is handled in the <a href="users" onclick="document.querySelector('a[href=\\'users\\']').click(); return false;" style="color:var(--brand-primary); text-decoration:none; font-weight:600;">Users Section</a>.
                         </div>
                     </div>
                 `, [
@@ -2021,22 +2050,26 @@ window.MoveXAdmin = (function () {
                             const full_address = document.getElementById('edit_f_address').value;
                             const non_serviceable_areas = document.getElementById('edit_f_non_serviceable').value;
                             const pincodes = document.getElementById('edit_f_pincodes').value;
-                            const performance = document.getElementById('edit_f_perf').value;
                             const owner_phone = document.getElementById('edit_f_phone').value;
                             const owner_name = document.getElementById('edit_f_owner_name').value;
                             const owner_username = document.getElementById('edit_f_owner_username').value;
 
                             try {
-                                const res = await fetch('/api/dashboard/admin/franchises/update', {
+                                const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                                const token = session.data?.token;
+                                const headers = { 'Content-Type': 'application/json' };
+                                if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                                const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises/update`, {
                                     method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
+                                    credentials: 'include',
+                                    headers: headers,
                                     body: JSON.stringify({
-                                        id: f.id,
+                                        id: f.organization_id,
                                         name,
                                         full_address,
                                         non_serviceable_areas,
                                         pincodes,
-                                        performance,
                                         owner_phone,
                                         owner_name,
                                         owner_username
@@ -2056,24 +2089,6 @@ window.MoveXAdmin = (function () {
         });
     }
 
-    function renderAuditLogs() {
-        const logs = [
-            { timestamp: 'Oct 24, 14:32:01', user: 'admin', action: 'Updated System Settings', ip: '192.168.1.1', status: 'Success' },
-            { timestamp: 'Oct 24, 14:05:22', user: 'john.doe', action: 'Login Attempt', ip: '10.0.0.52', status: 'Failed' },
-            { timestamp: 'Oct 24, 13:55:00', user: 'system', action: 'Cron Job: Invoice Gen', ip: 'localhost', status: 'Success' }
-        ];
-        const tbody = document.querySelector('.data-table tbody');
-        if (!tbody) return;
-        tbody.innerHTML = logs.map(l => `
-            <tr>
-                <td style="font-family: monospace;">${l.timestamp}</td>
-                <td>${l.user}</td>
-                <td>${l.action}</td>
-                <td style="font-family: monospace;">${l.ip}</td>
-                <td><span class="status-badge status-${l.status === 'Success' ? 'active' : 'error'}">${l.status}</span></td>
-            </tr>
-        `).join('');
-    }
 
     function initCustomSelects() {
         const selects = document.querySelectorAll('select:not(.custom-initialized)');
@@ -2408,6 +2423,7 @@ window.MoveXAdmin = (function () {
         },
         updateShipmentStatus: (shipment) => {
             showUpdateStatusModal(shipment);
-        }
+        },
+        _source: '/js/admin-core.js'
     };
 })();

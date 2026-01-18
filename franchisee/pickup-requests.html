@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pickup Requests - MoveX Franchisee</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../styles/base.css?v=4">
+    <link rel="stylesheet" href="../styles/components.css?v=4">
+    <link rel="stylesheet" href="../styles/admin.css?v=4">
+    <script src="../js/config.js?v=1"></script>
+    <script src="../js/dashboard-guard.js?v=3"></script>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar will be injected -->
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <div class="main-content">
+            <header class="top-nav" id="top-nav-placeholder">
+                <!-- Header will be injected here -->
+            </header>
+
+            <main>
+                <div class="dashboard-container">
+                    <div class="page-header">
+                        <h1 class="page-title">Pickup Requests</h1>
+                        <p class="page-subtitle">Manage new booking requests from customers in your area.</p>
+                    </div>
+
+                    <div class="grid-kpi" style="grid-template-columns: repeat(2, 1fr);">
+                        <div class="card">
+                            <div class="card-title">New Requests</div>
+                            <div class="card-value" id="kpi-new-bookings">0</div>
+                            <div class="card-trend"><span>Awaiting Pickup</span></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">Scheduled Today</div>
+                            <div class="card-value" id="kpi-scheduled-today">0</div>
+                            <div class="card-trend"><span>Assigned</span></div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="padding: 0; margin-top: 2rem;">
+                        <div class="data-table-container" style="border: none; box-shadow: none;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Request ID</th>
+                                        <th>Customer</th>
+                                        <th>Pickup Address</th>
+                                        <th>Package Info</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pickup-requests-table-body">
+                                    <tr>
+                                        <td colspan="6"
+                                            style="text-align: center; padding: 3rem; color: var(--text-tertiary);">
+                                            Loading pickup requests...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="../js/franchisee-core.js"></script>
+    <script src="../js/admin-layout.js"></script>
+</body>
+
+</html>

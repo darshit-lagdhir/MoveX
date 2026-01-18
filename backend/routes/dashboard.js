@@ -156,6 +156,27 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
             return res.status(400).json({ success: false, error: 'Amount must be a valid number' });
         }
 
+        // Check if pincodes are serviceable (at least one franchise covers them)
+        const senderPincodeCheck = await db.query(`
+            SELECT organization_id FROM organizations 
+            WHERE status = 'active' AND pincodes LIKE '%' || $1 || '%'
+            LIMIT 1
+        `, [sender_pincode]);
+
+        if (senderPincodeCheck.rows.length === 0) {
+            return res.status(400).json({ success: false, error: `Sender pincode ${sender_pincode} is not serviceable. No franchise covers this area.` });
+        }
+
+        const receiverPincodeCheck = await db.query(`
+            SELECT organization_id FROM organizations 
+            WHERE status = 'active' AND pincodes LIKE '%' || $1 || '%'
+            LIMIT 1
+        `, [receiver_pincode]);
+
+        if (receiverPincodeCheck.rows.length === 0) {
+            return res.status(400).json({ success: false, error: `Receiver pincode ${receiver_pincode} is not serviceable. No franchise covers this area.` });
+        }
+
         // Generate Sequential Tracking ID
         // 1. Get the latest tracking ID that matches the MX pattern
         const maxIdResult = await db.query("SELECT tracking_id FROM shipments WHERE tracking_id LIKE 'MX%' ORDER BY LENGTH(tracking_id) DESC, tracking_id DESC LIMIT 1");
@@ -184,7 +205,7 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
         origin_address, destination_address,
         price, weight, status, created_at, estimated_delivery
     ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending', $14, $15)
-            RETURNING id, tracking_id
+            RETURNING shipment_id, tracking_id
     `;
 
         const values = [
@@ -509,6 +530,39 @@ router.post('/admin/franchises/status', validateSession, requireRole('admin'), a
     }
 });
 
+// Delete Franchise (Permanently removes organization and unlinks users)
+router.delete('/admin/franchises/:id', validateSession, requireRole('admin'), async (req, res) => {
+    const client = await db.pool.connect();
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({ success: false, error: 'Franchise ID is required' });
+        }
+
+        await client.query('BEGIN');
+
+        // 1. Unlink any users associated with this franchise (set their organization_id to NULL)
+        await client.query('UPDATE users SET organization_id = NULL WHERE organization_id = $1', [id]);
+
+        // 2. Delete the organization
+        const result = await client.query('DELETE FROM organizations WHERE organization_id = $1 RETURNING name', [id]);
+
+        if (result.rowCount === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ success: false, error: 'Franchise not found' });
+        }
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: `Franchise "${result.rows[0].name}" deleted successfully` });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error("Delete Franchise Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to delete franchise' });
+    } finally {
+        client.release();
+    }
+});
+
 // Update Franchise Details
 router.post('/admin/franchises/update', validateSession, requireRole('admin'), async (req, res) => {
     const client = await db.pool.connect();
@@ -621,7 +675,7 @@ router.get('/public/check-service/:query', async (req, res) => {
         const result = await db.query(`
             SELECT o.name, o.full_address, u.phone as owner_phone
             FROM organizations o
-            LEFT JOIN users u ON u.organization_id = o.id AND u.role = 'franchisee'
+            LEFT JOIN users u ON u.organization_id = o.organization_id AND u.role = 'franchisee'
             WHERE o.type = 'franchise' AND o.status = 'active'
 AND(
     --Search by Hub / Area Name
@@ -635,7 +689,7 @@ o.pincodes LIKE '%,' || $2 OR
 o.pincodes LIKE '%,' || $2 || ',%'
             )
             LIMIT 1
-    `, [` % ${query}% `, query]);
+    `, [`%${query}%`, query]);
 
         if (result.rows.length > 0) {
             res.json({
@@ -954,4 +1008,477 @@ router.get('/admin/reports/stats', validateSession, requireRole('admin'), async 
     }
 });
 
+// --- FRANCHISEE DASHBOARD ---
+
+// Get Franchisee Stats
+router.get('/franchisee/stats', validateSession, requireRole('franchisee'), async (req, res) => {
+    try {
+        const orgId = req.organization?.id;
+        if (!orgId) return res.status(403).json({ success: false, error: 'No organization linked' });
+
+        const totalShipmentsRes = await db.query('SELECT COUNT(*) FROM shipments WHERE organization_id = $1', [orgId]);
+        const pendingPickupsRes = await db.query("SELECT COUNT(*) FROM shipments WHERE organization_id = $1 AND status = 'pending'", [orgId]);
+        const deliveredTodayRes = await db.query("SELECT COUNT(*) FROM shipments WHERE organization_id = $1 AND status = 'delivered' AND updated_at >= NOW() - INTERVAL '24 HOURS'", [orgId]);
+        const revenueRes = await db.query('SELECT SUM(price) FROM shipments WHERE organization_id = $1', [orgId]);
+
+        res.json({
+            success: true,
+            stats: {
+                totalShipments: parseInt(totalShipmentsRes.rows[0].count),
+                pendingPickups: parseInt(pendingPickupsRes.rows[0].count),
+                deliveredToday: parseInt(deliveredTodayRes.rows[0].count),
+                totalRevenue: parseFloat(revenueRes.rows[0].sum || 0),
+                payouts: 0 // Mock for now
+            }
+        });
+    } catch (err) {
+        console.error("Franchisee Stats Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch franchisee stats' });
+    }
+});
+
+// Get Franchisee Shipments (Full Data for CRUD)
+router.get('/franchisee/shipments', validateSession, requireRole('franchisee'), async (req, res) => {
+    try {
+        const orgId = req.organization?.id;
+        if (!orgId) return res.status(403).json({ success: false, error: 'No organization linked' });
+
+        // Return ALL shipments for this franchise (no limit by default)
+        const result = await db.query(`
+            SELECT 
+                shipment_id, tracking_id, status,
+                sender_name, sender_mobile, sender_address, sender_pincode,
+                receiver_name, receiver_mobile, receiver_address, receiver_pincode,
+                origin_address, destination_address,
+                price, weight,
+                created_at, updated_at, estimated_delivery,
+                organization_id
+            FROM shipments 
+            WHERE organization_id = $1 
+            ORDER BY created_at DESC
+        `, [orgId]);
+
+        const shipments = result.rows.map(row => ({
+            shipment_id: row.shipment_id,
+            tracking_id: row.tracking_id,
+            id: row.tracking_id,
+            status: row.status ? row.status.charAt(0).toUpperCase() + row.status.slice(1).replace('_', ' ') : 'Pending',
+            // Sender
+            sender_name: row.sender_name,
+            sender: row.sender_name,
+            sender_phone: row.sender_mobile,
+            sender_address: row.sender_address,
+            sender_pincode: row.sender_pincode,
+            sender_city: row.origin_address ? row.origin_address.split(',')[0].trim() : '',
+            // Receiver  
+            receiver_name: row.receiver_name,
+            receiver_phone: row.receiver_mobile,
+            receiver_address: row.receiver_address,
+            receiver_pincode: row.receiver_pincode,
+            receiver_city: row.destination_address ? row.destination_address.split(',')[0].trim() : '',
+            // Locations
+            origin: row.origin_address,
+            destination: row.destination_address,
+            // Package
+            amount: parseFloat(row.price || 0),
+            price: parseFloat(row.price || 0),
+            weight: parseFloat(row.weight || 0),
+            package_type: row.package_type || 'Standard',
+            contents: row.contents || '',
+            // Dates
+            created_at: row.created_at,
+            date: row.created_at,
+            updated_at: row.updated_at,
+            estimated_delivery: row.estimated_delivery
+        }));
+
+        res.json({ success: true, shipments });
+    } catch (err) {
+        console.error("Franchisee Shipments Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch shipments' });
+    }
+});
+
+// Update Shipment Status (for Franchisee)
+router.post('/franchisee/shipments/update-status', validateSession, requireRole('franchisee'), async (req, res) => {
+    try {
+        const { tracking_id, status } = req.body;
+        const orgId = req.organization?.id;
+
+        if (!tracking_id || !status) {
+            return res.status(400).json({ success: false, error: 'Missing parameters' });
+        }
+
+        // Verify ownership
+        const verify = await db.query('SELECT organization_id FROM shipments WHERE tracking_id = $1', [tracking_id]);
+        if (verify.rows.length === 0 || verify.rows[0].organization_id != orgId) {
+            return res.status(403).json({ success: false, error: 'Permission denied' });
+        }
+
+        await db.query('UPDATE shipments SET status = $1, updated_at = NOW() WHERE tracking_id = $2', [status.toLowerCase(), tracking_id]);
+        res.json({ success: true, message: 'Status updated' });
+    } catch (err) {
+        console.error("Franchisee Update Status Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to update' });
+    }
+});
+
+// Get Franchisee Bookings
+router.get('/franchisee/bookings', validateSession, requireRole('franchisee'), async (req, res) => {
+    try {
+        const orgId = req.organization?.id;
+        if (!orgId) return res.status(403).json({ success: false, error: 'No organization linked' });
+
+        const result = await db.query(`
+            SELECT * FROM shipments 
+            WHERE organization_id = $1 AND status = 'pending'
+            ORDER BY created_at DESC
+        `, [orgId]);
+
+        const bookings = result.rows.map(row => ({
+            id: row.tracking_id,
+            sender: row.sender_name,
+            type: 'Standard', // Mock
+            weight: row.weight,
+            date: row.created_at
+        }));
+
+        res.json({ success: true, bookings, stats: { newRequests: bookings.length, scheduledToday: 0 } });
+    } catch (err) {
+        console.error("Franchisee Bookings Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch bookings' });
+    }
+});
+
+// Get Franchisee Staff
+router.get('/franchisee/staff', validateSession, requireRole('franchisee'), async (req, res) => {
+    try {
+        const orgId = req.organization?.id;
+        if (!orgId) return res.status(403).json({ success: false, error: 'No organization linked' });
+
+        const result = await db.query(`
+            SELECT * FROM users 
+            WHERE organization_id = $1 AND role = 'staff'
+            ORDER BY created_at DESC
+        `, [orgId]);
+
+        const staff = result.rows.map(row => ({
+            user_id: row.user_id,
+            id: row.user_id,
+            full_name: row.full_name,
+            name: row.full_name,
+            username: row.username,
+            phone: row.phone,
+            staff_role: row.staff_role || 'Staff',
+            role: row.staff_role || 'Staff',
+            status: row.staff_status || 'Active',
+            email: row.email
+        }));
+
+        res.json({ success: true, staff });
+    } catch (err) {
+        console.error("Franchisee Staff Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch staff' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  FRANCHISEE - CREATE SHIPMENT
+// ═══════════════════════════════════════════════════════════
+router.post('/franchisee/shipments/create', validateSession, requireRole('franchisee'), async (req, res) => {
+    try {
+        const orgId = req.organization?.id;
+        if (!orgId) return res.status(403).json({ success: false, error: 'No organization linked' });
+
+        const {
+            sender_name, sender_phone, sender_address, sender_pincode, sender_city,
+            receiver_name, receiver_phone, receiver_address, receiver_pincode, receiver_city,
+            weight, amount
+        } = req.body;
+
+        // Validation
+        if (!sender_name || !sender_phone || !sender_address || !sender_pincode ||
+            !receiver_name || !receiver_phone || !receiver_address || !receiver_pincode ||
+            !weight || !amount) {
+            return res.status(400).json({ success: false, error: 'Missing required fields' });
+        }
+
+        // Check if pincodes are serviceable
+        const senderPincodeCheck = await db.query(`
+            SELECT organization_id FROM organizations 
+            WHERE status = 'active' AND pincodes LIKE '%' || $1 || '%'
+            LIMIT 1
+        `, [sender_pincode]);
+
+        if (senderPincodeCheck.rows.length === 0) {
+            return res.status(400).json({ success: false, error: `Sender pincode ${sender_pincode} is not serviceable. No franchise covers this area.` });
+        }
+
+        const receiverPincodeCheck = await db.query(`
+            SELECT organization_id FROM organizations 
+            WHERE status = 'active' AND pincodes LIKE '%' || $1 || '%'
+            LIMIT 1
+        `, [receiver_pincode]);
+
+        if (receiverPincodeCheck.rows.length === 0) {
+            return res.status(400).json({ success: false, error: `Receiver pincode ${receiver_pincode} is not serviceable. No franchise covers this area.` });
+        }
+
+        // Generate tracking ID
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+        const tracking_id = `MX${timestamp}${random}`;
+
+        // Build origin/destination address strings
+        const origin_address = sender_city ? `${sender_city}, ${sender_pincode}` : sender_pincode;
+        const destination_address = receiver_city ? `${receiver_city}, ${receiver_pincode}` : receiver_pincode;
+
+        // Insert shipment
+        const result = await db.query(`
+            INSERT INTO shipments (
+                tracking_id, status, organization_id, creator_username,
+                sender_name, sender_mobile, sender_address, sender_pincode,
+                receiver_name, receiver_mobile, receiver_address, receiver_pincode,
+                origin_address, destination_address,
+                weight, price,
+                created_at, updated_at
+            ) VALUES (
+                $1, 'pending', $2, $3,
+                $4, $5, $6, $7,
+                $8, $9, $10, $11,
+                $12, $13,
+                $14, $15,
+                NOW(), NOW()
+            ) RETURNING shipment_id, tracking_id
+        `, [
+            tracking_id, orgId, req.session.username,
+            sender_name, sender_phone, sender_address, sender_pincode,
+            receiver_name, receiver_phone, receiver_address, receiver_pincode,
+            origin_address, destination_address,
+            weight, amount
+        ]);
+
+        res.json({
+            success: true,
+            message: 'Shipment created successfully',
+            shipment_id: result.rows[0].shipment_id,
+            tracking_id: result.rows[0].tracking_id
+        });
+    } catch (err) {
+        console.error("Franchisee Create Shipment Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to create shipment' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  FRANCHISEE - PICKUP REQUESTS (Based on Assigned Pincodes)
+// ═══════════════════════════════════════════════════════════
+router.get('/franchisee/pickup-requests', validateSession, requireRole('franchisee'), async (req, res) => {
+    try {
+        const orgId = req.organization?.id;
+        if (!orgId) return res.status(403).json({ success: false, error: 'No organization linked' });
+
+        // Get franchise's assigned pincodes
+        const orgResult = await db.query('SELECT pincodes FROM organizations WHERE organization_id = $1', [orgId]);
+        if (orgResult.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Organization not found' });
+        }
+
+        const pincodes = (orgResult.rows[0].pincodes || '').split(',').map(p => p.trim()).filter(p => p);
+
+        if (pincodes.length === 0) {
+            return res.json({ success: true, requests: [], message: 'No pincodes assigned to this franchise' });
+        }
+
+        // For now, return pending shipments from those pincodes that haven't been assigned to org yet
+        // This simulates customer booking requests awaiting pickup
+        const placeholders = pincodes.map((_, i) => `$${i + 1}`).join(', ');
+        const result = await db.query(`
+            SELECT * FROM shipments 
+            WHERE sender_pincode IN (${placeholders}) 
+            AND status = 'pending'
+            AND (organization_id IS NULL OR organization_id = $${pincodes.length + 1})
+            ORDER BY created_at DESC
+        `, [...pincodes, orgId]);
+
+        const requests = result.rows.map(row => ({
+            id: row.tracking_id || row.shipment_id,
+            customer_name: row.sender_name,
+            customer_phone: row.sender_mobile,
+            pickup_address: row.sender_address,
+            pincode: row.sender_pincode,
+            package_type: row.package_type || 'Parcel',
+            weight: row.weight || 0,
+            status: row.status || 'pending',
+            created_at: row.created_at
+        }));
+
+        res.json({ success: true, requests });
+    } catch (err) {
+        console.error("Franchisee Pickup Requests Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch pickup requests' });
+    }
+});
+
+// Approve Pickup Request
+router.post('/franchisee/pickup-requests/approve', validateSession, requireRole('franchisee'), async (req, res) => {
+    try {
+        const { id, remarks } = req.body;
+        const orgId = req.organization?.id;
+        if (!orgId) return res.status(403).json({ success: false, error: 'No organization linked' });
+
+        // Update shipment to assign to this franchise and mark as picked up
+        const result = await db.query(`
+            UPDATE shipments 
+            SET organization_id = $1, status = 'picked up', updated_at = NOW()
+            WHERE (tracking_id = $2 OR shipment_id::text = $2)
+            RETURNING tracking_id
+        `, [orgId, id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ success: false, error: 'Request not found' });
+        }
+
+        res.json({ success: true, message: 'Pickup approved', tracking_id: result.rows[0].tracking_id });
+    } catch (err) {
+        console.error("Approve Pickup Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to approve pickup' });
+    }
+});
+
+// Reject Pickup Request
+router.post('/franchisee/pickup-requests/reject', validateSession, requireRole('franchisee'), async (req, res) => {
+    try {
+        const { id, remarks } = req.body;
+        const orgId = req.organization?.id;
+        if (!orgId) return res.status(403).json({ success: false, error: 'No organization linked' });
+
+        // Update shipment status to rejected/cancelled
+        const result = await db.query(`
+            UPDATE shipments 
+            SET status = 'cancelled', updated_at = NOW()
+            WHERE (tracking_id = $1 OR shipment_id::text = $1)
+            AND (organization_id IS NULL OR organization_id = $2)
+            RETURNING tracking_id
+        `, [id, orgId]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ success: false, error: 'Request not found or permission denied' });
+        }
+
+        res.json({ success: true, message: 'Pickup request rejected' });
+    } catch (err) {
+        console.error("Reject Pickup Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to reject pickup' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  FRANCHISEE - STAFF MANAGEMENT
+// ═══════════════════════════════════════════════════════════
+
+// Create Staff for Franchisee
+router.post('/franchisee/staff/create', validateSession, requireRole('franchisee'), async (req, res) => {
+    try {
+        const orgId = req.organization?.id;
+        if (!orgId) return res.status(403).json({ success: false, error: 'No organization linked' });
+
+        const { full_name, phone, username, password, staff_role, email } = req.body;
+
+        // Validation
+        if (!full_name || !username || !password) {
+            return res.status(400).json({ success: false, error: 'Name, username and password are required' });
+        }
+
+        // Check if username exists
+        const existing = await db.query('SELECT user_id FROM users WHERE username = $1', [username]);
+        if (existing.rows.length > 0) {
+            return res.status(400).json({ success: false, error: 'Username already exists' });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Insert staff
+        const result = await db.query(`
+            INSERT INTO users (username, password_hash, full_name, phone, email, role, organization_id, staff_role, staff_status, created_at)
+            VALUES ($1, $2, $3, $4, $5, 'staff', $6, $7, 'Active', NOW())
+            RETURNING user_id
+        `, [username, hashedPassword, full_name, phone || null, email || null, orgId, staff_role || 'Staff']);
+
+        res.json({ success: true, message: 'Staff created successfully', user_id: result.rows[0].user_id });
+    } catch (err) {
+        console.error("Franchisee Create Staff Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to create staff' });
+    }
+});
+
+// Update Staff for Franchisee
+router.post('/franchisee/staff/update', validateSession, requireRole('franchisee'), async (req, res) => {
+    try {
+        const orgId = req.organization?.id;
+        if (!orgId) return res.status(403).json({ success: false, error: 'No organization linked' });
+
+        const { user_id, full_name, phone, staff_role, password } = req.body;
+
+        if (!user_id) {
+            return res.status(400).json({ success: false, error: 'User ID is required' });
+        }
+
+        // Verify staff belongs to this franchise
+        const verify = await db.query('SELECT organization_id FROM users WHERE user_id = $1', [user_id]);
+        if (verify.rows.length === 0 || verify.rows[0].organization_id != orgId) {
+            return res.status(403).json({ success: false, error: 'Permission denied' });
+        }
+
+        // Build update query
+        let updateQuery = 'UPDATE users SET full_name = $1, phone = $2, staff_role = $3';
+        let params = [full_name, phone, staff_role];
+
+        // If password provided, hash and update
+        if (password && password.length >= 6) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            updateQuery += ', password_hash = $4 WHERE user_id = $5';
+            params.push(hashedPassword, user_id);
+        } else {
+            updateQuery += ' WHERE user_id = $4';
+            params.push(user_id);
+        }
+
+        await db.query(updateQuery, params);
+        res.json({ success: true, message: 'Staff updated successfully' });
+    } catch (err) {
+        console.error("Franchisee Update Staff Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to update staff' });
+    }
+});
+
+// Toggle Staff Status for Franchisee
+router.post('/franchisee/staff/status', validateSession, requireRole('franchisee'), async (req, res) => {
+    try {
+        const orgId = req.organization?.id;
+        if (!orgId) return res.status(403).json({ success: false, error: 'No organization linked' });
+
+        const { user_id, status } = req.body;
+
+        if (!user_id || !status) {
+            return res.status(400).json({ success: false, error: 'User ID and status are required' });
+        }
+
+        // Verify staff belongs to this franchise
+        const verify = await db.query('SELECT organization_id FROM users WHERE user_id = $1', [user_id]);
+        if (verify.rows.length === 0 || verify.rows[0].organization_id != orgId) {
+            return res.status(403).json({ success: false, error: 'Permission denied' });
+        }
+
+        await db.query('UPDATE users SET staff_status = $1 WHERE user_id = $2', [status, user_id]);
+        res.json({ success: true, message: 'Staff status updated' });
+    } catch (err) {
+        console.error("Franchisee Staff Status Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to update status' });
+    }
+});
+
 module.exports = router;
+
+

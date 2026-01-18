@@ -56,9 +56,25 @@ MoveX uses two ways to know who you are:
 *   **Path:** `POST /api/auth/logout` (or `POST /api/dashboard/logout`)
 *   **Details:** This tells the server to forget your current session. After this, you must login again to see any private data.
 
-### 👤 Who am I?
+### 👤 Who am I? (Basic)
 *   **Path:** `GET /api/auth/me`
-*   **Details:** Tells you everything about your own account. Great for showing the user's name on the screen.
+*   **Details:** Returns basic session info (username, role).
+
+### 👤 User Profile & Organization (Detailed)
+*   **Path:** `GET /api/me`
+*   **Details:** Returns full user profile `user` object and `organization` object.
+*   **Organization Data:** Includes `id`, `name`, `type`, `status`, `address` (full address), and `pincodes`.
+
+### ✏️ Update Profile
+*   **Path:** `PUT /api/me`
+*   **What to send:**
+    ```json
+    {
+      "full_name": "New Name",
+      "phone": "9876543210"
+    }
+    ```
+
 
 ---
 
@@ -153,14 +169,59 @@ These paths are used by the Admin to manage the whole business.
 *   **Path:** `POST /api/dashboard/admin/franchises/update`
 *   **What to send:** `id` and updated fields (e.g. `name`, `pincodes`, `performance`).
 
-### 🛡️ Disable Franchise Branch
+### ✏️ Disable Franchise Branch
 *   **Path:** `POST /api/dashboard/admin/franchises/status`
 *   **What to send:** `{"id": 123, "status": "disabled"}`.
 *   **Effect:** Disables the branch operations (tracking/booking).
 
 ---
 
-## 👥 4. Staff Management (Logistics Team)
+## 🏢 4. Franchisee Operations
+
+These paths are for Franchise Owners to manage their business.
+
+### 📊 Franchise Stats
+*   **Path:** `GET /api/dashboard/franchisee/stats`
+*   **Details:** Returns shipments count, pending pickups, today's deliveries, and total revenue.
+
+### 📦 Franchise Shipments
+*   **Path:** `GET /api/dashboard/franchisee/shipments`
+*   **Details:** List of all shipments created by or assigned to this franchise.
+
+### ➕ Create Shipment (Franchisee)
+*   **Path:** `POST /api/dashboard/franchisee/shipments/create`
+*   **Validation:** Checks if sender and receiver pincodes are serviceable.
+*   **What to send:**
+    ```json
+    {
+      "sender_name": "John", "sender_phone": "...", "sender_pincode": "560001", "sender_address": "...",
+      "receiver_name": "Jane", "receiver_phone": "...", "receiver_pincode": "560002", "receiver_address": "...",
+      "weight": 2.5, "amount": 150
+    }
+    ```
+
+### 🚚 Pickup Requests (Pincode Based)
+*   **Path:** `GET /api/dashboard/franchisee/pickup-requests`
+*   **Details:** Shows pending shipments in pincodes assigned to this franchise.
+
+### ✅ Approve Pickup
+*   **Path:** `POST /api/dashboard/franchisee/pickup-requests/approve`
+*   **What to send:** `{"id": "MX001"}`
+*   **Effect:** Assigns shipment to franchise and changes status to 'picked up'.
+
+### ❌ Reject Pickup
+*   **Path:** `POST /api/dashboard/franchisee/pickup-requests/reject`
+*   **What to send:** `{"id": "MX001", "remarks": "reason"}`
+
+### 👥 Franchise Staff Management
+*   **Path:** `GET /api/dashboard/franchisee/staff`
+*   **Create:** `POST /api/dashboard/franchisee/staff/create` (Requires `username`, `password`, `full_name`, `staff_role`)
+*   **Update:** `POST /api/dashboard/franchisee/staff/update`
+*   **Disable:** `POST /api/dashboard/franchisee/staff/status`
+
+---
+
+## 👥 5. Staff Management (Logistics Team)
 
 These paths are for managing the ground team (Drivers, Warehouse Staff, etc.).
 
@@ -184,7 +245,7 @@ These paths are for managing the ground team (Drivers, Warehouse Staff, etc.).
 
 ---
 
-## � 4. Public Tools (No Login Needed)
+## 6. Public Tools (No Login Needed)
 
 ### 🧐 Can you deliver here? (Service Check)
 *   **Path:** `GET /api/dashboard/public/check-service/:query`
@@ -197,7 +258,7 @@ These paths are for managing the ground team (Drivers, Warehouse Staff, etc.).
 
 ---
 
-## 🏥 5. System Health & Probes
+## 7. System Health & Probes
 
 | Path | What it tells the Developer |
 |------|---------------------------|
@@ -208,7 +269,7 @@ These paths are for managing the ground team (Drivers, Warehouse Staff, etc.).
 
 ---
 
-## ⚠️ 6. Understanding Errors
+## 8. Understanding Errors
 
 | Code | Simple Meaning | What you should do |
 |------|----------------|-------------------|

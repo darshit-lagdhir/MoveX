@@ -158,6 +158,7 @@ DB_NAME=movex_auth
 | POST | `/api/auth/login` | Log in (using username) |
 | POST | `/api/auth/logout` | Log out |
 | GET | `/api/auth/me` | Show current user info |
+| GET | `/api/me` | Full profile & franchise details |
 
 ### Dashboard
 | Method | Path | Description |

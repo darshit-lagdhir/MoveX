@@ -4,29 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Management - MoveX Admin</title>
+    <title>My Shipments - MoveX Franchisee</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-
     <link rel="preload" href="../styles/base.css?v=4" as="style">
     <link rel="preload" href="../styles/components.css?v=4" as="style">
     <link rel="preload" href="../styles/admin.css?v=5" as="style">
     <link rel="stylesheet" href="../styles/base.css?v=4">
     <link rel="stylesheet" href="../styles/components.css?v=4">
-    <link rel="stylesheet" href="../styles/admin.css?v=4">
+    <link rel="stylesheet" href="../styles/admin.css?v=5">
     <script src="../js/config.js?v=1"></script>
     <script src="../js/dashboard-guard.js?v=3"></script>
 </head>
 
 <body>
     <div class="admin-layout">
+        <!-- ⚡ INSTANT PAINT: Sidebar with Shipments Active -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header" style="height: 60px; border-bottom: 1px solid var(--border-default);">
-                <a href="/admin/dashboard.html" class="nav-logo">
-
+                <a href="/franchisee/dashboard.html" class="nav-logo">
                     <span class="logo-text">MoveX</span>
                 </a>
             </div>
@@ -42,48 +41,32 @@
                 </a>
 
                 <div class="nav-group-title">Logistics</div>
-                <a href="shipments.html" class="nav-item">
+                <a href="shipments.html" class="nav-item active">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path>
                         <path
                             d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0">
                         </path>
                     </svg>
-                    <span>Shipments</span>
+                    <span>My Shipments</span>
                 </a>
-                <a href="bookings.html" class="nav-item">
+                <a href="pickup-requests.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                         </path>
                     </svg>
-                    <span>Bookings</span>
+                    <span>Pickup Requests</span>
                 </a>
 
                 <div class="nav-group-title">Organization</div>
-                <a href="users.html" class="nav-item">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path
-                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
-                        </path>
-                    </svg>
-                    <span>Users</span>
-                </a>
-                <a href="franchises.html" class="nav-item">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                        </path>
-                    </svg>
-                    <span>Franchises</span>
-                </a>
-                <a href="staff.html" class="nav-item active">
+                <a href="staff.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z">
                         </path>
                     </svg>
-                    <span>Staff Support</span>
+                    <span>My Staff</span>
                 </a>
 
                 <div class="nav-group-title">Business</div>
@@ -93,15 +76,7 @@
                             d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
                         </path>
                     </svg>
-                    <span>Finance</span>
-                </a>
-                <a href="reports.html" class="nav-item">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path
-                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                        </path>
-                    </svg>
-                    <span>Reports</span>
+                    <span>Revenue</span>
                 </a>
 
                 <div class="nav-group-title">System</div>
@@ -114,16 +89,10 @@
                     </svg>
                     <span>Settings</span>
                 </a>
-                <a href="audit-logs.html" class="nav-item">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                        </path>
-                    </svg>
-                    <span>Audit Logs</span>
-                </a>
             </nav>
         </aside>
+
+        <!-- ⚡ INSTANT PAINT: Content Wrapper + Header + Main -->
         <div class="main-content">
             <header class="top-nav"
                 style="background: var(--surface-primary); border-bottom: 1px solid var(--border-default); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; height: 60px;">
@@ -139,7 +108,6 @@
                     <div class="action-icons"
                         style="display: flex; align-items: center; gap: 1rem; color: var(--text-secondary);">
                         
-                        
                     </div>
                     <div class="user-profile"
                         style="display: flex; align-items: center; gap: 0.75rem; border-left: 1px solid var(--border-default); padding-left: 1.25rem; cursor: pointer;">
@@ -147,7 +115,8 @@
                             <div id="topBarUserName" style="font-weight: 600; font-size: 0.875rem;">Loading...</div>
                             <div id="topBarRole"
                                 style="font-size: 0.75rem; color: var(--text-secondary); text-transform: capitalize;">
-                                ...</div>
+                                ...
+                            </div>
                         </div>
                         <div class="avatar"
                             style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #4F46E5 0%, #3b82f6 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); border: 2px solid var(--surface-primary);">
@@ -168,63 +137,81 @@
                     </button>
                 </div>
             </header>
+
             <main>
                 <div class="dashboard-container">
-                    <div class="page-header">
-                        <div style="display: flex; justify-content: space-between; align-items: start;">
-                            <div>
-                                <h1 class="page-title">Staff Management</h1>
-                                <p class="page-subtitle">Drivers, handlers, and branch staff.</p>
-                            </div>
-                            <button
-                                style="background: var(--brand-primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-md);">
-                                + Add Staff
-                            </button>
+                    <div class="page-header"
+                        style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h1 class="page-title">My Shipments</h1>
+                            <p class="page-subtitle">Manage shipments created by your franchise.</p>
+                        </div>
+                        <button class="btn-primary" id="createNewShipment">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4">
+                                </path>
+                            </svg>
+                            Create Shipment
+                        </button>
+                    </div>
+
+                    <div class="card" style="margin-bottom: 2rem; padding: 1.5rem;">
+                        <div class="search-bar-container">
+                            <input type="text" id="shipmentSearchInput" placeholder="Enter Tracking ID..."
+                                class="search-input">
+                            <select id="shipmentStatusFilter" class="search-select">
+                                <option>All Status</option>
+                                <option>In Transit</option>
+                                <option>Delivered</option>
+                                <option>Pending</option>
+                                <option>Failed</option>
+                                <option>Hold</option>
+                                <option>RTO</option>
+                            </select>
+                            <input type="date" id="shipmentDateFilter" class="search-date">
+                            <button id="shipmentSearchBtn" class="search-btn">Search</button>
                         </div>
                     </div>
 
-                    <div class="card" style="padding: 0;">
-                        <div
-                            style="padding: 1rem; border-bottom: 1px solid var(--border-subtle); display:flex; gap: 1rem;">
-                            <input type="text" placeholder="Search staff..."
-                                style="padding: 0.5rem; border: 1px solid var(--border-default); border-radius: var(--radius-sm); flex:1;">
-                            <select
-                                style="padding: 0.5rem; border: 1px solid var(--border-default); border-radius: var(--radius-sm);">
-                                <option>All Roles</option>
-                                <option>Driver</option>
-                                <option>Warehouse Staff</option>
-                                <option>Delivery Associate</option>
-                            </select>
-                        </div>
-                        <div class="data-table-container" style="border: none; border-radius: 0;">
+                    <div class="card card-table" style="padding: 0 !important; overflow: hidden !important;">
+                        <div class="data-table-container" style="border: none;">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Staff Member</th>
-                                        <th>Role</th>
-                                        <th>Assigned Franchise</th>
+                                        <th>Tracking ID</th>
                                         <th>Status</th>
-                                        <th>Contact</th>
+                                        <th>Sender</th>
+                                        <th>Origin</th>
+                                        <th>Destination</th>
+                                        <th>Ship Date</th>
+                                        <th>Amount</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="staffTableBody">
+                                <tbody id="shipmentsTableBody">
+                                    <!-- Data will be populated by JS -->
                                     <tr>
-                                        <td colspan="6"
-                                            style="text-align:center; padding: 3rem; color: var(--text-tertiary);">
-                                            <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> Loading
-                                            staff roster...
-                                        </td>
+                                        <td colspan="8"
+                                            style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                            Loading
+                                            shipments...</td>
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                        <div id="paginationControls"
+                            style="padding: 1rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; border-top: 1px solid var(--border-subtle); background: var(--surface-primary);">
+                            <!-- Injected by JS -->
                         </div>
                     </div>
                 </div>
             </main>
         </div>
     </div>
-    <script src="../js/admin-layout.js"></script>
+
+    <script src="../js/franchisee-core.js"></script>
+    <script src="../js/admin-layout.js?v=2"></script>
 </body>
 
 </html>

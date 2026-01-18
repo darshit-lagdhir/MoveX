@@ -17,7 +17,8 @@ async function validateSession(req, res, next) {
                     SELECT u.user_id, u.username, u.full_name, u.phone, u.role, u.status, 
                            u.created_at, u.last_login_at,
                            u.organization_id,
-                           o.name as org_name, o.type as org_type, o.non_serviceable_areas, o.status as org_status
+                           o.name as org_name, o.type as org_type, o.non_serviceable_areas, o.status as org_status,
+                           o.full_address, o.pincodes
                     FROM users u
                     LEFT JOIN organizations o ON u.organization_id = o.organization_id
                     WHERE u.username = $1
@@ -33,7 +34,8 @@ async function validateSession(req, res, next) {
                     };
                     req.organization = row.organization_id ? {
                         id: row.organization_id, name: row.org_name, type: row.org_type,
-                        non_serviceable_areas: row.non_serviceable_areas, status: row.org_status
+                        non_serviceable_areas: row.non_serviceable_areas, status: row.org_status,
+                        address: row.full_address, pincodes: row.pincodes
                     } : null;
                     return next();
                 }
@@ -55,7 +57,8 @@ async function validateSession(req, res, next) {
                 SELECT u.user_id, u.username, u.full_name, u.phone, u.role, u.status, 
                        u.created_at, u.last_login_at,
                        u.organization_id,
-                       o.name as org_name, o.type as org_type, o.non_serviceable_areas, o.status as org_status
+                       o.name as org_name, o.type as org_type, o.non_serviceable_areas, o.status as org_status,
+                       o.full_address, o.pincodes
                 FROM users u
                 LEFT JOIN organizations o ON u.organization_id = o.organization_id
                 WHERE u.username = $1 OR u.user_id::text = $1
@@ -71,7 +74,8 @@ async function validateSession(req, res, next) {
                 };
                 req.organization = row.organization_id ? {
                     id: row.organization_id, name: row.org_name, type: row.org_type,
-                    non_serviceable_areas: row.non_serviceable_areas, status: row.org_status
+                    non_serviceable_areas: row.non_serviceable_areas, status: row.org_status,
+                    address: row.full_address, pincodes: row.pincodes
 
                 } : null;
                 return next();
@@ -105,7 +109,7 @@ function requireRole(...allowedRoles) {
 function getDashboardForRole(role) {
     const dashboards = {
         admin: '/admin/dashboard.html',
-        franchisee: '/dashboards/franchisee.html',
+        franchisee: '/franchisee/dashboard.html',
         staff: '/dashboards/staff.html',
         user: '/dashboards/user.html'
     };
@@ -117,7 +121,7 @@ router.get('/me', validateSession, (req, res) => {
     const organization = req.organization;
 
     const profile = {
-        id: user.id,
+        id: user.user_id,
         username: user.username,
         full_name: user.full_name,
         phone: user.phone,

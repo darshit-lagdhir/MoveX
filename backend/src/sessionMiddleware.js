@@ -29,6 +29,7 @@ function clearSessionCookie(res) {
 }
 
 async function requireSession(req, res, next) {
+  const db = require('./config/db'); // Lazy load to avoid circular deps
   let session = null;
 
   // 1. Try Cookie Strategy
@@ -51,10 +52,8 @@ async function requireSession(req, res, next) {
         session = {
           username: decoded.username,
           role: decoded.role,
-          // Map other standard session fields if needed
         };
       } catch (err) {
-        // Token invalid or expired
         console.warn('Backend: Bearer token invalid', err.message);
       }
     }
@@ -64,6 +63,31 @@ async function requireSession(req, res, next) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
   req.session = session;
+
+  // 3. Load user organization data for franchisees/staff
+  if (session.role === 'franchisee' || session.role === 'staff') {
+    try {
+      const userResult = await db.query(
+        'SELECT user_id, organization_id FROM users WHERE username = $1',
+        [session.username]
+      );
+      if (userResult.rows.length > 0 && userResult.rows[0].organization_id) {
+        const orgResult = await db.query(
+          'SELECT organization_id, name, pincodes, full_address, status FROM organizations WHERE organization_id = $1',
+          [userResult.rows[0].organization_id]
+        );
+        if (orgResult.rows.length > 0) {
+          req.organization = {
+            id: orgResult.rows[0].organization_id,
+            ...orgResult.rows[0]
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to load organization data:', err.message);
+    }
+  }
+
   next();
 }
 

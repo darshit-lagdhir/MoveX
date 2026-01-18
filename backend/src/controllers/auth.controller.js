@@ -136,7 +136,7 @@ exports.login = async (req, res) => {
     }
 
     if (user.status && user.status !== 'active') {
-      return res.status(403).json({ message: 'Account is not active.' });
+      return res.status(403).json({ message: 'Account has been disabled by Admin. Please contact support.' });
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password_hash);

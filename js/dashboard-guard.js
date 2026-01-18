@@ -9,22 +9,22 @@
 
     const DASHBOARDS = {
         admin: '/admin/dashboard',
-        franchisee: '/dashboards/franchisee',
+        franchisee: '/franchisee/dashboard',
         staff: '/dashboards/staff',
         user: '/dashboards/user'
     };
 
     const ROLE_HIERARCHY = {
-        'dashboard': ['admin'],
+        'dashboard': ['admin', 'franchisee', 'staff', 'user'],
         'users': ['admin'],
         'franchises': ['admin'],
         'staff': ['admin', 'franchisee', 'staff'],
-        'shipments': ['admin'],
-        'bookings': ['admin'],
-        'finance': ['admin'],
+        'shipments': ['admin', 'franchisee'],
+        'bookings': ['admin', 'franchisee'],
+        'pickup-requests': ['admin', 'franchisee'],
+        'finance': ['admin', 'franchisee'],
         'reports': ['admin'],
-        'settings': ['admin'],
-        'audit-logs': ['admin'],
+        'settings': ['admin', 'franchisee', 'staff', 'user'],
         'franchisee': ['admin', 'franchisee'],
         'user': ['admin', 'franchisee', 'staff', 'user']
     };

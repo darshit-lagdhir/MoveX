@@ -23,7 +23,7 @@
           const storedRole = data.data.role || 'user';
           const dashboards = {
             admin: '/admin/dashboard.html',
-            franchisee: '/dashboards/franchisee.html',
+            franchisee: '/franchisee/dashboard.html',
             staff: '/dashboards/staff.html',
             user: '/dashboards/user.html'
           };
@@ -280,7 +280,7 @@
 
     const dashboards = {
       admin: 'admin/dashboard',
-      franchisee: 'dashboards/franchisee',
+      franchisee: 'franchisee/dashboard',
       staff: 'dashboards/staff',
       user: 'dashboards/user'
     };
@@ -353,7 +353,7 @@
         setTimeout(() => {
           const dashboards = {
             admin: 'admin/dashboard',
-            franchisee: 'dashboards/franchisee',
+            franchisee: 'franchisee/dashboard',
             staff: 'dashboards/staff',
             user: 'dashboards/user'
           };
