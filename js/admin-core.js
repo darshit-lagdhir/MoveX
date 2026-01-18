@@ -412,7 +412,7 @@ window.MoveXAdmin = (function () {
     const initializers = {
         'dashboard': function () {
             document.getElementById('action-create-shipment').onclick = () => window.MoveXAdmin.createShipment();
-            document.getElementById('action-add-user').onclick = () => document.querySelector('a[href="users"]').click();
+            document.getElementById('action-add-user').onclick = () => document.querySelector('a[href="users.html"]').click();
 
             const serviceBtn = document.getElementById('action-check-service');
             if (serviceBtn) {
