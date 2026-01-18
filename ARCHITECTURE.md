@@ -45,6 +45,21 @@ We chose PostgreSQL because it is the "Gold Standard" for safe data.
 *   **ACID Compliance**: This is a fancy way of saying: "If the power goes out while saving a parcel, the data will not be corrupted."
 *   **Row Level Security (RLS)**: We tell the database itself: "Only an Admin can see the profit numbers." Even if a hacker finds a bug in our code, the database will still block them.
 
+### Database Schema Design
+MoveX uses table-specific column names for clarity:
+
+| Table | Primary Key | Key Columns |
+|-------|-------------|-------------|
+| **organizations** | organization_id | name, type, status |
+| **users** | username | user_id, role, status |
+| **sessions** | session_id | token, username, expires_at |
+| **password_resets** | reset_id | username, token_hash |
+| **shipments** | tracking_id | shipment_id, creator_username, organization_id |
+| **serviceable_cities** | city_id | name |
+
+**Visual Reference:** See `ERDIAGRAM/index.html` for Chen Notation ER Diagram.
+**Complete Schema:** See `TABLE_DESIGN.md` for detailed column specifications.
+
 ---
 
 ## 4. Core Functional Modules
@@ -115,6 +130,8 @@ Imagine you are an Admin changing a Parcel status:
 8.  **Response**: The server sends a `{"success": true}` message back.
 9.  **Frontend**: The UI sees the success and changes the color of the status badge to Green.
 
+**Note:** The shipments table uses `tracking_id` as its PRIMARY KEY (not `shipment_id`).
+
 ---
 
 ## 8. How we manage Photos
@@ -139,3 +156,15 @@ MoveX is designed to scale horizontally.
 ---
 
 **Summary:** MoveX Architecture is built to be **Simple to learn but Hard to break**. Every design choice was made to prioritize the safety of your logistics data.
+
+---
+
+## 10. Documentation Reference
+
+| Document | Description |
+|----------|-------------|
+| `TABLE_DESIGN.md` | Complete database table structures |
+| `ERDIAGRAM/index.html` | Visual ER Diagram (Chen Notation) |
+| `backend/sql/001_schema.sql` | SQL schema definitions |
+| `API.md` | REST API documentation |
+| `SETUP.md` | Deployment guide |

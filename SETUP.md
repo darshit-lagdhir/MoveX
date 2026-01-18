@@ -1,7 +1,7 @@
 # MoveX Guide for Online Use
 
-> **Last Updated:** January 6, 2026  
-> **Version:** 1.1.0  
+> **Last Updated:** January 18, 2026  
+> **Version:** 1.2.0  
 > **Status:** Ready for Real Customers
 
 This document is a full guide for running MoveX online. It covers setting up the database, security settings, ways to put it online, and how to keep it running.
@@ -318,14 +318,14 @@ HEALTH_CHECK_KEY=your_secret_key
 #### `users` (User accounts)
 | Column | Type | Description |
 |--------|------|-------------|
-| id | BIGSERIAL | Main Key |
-| username | VARCHAR(255) | Unique login name |
+| user_id | BIGSERIAL | Auto-increment ID |
+| username | VARCHAR(255) | **PRIMARY KEY** - Unique login name |
 | password_hash | TEXT | Hidden password |
 | full_name | VARCHAR(100) | Person's name |
 | phone | VARCHAR(50) | Contact number |
 | role | user_role | admin, franchisee, staff, user |
 | status | user_status | active, disabled, suspended |
-| organization_id | BIGINT | Linking to branch |
+| organization_id | BIGINT | FK → organizations(organization_id) |
 | security_answers | JSONB | Recovery questions |
 | created_at | TIMESTAMPTZ | Signup date |
 | updated_at | TIMESTAMPTZ | Last update date |
@@ -333,33 +333,55 @@ HEALTH_CHECK_KEY=your_secret_key
 #### `organizations` (Branches)
 | Column | Type | Description |
 |--------|------|-------------|
-| id | BIGSERIAL | Main Key |
+| organization_id | BIGSERIAL | **PRIMARY KEY** |
 | name | VARCHAR(255) | Branch name |
 | type | VARCHAR(50) | admin or franchise |
 | service_area | TEXT | Area they cover |
 | pincodes | TEXT | List of pincodes |
 | status | VARCHAR(50) | active/inactive |
 
+#### `sessions` (Active Logins)
+| Column | Type | Description |
+|--------|------|-------------|
+| session_id | SERIAL | **PRIMARY KEY** |
+| username | VARCHAR(255) | FK → users(username) |
+| token | VARCHAR(255) | Session token |
+| role | VARCHAR(50) | User role |
+| expires_at | BIGINT | Expiry timestamp |
+
+#### `password_resets` (Password Recovery)
+| Column | Type | Description |
+|--------|------|-------------|
+| reset_id | BIGSERIAL | **PRIMARY KEY** |
+| username | VARCHAR(255) | FK → users(username) |
+| token_hash | TEXT | Hashed reset token |
+| expires_at | TIMESTAMPTZ | Token expiry |
+| used | BOOLEAN | Whether token was used |
+
 #### `shipments` (Parcels)
 | Column | Type | Description |
 |--------|------|-------------|
-| id | BIGSERIAL | Main Key |
-| tracking_id | VARCHAR(50) | Unique tracking code |
+| shipment_id | BIGSERIAL | Auto-increment ID |
+| tracking_id | VARCHAR(50) | **PRIMARY KEY** - Unique tracking code |
 | sender_name | VARCHAR(100) | Who is sending |
 | sender_mobile | VARCHAR(20) | Sender phone |
 | sender_address | TEXT | Sender full address |
+| sender_pincode | VARCHAR(10) | Sender pincode |
 | receiver_name | VARCHAR(100) | Who is receiving |
 | receiver_mobile | VARCHAR(20) | Receiver phone |
 | receiver_address | TEXT | Receiver full address |
+| receiver_pincode | VARCHAR(10) | Receiver pincode |
 | status | VARCHAR(50) | pending, in_transit, delivered, failed |
 | price | DECIMAL | Cost of delivery |
 | weight | DECIMAL | Parcel weight in KG |
+| creator_username | VARCHAR(255) | FK → users(username) |
+| organization_id | BIGINT | FK → organizations(organization_id) |
 | created_at | TIMESTAMPTZ | Booking date |
 
 #### `serviceable_cities`
 | Column | Type | Description |
 |--------|------|-------------|
-| id | SERIAL | Main Key |
+| city_id | SERIAL | **PRIMARY KEY** |
 | name | VARCHAR(255) | City Name (e.g. "Mumbai, MH") |
 
 ---
@@ -516,6 +538,19 @@ cd backend && npm start
 ---
 
 ## Appendix C: History (Changelog)
+
+### v1.2.0 (January 18, 2026)
+- **Database**: Renamed all `id` columns to table-specific names:
+  - `organizations.id` → `organization_id`
+  - `users.id` → `user_id`  
+  - `sessions.id` → `session_id`
+  - `password_resets.id` → `reset_id`
+  - `shipments.id` → `shipment_id`
+  - `serviceable_cities.id` → `city_id`
+- **Database**: Made `tracking_id` the PRIMARY KEY of `shipments` table
+- **Documentation**: Added `TABLE_DESIGN.md` with complete schema
+- **Documentation**: Added `ERDIAGRAM/index.html` with Chen Notation ER Diagram
+- **ER Diagram**: Foreign keys shown with dashed borders
 
 ### v1.1.1 (January 9, 2026)
 - **Security**: Removed experimental MFA and OAuth code to streamline the authentication flow.

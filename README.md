@@ -95,7 +95,9 @@ movex/
 ├── dashboards/            # Pages for various roles
 ├── js/                    # Frontend JavaScript files
 ├── styles/                # CSS design files
+├── ERDIAGRAM/             # ER Diagram visualization (Chen notation)
 ├── index.html             # Main login page
+├── TABLE_DESIGN.md        # Complete database table design
 ├── SETUP.md               # Guide for real online setup
 ├── API.md                 # Detailed server connection guide
 ├── ARCHITECTURE.md        # How the system is built
@@ -197,6 +199,21 @@ DB_NAME=movex_auth
 
 ## 🗄️ Database
 
+### Database Schema
+
+MoveX uses PostgreSQL with the following tables:
+
+| Table | Primary Key | Description |
+|-------|-------------|-------------|
+| organizations | organization_id | Franchise branches |
+| users | username | User accounts |
+| sessions | session_id | Active login sessions |
+| password_resets | reset_id | Password recovery tokens |
+| shipments | tracking_id | Parcel tracking records |
+| serviceable_cities | city_id | Delivery coverage areas |
+
+**See:** `TABLE_DESIGN.md` for complete column-level details and `ERDIAGRAM/index.html` for visual ER diagram.
+
 ### Supabase (Recommended for Production)
 
 See **[SETUP.md](./SETUP.md)** for the full setup guide.
@@ -290,6 +307,8 @@ Configuring the connection between them is handled via `js/config.js` (Frontend)
 
 ## 📄 Documentation
 
+- **[TABLE_DESIGN.md](./TABLE_DESIGN.md)** - Complete database table structures
+- **[ERDIAGRAM/index.html](./ERDIAGRAM/index.html)** - Visual ER Diagram (Chen Notation)
 - **[SETUP.md](./SETUP.md)** - Full guide for real setup.
 - **[API.md](./API.md)** - Full list of server paths and data.
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Deep dive into how code is organized.
