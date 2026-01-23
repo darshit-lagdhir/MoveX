@@ -323,6 +323,8 @@
             <div class="a" id="a-org-address" style="left: 13%; top: 35%;">full_address</div>
             <div class="a" id="a-org-perf" style="left: 3%; top: 34%;">performance</div>
             <div class="a" id="a-org-created" style="left: 1%; top: 26%;">created_at</div>
+            <div class="a" id="a-org-updated" style="left: 1%; top: 30%;">updated_at</div>
+            <div class="a" id="a-org-nonserv" style="left: 18%; top: 34%;">non_serviceable_areas</div>
 
 
             <!-- ═══════════ USERS ═══════════ -->
@@ -337,7 +339,9 @@
             <div class="a" id="a-usr-status" style="left: 48%; top: 36%;">status</div>
             <div class="a" id="a-usr-security" style="left: 38%; top: 36%;">security_answers</div>
             <div class="a" id="a-usr-staffrole" style="left: 30%; top: 32%;">staff_role</div>
-            <div class="a" id="a-usr-created" style="left: 30%; top: 25%;">created_at</div>
+            <div class="a" id="a-usr-created" style="left: 30%; top: 28%;">created_at</div>
+            <div class="a" id="a-usr-updated" style="left: 32%; top: 40%;">updated_at</div>
+            <div class="a" id="a-usr-staffstatus" style="left: 32%; top: 35%;">staff_status</div>
             <div class="a" id="a-usr-login" style="left: 32%; top: 18%;">last_login_at</div>
             <div class="a fk" id="a-usr-orgid" style="left: 35%; top: 12%;">organization_id</div>
 
@@ -358,7 +362,7 @@
             <div class="a" id="a-sess-role" style="left: 90%; top: 13%;">role</div>
             <div class="a" id="a-sess-expires" style="left: 93%; top: 21%;">expires_at</div>
             <div class="a" id="a-sess-created" style="left: 92%; top: 29%;">created_at</div>
-            <div class="a" id="a-sess-last" style="left: 86%; top: 35%;">last_accessed</div>
+            <div class="a" id="a-sess-last" style="left: 86%; top: 35%;">last_accessed_at</div>
             <div class="a fk" id="a-sess-username" style="left: 77%; top: 35%;">username</div>
 
 
@@ -385,7 +389,7 @@
             <div class="r id" id="r-requests" style="left: 64%; top: 44%;">
                 <div class="r-box"><span class="r-text">Requests</span></div>
             </div>
-            <div class="c" style="left: 60%; top: 40%;">1</div>
+            <div class="c" style="left: 60%; top: 43%;">1</div>
             <div class="c" style="left: 72%; top: 53%;">N</div>
 
 
@@ -394,41 +398,45 @@
             </div>
 
             <!-- Left side attrs - moved away from HANDLES line -->
-            <div class="a pk" id="a-ship-tracking" style="left: 32%; top: 60%;"><span>tracking_id</span></div>
-            <div class="a" id="a-ship-id" style="left: 24%; top: 64%;">shipment_id</div>
-            <div class="a fk" id="a-ship-orgid" style="left: 20%; top: 58%;">organization_id</div>
-            <div class="a" id="a-ship-origin" style="left: 20%; top: 70%;">origin_address</div>
+            <div class="a pk" id="a-ship-tracking" style="left: 38%; top: 60%;"><span>tracking_id</span></div>
+            <div class="a" id="a-ship-id" style="left: 25%; top: 68%;">shipment_id</div>
+            <div class="a fk" id="a-ship-orgid" style="left: 30%; top: 58%;">organization_id</div>
+            <div class="a" id="a-ship-origin" style="left: 20%; top: 72%;">origin_address</div>
             <div class="a" id="a-ship-weight" style="left: 18%; top: 78%;">weight</div>
-            <div class="a" id="a-ship-price" style="left: 22%; top: 84%;">price</div>
-            <div class="a" id="a-ship-status" style="left: 30%; top: 88%;">status</div>
-            <div class="a" id="a-ship-dest" style="left: 40%; top: 92%;">destination</div>
-            <div class="a" id="a-ship-created" style="left: 20%; top: 90%;">created_at</div>
+            <div class="a" id="a-ship-price" style="left: 18%; top: 85%;">price</div>
+            <div class="a" id="a-ship-status" style="left: 30%; top: 92%;">status</div>
+            <div class="a" id="a-ship-dest" style="left: 40%; top: 94%;">destination_address</div>
+            <div class="a" id="a-ship-created" style="left: 18%; top: 90%;">created_at</div>
+            <div class="a" id="a-ship-updated" style="left: 24%; top: 92%;">updated_at</div>
+            <div class="a" id="a-ship-currloc" style="left: 34%; top: 92%;">current_location</div>
 
             <!-- Right side attrs - moved away from CREATES line -->
             <div class="a fk" id="a-ship-creator" style="left: 54%; top: 60%;">creator_username</div>
             <div class="a" id="a-ship-sendername" style="left: 60%; top: 66%;">sender_name</div>
-            <div class="a" id="a-ship-sendermob" style="left: 68%; top: 70%;">sender_mobile</div>
+            <div class="a" id="a-ship-senderphone" style="left: 66%; top: 60%;">sender_phone</div>
+            <div class="a" id="a-ship-senderaddr" style="left: 72%; top: 66%;">sender_address</div>
             <div class="a" id="a-ship-senderpin" style="left: 74%; top: 75%;">sender_pincode</div>
             <div class="a" id="a-ship-recvname" style="left: 74%; top: 81%;">receiver_name</div>
-            <div class="a" id="a-ship-recvmob" style="left: 70%; top: 86%;">receiver_mobile</div>
-            <div class="a" id="a-ship-recvpin" style="left: 62%; top: 90%;">receiver_pincode</div>
-            <div class="a" id="a-ship-estdel" style="left: 52%; top: 92%;">estimated_delivery</div>
+            <div class="a" id="a-ship-recvphone" style="left: 78%; top: 86%;">receiver_phone</div>
+            <div class="a" id="a-ship-recvaddr" style="left: 72%; top: 92%;">receiver_address</div>
+            <div class="a" id="a-ship-recvpin" style="left: 62%; top: 92%;">receiver_pincode</div>
+            <div class="a" id="a-ship-estdel" style="left: 52%; top: 94%;">estimated_delivery</div>
 
 
             <!-- ═══════════ CREATES (Users → Shipments) ═══════════ -->
             <div class="r" id="r-creates-ship" style="left: 48%; top: 50%;">
                 <div class="r-box"><span class="r-text">Creates</span></div>
             </div>
-            <div class="c" style="left: 46%; top: 44%;">1</div>
-            <div class="c" style="left: 52%; top: 64%;">N</div>
+            <div class="c" style="left: 47%; top: 44%;">1</div>
+            <div class="c" style="left: 48%; top: 60%;">N</div>
 
 
             <!-- ═══════════ HANDLES (Organizations → Shipments) ═══════════ -->
             <div class="r" id="r-handles" style="left: 12%; top: 50%;">
                 <div class="r-box"><span class="r-text">Handles</span></div>
             </div>
-            <div class="c" style="left: 10%; top: 44%;">1</div>
-            <div class="c" style="left: 18%; top: 64%;">N</div>
+            <div class="c" style="left: 14%; top: 44%;">1</div>
+            <div class="c" style="left: 18%; top: 58%;">N</div>
 
 
             <!-- ═══════════ SERVICEABLE_CITIES (Standalone) ═══════════ -->
@@ -477,13 +485,13 @@
 
             // Organization attrs
             ['a-org-id', 'a-org-name', 'a-org-type', 'a-org-status', 'a-org-pincodes',
-                'a-org-address', 'a-org-perf', 'a-org-created']
+                'a-org-address', 'a-org-perf', 'a-org-created', 'a-org-updated', 'a-org-nonserv']
                 .forEach(a => line(a, 'e-org'));
 
             // Users attrs
             ['a-usr-username', 'a-usr-id', 'a-usr-fullname', 'a-usr-phone', 'a-usr-password',
                 'a-usr-role', 'a-usr-status', 'a-usr-security', 'a-usr-staffrole', 'a-usr-created',
-                'a-usr-login', 'a-usr-orgid']
+                'a-usr-login', 'a-usr-orgid', 'a-usr-updated', 'a-usr-staffstatus']
                 .forEach(a => line(a, 'e-users'));
 
             // Sessions attrs
@@ -497,9 +505,10 @@
 
             // Shipments attrs
             ['a-ship-id', 'a-ship-tracking', 'a-ship-origin', 'a-ship-weight', 'a-ship-price', 'a-ship-status',
-                'a-ship-dest', 'a-ship-created', 'a-ship-sendername', 'a-ship-sendermob',
-                'a-ship-senderpin', 'a-ship-recvname', 'a-ship-recvmob', 'a-ship-recvpin',
-                'a-ship-estdel', 'a-ship-creator', 'a-ship-orgid']
+                'a-ship-dest', 'a-ship-created', 'a-ship-updated', 'a-ship-currloc', 'a-ship-sendername',
+                'a-ship-senderphone', 'a-ship-senderaddr', 'a-ship-senderpin',
+                'a-ship-recvname', 'a-ship-recvphone', 'a-ship-recvaddr',
+                'a-ship-recvpin', 'a-ship-estdel', 'a-ship-creator', 'a-ship-orgid']
                 .forEach(a => line(a, 'e-shipments'));
 
             // Cities attrs
