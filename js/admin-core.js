@@ -605,7 +605,7 @@ window.MoveXAdmin = (function () {
                             </div>
                              <div>
                                 <label style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Phone (Optional)</label>
-                                <input type="tel" id="new_phone" placeholder="+91..." style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);">
+                                <input type="tel" id="new_phone" placeholder="10-digit Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%; padding:0.6rem; border:1px solid var(--border-default); border-radius:4px; background:var(--surface-primary); color:var(--text-primary);">
                             </div>
                         </div>
                     `, [
@@ -873,7 +873,7 @@ window.MoveXAdmin = (function () {
                             </div>
                             <div>
                                 <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Owner Phone Number</label>
-                                <input type="tel" id="f_owner_phone" placeholder="e.g. +91 9876543210" style="width:100%;">
+                                <input type="tel" id="f_owner_phone" placeholder="10-digit Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%;">
                             </div>
                         </div>
                     `, [
@@ -1796,7 +1796,7 @@ window.MoveXAdmin = (function () {
                         </div>
                         <div>
                             <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Owner Phone Number</label>
-                            <input type="tel" id="edit_f_phone" value="${f.owner_phone || ''}" placeholder="e.g. +91 9876543210" style="width:100%;">
+                            <input type="tel" id="edit_f_phone" value="${f.owner_phone || ''}" placeholder="10-digit Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%;">
                         </div>
                         <div style="padding:1rem; background:var(--surface-secondary); border-radius:var(--radius-md); font-size:0.85rem; border-left: 4px solid var(--warning);">
                             <i class="fas fa-info-circle" style="color:var(--warning); margin-right:8px;"></i>

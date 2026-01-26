@@ -340,7 +340,12 @@ router.post('/admin/users/create', validateSession, requireRole('admin'), async 
         const { full_name, username, password, role, phone } = req.body;
 
         if (!full_name || !username || !password || !role) {
-            return res.status(400).json({ success: false, error: 'All fields are required' });
+            return res.status(400).json({ success: false, error: 'Mandatory fields missing' });
+        }
+
+        const cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : null;
+        if (cleanPhone && cleanPhone.length !== 10) {
+            return res.status(400).json({ success: false, error: 'Phone number must be exactly 10 digits' });
         }
 
         // Check if username exists
@@ -363,7 +368,7 @@ router.post('/admin/users/create', validateSession, requireRole('admin'), async 
         await db.query(`
             INSERT INTO users(full_name, username, password_hash, role, status, phone, created_at)
 VALUES($1, $2, $3, $4, $5, $6, NOW())
-        `, [full_name, username, hash, role, status, phone || null]);
+        `, [full_name, username, hash, role, status, cleanPhone]);
 
         res.json({ success: true, message: 'User created successfully' });
 
@@ -473,7 +478,12 @@ router.post('/admin/franchises/create', validateSession, requireRole('admin'), a
         const { name, non_serviceable_areas, pincodes, full_address, owner_name, owner_username, owner_password, owner_phone } = req.body;
 
         if (!name || !owner_name || !owner_username || !owner_password || !owner_phone) {
-            return res.status(400).json({ success: false, error: 'Missing required fields' });
+            return res.status(400).json({ success: false, error: 'All fields are required' });
+        }
+
+        const cleanOwnerPhone = owner_phone.replace(/[^0-9]/g, '');
+        if (cleanOwnerPhone.length !== 10) {
+            return res.status(400).json({ success: false, error: 'Owner phone must be exactly 10 digits' });
         }
 
         if (owner_password.length < 8) {
@@ -493,7 +503,7 @@ router.post('/admin/franchises/create', validateSession, requireRole('admin'), a
         const hash = await bcrypt.hash(owner_password, 12);
         await client.query(
             'INSERT INTO users (full_name, username, password_hash, role, organization_id, status, phone) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-            [owner_name, owner_username.trim().toLowerCase(), hash, 'franchisee', orgId, 'active', owner_phone]
+            [owner_name, owner_username.trim().toLowerCase(), hash, 'franchisee', orgId, 'active', cleanOwnerPhone]
         );
 
         await client.query('COMMIT');
@@ -592,9 +602,14 @@ router.post('/admin/franchises/update', validateSession, requireRole('admin'), a
                 updates.push(`username = $${i++} `);
                 values.push(owner_username);
             }
-            if (owner_phone) {
+
+            const cleanOwnerPhone = owner_phone ? owner_phone.replace(/[^0-9]/g, '') : null;
+            if (cleanOwnerPhone) {
+                if (cleanOwnerPhone.length !== 10) {
+                    return res.status(400).json({ success: false, error: 'Owner phone must be exactly 10 digits' });
+                }
                 updates.push(`phone = $${i++} `);
-                values.push(owner_phone);
+                values.push(cleanOwnerPhone);
             }
 
             if (updates.length > 0) {
@@ -750,7 +765,12 @@ router.post('/admin/staff/create', validateSession, requireRole('admin'), async 
         const { full_name, username, password, staff_role, phone, organization_id } = req.body;
 
         if (!full_name || !username || !password || !staff_role) {
-            return res.status(400).json({ success: false, error: 'Name, Username, Password, and Role are required' });
+            return res.status(400).json({ success: false, error: 'Mandatory fields missing' });
+        }
+
+        const cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : null;
+        if (cleanPhone && cleanPhone.length !== 10) {
+            return res.status(400).json({ success: false, error: 'Phone number must be exactly 10 digits' });
         }
 
         const existing = await db.query('SELECT user_id FROM users WHERE username = $1', [username]);
@@ -763,7 +783,7 @@ router.post('/admin/staff/create', validateSession, requireRole('admin'), async 
         await db.query(`
             INSERT INTO users(full_name, username, password_hash, role, staff_role, phone, organization_id, status, staff_status)
 VALUES($1, $2, $3, 'staff', $4, $5, $6, 'active', 'Active')
-    `, [full_name, username, hash, staff_role, phone || null, organization_id || null]);
+    `, [full_name, username, hash, staff_role, cleanPhone, organization_id || null]);
 
         res.json({ success: true, message: 'Staff member created successfully' });
     } catch (err) {
@@ -779,16 +799,21 @@ router.post('/admin/staff/update', validateSession, requireRole('admin'), async 
 
         if (!id) return res.status(400).json({ success: false, error: 'Staff ID is required' });
 
+        const cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : null;
+        if (cleanPhone && cleanPhone.length !== 10) {
+            return res.status(400).json({ success: false, error: 'Phone number must be exactly 10 digits' });
+        }
+
         await db.query(`
             UPDATE users 
             SET full_name = COALESCE($1, full_name),
     staff_role = COALESCE($2, staff_role),
-    phone = COALESCE($3, phone),
+    phone = $3,
     organization_id = $4,
     staff_status = COALESCE($5, staff_status),
     updated_at = NOW()
             WHERE user_id = $6 AND role = 'staff'
-    `, [full_name, staff_role, phone, organization_id || null, staff_status, id]);
+    `, [full_name, staff_role, cleanPhone, organization_id || null, staff_status, id]);
 
         res.json({ success: true, message: 'Staff updated successfully' });
     } catch (err) {
@@ -1388,21 +1413,17 @@ router.post('/franchisee/staff/create', validateSession, requireRole('franchisee
             return res.status(400).json({ success: false, error: 'Name, username and password are required' });
         }
 
-        // Check if username exists
-        const existing = await db.query('SELECT user_id FROM users WHERE username = $1', [username]);
-        if (existing.rows.length > 0) {
-            return res.status(400).json({ success: false, error: 'Username already exists' });
+        const cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : null;
+        if (cleanPhone && cleanPhone.length !== 10) {
+            return res.status(400).json({ success: false, error: 'Phone number must be exactly 10 digits' });
         }
-
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
 
         // Insert staff
         const result = await db.query(`
             INSERT INTO users (username, password_hash, full_name, phone, email, role, organization_id, staff_role, staff_status, created_at)
             VALUES ($1, $2, $3, $4, $5, 'staff', $6, $7, 'Active', NOW())
             RETURNING user_id
-        `, [username, hashedPassword, full_name, phone || null, email || null, orgId, staff_role || 'Staff']);
+        `, [username, hashedPassword, full_name, cleanPhone, email || null, orgId, staff_role || 'Staff']);
 
         res.json({ success: true, message: 'Staff created successfully', user_id: result.rows[0].user_id });
     } catch (err) {
@@ -1429,9 +1450,14 @@ router.post('/franchisee/staff/update', validateSession, requireRole('franchisee
             return res.status(403).json({ success: false, error: 'Permission denied' });
         }
 
+        const cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : null;
+        if (cleanPhone && cleanPhone.length !== 10) {
+            return res.status(400).json({ success: false, error: 'Phone number must be exactly 10 digits' });
+        }
+
         // Build update query
         let updateQuery = 'UPDATE users SET full_name = $1, phone = $2, staff_role = $3';
-        let params = [full_name, phone, staff_role];
+        let params = [full_name, cleanPhone, staff_role];
 
         // If password provided, hash and update
         if (password && password.length >= 6) {

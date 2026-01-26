@@ -153,9 +153,13 @@ router.put('/me', validateSession, async (req, res) => {
     }
 
     if (phone !== undefined) {
-        const cleanPhone = phone.replace(/[^0-9+\-\s()]/g, '').substring(0, 50);
+        // Clean phone: remove all non-digits
+        const digitsOnly = phone.replace(/[^0-9]/g, '');
+        if (digitsOnly.length !== 10) {
+            return res.status(400).json({ error: 'Phone number must be exactly 10 digits' });
+        }
         updates.push(`phone = $${paramCount++}`);
-        values.push(cleanPhone);
+        values.push(digitsOnly);
     }
 
     if (updates.length === 0) {

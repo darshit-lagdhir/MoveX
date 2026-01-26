@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS users (
     
     -- User Details
     full_name VARCHAR(100),
-    phone VARCHAR(50),
+    phone VARCHAR(50) CONSTRAINT users_phone_check CHECK (phone IS NULL OR phone ~ '^[0-9]{10}$'),
     password_hash VARCHAR(255) NOT NULL,
     role user_role NOT NULL DEFAULT 'user',
     status user_status NOT NULL DEFAULT 'active',
@@ -180,15 +180,15 @@ CREATE TABLE IF NOT EXISTS shipments (
     
     -- Sender Details
     sender_name VARCHAR(100),
-    sender_phone VARCHAR(20),
+    sender_phone VARCHAR(20) CONSTRAINT shipments_sender_phone_check CHECK (sender_phone ~ '^[0-9]{10}$'),
     sender_address TEXT,
-    sender_pincode VARCHAR(10),
+    sender_pincode VARCHAR(10) CONSTRAINT shipments_sender_pincode_check CHECK (sender_pincode ~ '^[0-9]{6}$'),
     
     -- Receiver Details
     receiver_name VARCHAR(100),
-    receiver_phone VARCHAR(20),
+    receiver_phone VARCHAR(20) CONSTRAINT shipments_receiver_phone_check CHECK (receiver_phone ~ '^[0-9]{10}$'),
     receiver_address TEXT,
-    receiver_pincode VARCHAR(10),
+    receiver_pincode VARCHAR(10) CONSTRAINT shipments_receiver_pincode_check CHECK (receiver_pincode ~ '^[0-9]{6}$'),
     
     -- Shipment Details
     origin_address TEXT,

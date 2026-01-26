@@ -81,10 +81,15 @@ exports.register = async (req, res) => {
     const userRole = (role && allowedSelfRegisterRoles.includes(role.toLowerCase())) ? role.toLowerCase() : 'user';
     const status = 'active';
 
+    const cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : null;
+    if (cleanPhone && cleanPhone.length !== 10) {
+      return res.status(400).json({ message: 'Phone number must be exactly 10 digits.' });
+    }
+
     await pool.query(
       `INSERT INTO users (username, password_hash, role, status, security_answers, full_name, phone)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [normalizedUsername, hash, userRole, status, JSON.stringify(body.securityAnswers || {}), full_name, phone]
+      [normalizedUsername, hash, userRole, status, JSON.stringify(body.securityAnswers || {}), full_name, cleanPhone]
     );
 
     return res.status(201).json({

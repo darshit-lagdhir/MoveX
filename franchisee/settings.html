@@ -195,7 +195,8 @@
                                     </div>
                                     <div>
                                         <label class="block mb-2 font-bold text-primary">Phone Number</label>
-                                        <input type="tel" id="profile_phone" placeholder="Enter phone number"
+                                        <input type="tel" id="profile_phone" placeholder="10-digit Mobile"
+                                            maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                                             style="width: 100%;">
                                     </div>
                                     <div style="grid-column: span 2; display: flex; justify-content: flex-end;">

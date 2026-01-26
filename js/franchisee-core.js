@@ -745,7 +745,7 @@ window.MoveXAdmin = (function () {
                 </div>
                 <div>
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Phone Number *</label>
-                    <input type="tel" id="staff_phone" placeholder="+91 9876543210" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
+                    <input type="tel" id="staff_phone" placeholder="10-digit Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
                 <div>
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Username *</label>
@@ -818,7 +818,7 @@ window.MoveXAdmin = (function () {
                 </div>
                 <div>
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Phone Number</label>
-                    <input type="tel" id="edit_staff_phone" value="${dataset.phone || ''}" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
+                    <input type="tel" id="edit_staff_phone" value="${dataset.phone || ''}" placeholder="10-digit Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
                 <div>
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Role</label>
