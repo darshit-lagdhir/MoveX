@@ -224,18 +224,21 @@ window.MoveXAdmin = (function () {
             {
                 label: 'Print Label',
                 onClick: (c) => {
+                    const cleanOrigin = (s.origin || s.sender_city || '').split(',')[0].trim();
+                    const cleanDest = (s.destination || s.receiver_city || '').split(',')[0].trim();
+
                     const params = new URLSearchParams({
                         id: s.tracking_id || s.id,
                         sender: s.sender_name || s.sender || 'N/A',
                         receiver: s.receiver_name || 'N/A',
-                        r_addr: s.receiver_address || s.destination || '',
-                        r_phone: s.receiver_phone || '',
-                        origin: s.origin || '',
-                        dest: s.destination || '',
+                        r_addr: (s.receiver_address || s.destination || '').trim(),
+                        r_phone: s.receiver_phone || s.receiver_mobile || '',
+                        origin: cleanOrigin,
+                        dest: cleanDest,
                         price: s.amount || s.price || 0,
                         weight: s.weight || '1.0',
                         r_pincode: s.receiver_pincode || '',
-                        s_addr: s.sender_address || ''
+                        s_addr: (s.sender_address || s.origin || '').trim()
                     });
                     window.open(`../admin/print_label.html?${params.toString()}`, '_blank');
                 }

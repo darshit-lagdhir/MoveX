@@ -228,7 +228,7 @@
         document.getElementById('route_text').innerHTML = `${data.origin.substring(0, 3).toUpperCase()} &rarr; ${data.dest.substring(0, 3).toUpperCase()}`;
         document.getElementById('receiver_name').innerText = data.receiver;
         document.getElementById('receiver_addr').innerHTML = data.r_addr.replace(/,/g, ',<br>');
-        document.getElementById('receiver_phone').innerText = `+${data.r_phone}`;
+        document.getElementById('receiver_phone').innerText = data.r_phone;
         document.getElementById('price_text').innerText = `₹${data.price}`;
         document.getElementById('sender_info').innerText = `${data.sender}, ${data.origin}`;
         document.getElementById('weight_text').innerText = `${data.weight} KG`;
@@ -250,4 +250,3 @@
 </body>
 
 </html>
-
