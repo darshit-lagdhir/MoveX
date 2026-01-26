@@ -95,7 +95,7 @@ function whoami(req, res) {
   return res.json({
     user: {
       id: req.session.userId,
-      email: req.session.email,
+      username: req.session.username,
       role: req.session.role
     }
   });

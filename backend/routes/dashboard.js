@@ -1177,8 +1177,7 @@ router.get('/franchisee/staff', validateSession, requireRole('franchisee'), asyn
             phone: row.phone,
             staff_role: row.staff_role || 'Staff',
             role: row.staff_role || 'Staff',
-            status: row.staff_status || 'Active',
-            email: row.email
+            status: row.staff_status || 'Active'
         }));
 
         res.json({ success: true, staff });
@@ -1406,7 +1405,7 @@ router.post('/franchisee/staff/create', validateSession, requireRole('franchisee
         const orgId = req.organization?.id;
         if (!orgId) return res.status(403).json({ success: false, error: 'No organization linked' });
 
-        const { full_name, phone, username, password, staff_role, email } = req.body;
+        const { full_name, phone, username, password, staff_role } = req.body;
 
         // Validation
         if (!full_name || !username || !password) {
@@ -1418,12 +1417,15 @@ router.post('/franchisee/staff/create', validateSession, requireRole('franchisee
             return res.status(400).json({ success: false, error: 'Phone number must be exactly 10 digits' });
         }
 
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 12);
+
         // Insert staff
         const result = await db.query(`
-            INSERT INTO users (username, password_hash, full_name, phone, email, role, organization_id, staff_role, staff_status, created_at)
-            VALUES ($1, $2, $3, $4, $5, 'staff', $6, $7, 'Active', NOW())
+            INSERT INTO users (username, password_hash, full_name, phone, role, organization_id, staff_role, staff_status, created_at)
+            VALUES ($1, $2, $3, $4, 'staff', $5, $6, 'Active', NOW())
             RETURNING user_id
-        `, [username, hashedPassword, full_name, cleanPhone, email || null, orgId, staff_role || 'Staff']);
+        `, [username, hashedPassword, full_name, cleanPhone, orgId, staff_role || 'Staff']);
 
         res.json({ success: true, message: 'Staff created successfully', user_id: result.rows[0].user_id });
     } catch (err) {

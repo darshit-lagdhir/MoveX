@@ -722,10 +722,10 @@ window.MoveXAdmin = (function () {
                     pinEl.placeholder = 'No pincodes assigned';
                 }
 
+                // Removed email logic to match schema
                 const emailEl = document.getElementById('franchise_email');
                 if (emailEl) {
-                    emailEl.value = org.contact_email || '';
-                    emailEl.placeholder = 'Enter contact email';
+                    emailEl.style.display = 'none'; // Hide if exists in DOM
                 }
 
                 const avatarEl = document.getElementById('profile-avatar');
@@ -764,10 +764,7 @@ window.MoveXAdmin = (function () {
                         <option>Warehouse Staff</option>
                     </select>
                 </div>
-                <div>
-                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Email (Optional)</label>
-                    <input type="email" id="staff_email" placeholder="staff@example.com" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
-                </div>
+                <!-- Email removed per user request -->
             </div>
         `, [
             { label: 'Cancel', onClick: c => c() },
@@ -778,8 +775,7 @@ window.MoveXAdmin = (function () {
                         phone: document.getElementById('staff_phone').value,
                         username: document.getElementById('staff_username').value,
                         password: document.getElementById('staff_password').value,
-                        staff_role: document.getElementById('staff_role').value,
-                        email: document.getElementById('staff_email').value
+                        staff_role: document.getElementById('staff_role').value
                     };
 
                     if (!data.full_name || !data.phone || !data.username || !data.password) {
