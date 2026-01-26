@@ -172,9 +172,9 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
         }
 
         // Generate Sequential Tracking ID
-        const maxIdResult = await db.query("SELECT tracking_id FROM shipments WHERE tracking_id LIKE 'MX%' ORDER BY LENGTH(tracking_id) DESC, tracking_id DESC LIMIT 1");
+        const maxIdResult = await db.query("SELECT tracking_id FROM shipments WHERE tracking_id ~ '^MX[0-9]+$' ORDER BY tracking_id DESC LIMIT 1");
 
-        let nextNum = 1;
+        let nextNum = 10001; // Start from 10001 if empty
         if (maxIdResult.rows.length > 0) {
             const lastId = maxIdResult.rows[0].tracking_id;
             const numPart = parseInt(lastId.replace('MX', ''), 10);
@@ -183,7 +183,7 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
             }
         }
 
-        const trackingId = `MX${String(nextNum).padStart(5, '0')}`;
+        const trackingId = `MX${nextNum}`;
 
         // Calculate estimated delivery
         const createdAt = new Date();
@@ -1238,10 +1238,18 @@ router.post('/franchisee/shipments/create', validateSession, requireRole('franch
             return res.status(400).json({ success: false, error: `Receiver pincode ${receiver_pincode} is not serviceable. No franchise covers this area.` });
         }
 
-        // Generate tracking ID
-        const timestamp = Date.now().toString(36).toUpperCase();
-        const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-        const tracking_id = `MX${timestamp}${random}`;
+        // Generate Sequential Tracking ID
+        const maxIdResult = await db.query("SELECT tracking_id FROM shipments WHERE tracking_id ~ '^MX[0-9]+$' ORDER BY tracking_id DESC LIMIT 1");
+
+        let nextNum = 10001;
+        if (maxIdResult.rows.length > 0) {
+            const lastId = maxIdResult.rows[0].tracking_id;
+            const numPart = parseInt(lastId.replace('MX', ''), 10);
+            if (!isNaN(numPart)) {
+                nextNum = numPart + 1;
+            }
+        }
+        const tracking_id = `MX${nextNum}`;
 
         // Build origin/destination address strings
         const origin_address = sender_city ? `${sender_city}, ${sender_pincode}` : sender_pincode;

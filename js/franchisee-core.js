@@ -221,7 +221,25 @@ window.MoveXAdmin = (function () {
                 </div>
             </div>
         `, [
-            { label: 'Print Label', onClick: (c) => { window.open(`../print-label.html?id=${s.tracking_id || s.id}`, '_blank'); } },
+            {
+                label: 'Print Label',
+                onClick: (c) => {
+                    const params = new URLSearchParams({
+                        id: s.tracking_id || s.id,
+                        sender: s.sender_name || s.sender || 'N/A',
+                        receiver: s.receiver_name || 'N/A',
+                        r_addr: s.receiver_address || s.destination || '',
+                        r_phone: s.receiver_phone || '',
+                        origin: s.origin || '',
+                        dest: s.destination || '',
+                        price: s.amount || s.price || 0,
+                        weight: s.weight || '1.0',
+                        r_pincode: s.receiver_pincode || '',
+                        s_addr: s.sender_address || ''
+                    });
+                    window.open(`../admin/print_label.html?${params.toString()}`, '_blank');
+                }
+            },
             { label: 'Close', primary: true, onClick: c => c() }
         ]);
     }
