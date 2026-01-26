@@ -117,8 +117,18 @@
             width: 20px;
             height: 12px;
             background: var(--fk-fill);
-            border: 2px dashed var(--fk-stroke);
+            border: 1.5px solid var(--fk-stroke);
             border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6px;
+        }
+
+        .l-fk::after {
+            content: "---";
+            text-decoration: underline dashed;
+            color: var(--fk-stroke);
         }
 
         .l-diamond {
@@ -201,9 +211,13 @@
 
         .a.fk {
             background: var(--fk-fill);
-            border: 2px dashed var(--fk-stroke);
+            border: 1px solid var(--fk-stroke);
             color: #2E7D32;
             font-weight: 600;
+        }
+
+        .a.fk span {
+            text-decoration: underline dashed;
         }
 
         /* Relationship */
@@ -295,7 +309,7 @@
                 <div class="l-pk"></div><span><u>Primary Key</u></span>
             </div>
             <div class="legend-item">
-                <div class="l-fk"></div><span>Foreign Key (Dashed)</span>
+                <div class="l-fk"></div><span>Foreign Key (Dashed Underline)</span>
             </div>
             <div class="legend-item">
                 <div class="l-diamond"></div><span>Relationship</span>
@@ -343,7 +357,7 @@
             <div class="a" id="a-usr-updated" style="left: 32%; top: 40%;">updated_at</div>
             <div class="a" id="a-usr-staffstatus" style="left: 32%; top: 35%;">staff_status</div>
             <div class="a" id="a-usr-login" style="left: 32%; top: 18%;">last_login_at</div>
-            <div class="a fk" id="a-usr-orgid" style="left: 35%; top: 12%;">organization_id</div>
+            <div class="a fk" id="a-usr-orgid" style="left: 35%; top: 12%;"><span>organization_id</span></div>
 
 
             <!-- ═══════════ BELONGS_TO (Users → Organizations) ═══════════ -->
@@ -363,7 +377,7 @@
             <div class="a" id="a-sess-expires" style="left: 93%; top: 21%;">expires_at</div>
             <div class="a" id="a-sess-created" style="left: 92%; top: 29%;">created_at</div>
             <div class="a" id="a-sess-last" style="left: 86%; top: 35%;">last_accessed_at</div>
-            <div class="a fk" id="a-sess-username" style="left: 77%; top: 35%;">username</div>
+            <div class="a fk" id="a-sess-username" style="left: 77%; top: 35%;"><span>username</span></div>
 
 
             <!-- ═══════════ CREATES (Users → Sessions) ═══════════ -->
@@ -382,7 +396,7 @@
             <div class="a" id="a-pass-expires" style="left: 93%; top: 53%;">expires_at</div>
             <div class="a" id="a-pass-used" style="left: 94%; top: 62%;">used</div>
             <div class="a" id="a-pass-created" style="left: 91%; top: 69%;">created_at</div>
-            <div class="a fk" id="a-pass-username" style="left: 82%; top: 71%;">username</div>
+            <div class="a fk" id="a-pass-username" style="left: 82%; top: 71%;"><span>username</span></div>
 
 
             <!-- ═══════════ REQUESTS (Users → Password_Resets) ═══════════ -->
@@ -400,7 +414,7 @@
             <!-- Left side attrs - moved away from HANDLES line -->
             <div class="a pk" id="a-ship-tracking" style="left: 38%; top: 60%;"><span>tracking_id</span></div>
             <div class="a" id="a-ship-id" style="left: 25%; top: 68%;">shipment_id</div>
-            <div class="a fk" id="a-ship-orgid" style="left: 30%; top: 58%;">organization_id</div>
+            <div class="a fk" id="a-ship-orgid" style="left: 30%; top: 58%;"><span>organization_id</span></div>
             <div class="a" id="a-ship-origin" style="left: 20%; top: 72%;">origin_address</div>
             <div class="a" id="a-ship-weight" style="left: 18%; top: 78%;">weight</div>
             <div class="a" id="a-ship-price" style="left: 18%; top: 85%;">price</div>
@@ -411,7 +425,7 @@
             <div class="a" id="a-ship-currloc" style="left: 34%; top: 92%;">current_location</div>
 
             <!-- Right side attrs - moved away from CREATES line -->
-            <div class="a fk" id="a-ship-creator" style="left: 54%; top: 60%;">creator_username</div>
+            <div class="a fk" id="a-ship-creator" style="left: 54%; top: 60%;"><span>creator_username</span></div>
             <div class="a" id="a-ship-sendername" style="left: 60%; top: 66%;">sender_name</div>
             <div class="a" id="a-ship-senderphone" style="left: 66%; top: 60%;">sender_phone</div>
             <div class="a" id="a-ship-senderaddr" style="left: 72%; top: 66%;">sender_address</div>

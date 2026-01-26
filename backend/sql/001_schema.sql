@@ -181,14 +181,12 @@ CREATE TABLE IF NOT EXISTS shipments (
     -- Sender Details
     sender_name VARCHAR(100),
     sender_phone VARCHAR(20),
-    sender_mobile VARCHAR(20),
     sender_address TEXT,
     sender_pincode VARCHAR(10),
     
     -- Receiver Details
     receiver_name VARCHAR(100),
     receiver_phone VARCHAR(20),
-    receiver_mobile VARCHAR(20),
     receiver_address TEXT,
     receiver_pincode VARCHAR(10),
     

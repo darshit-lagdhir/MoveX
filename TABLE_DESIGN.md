@@ -91,12 +91,10 @@ VALUES: 'active', 'disabled', 'suspended'
 | tracking_id | VARCHAR(50) | PRIMARY KEY, UNIQUE, NOT NULL |
 | sender_name | VARCHAR(100) | — |
 | sender_phone | VARCHAR(20) | — |
-| sender_mobile | VARCHAR(20) | — |
 | sender_address | TEXT | — |
 | sender_pincode | VARCHAR(10) | — |
 | receiver_name | VARCHAR(100) | — |
 | receiver_phone | VARCHAR(20) | — |
-| receiver_mobile | VARCHAR(20) | — |
 | receiver_address | TEXT | — |
 | receiver_pincode | VARCHAR(10) | — |
 | origin_address | TEXT | — |

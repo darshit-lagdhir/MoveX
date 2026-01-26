@@ -69,8 +69,8 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
 
         let queryText = `
             SELECT shipment_id, tracking_id, status,
-    sender_name, sender_mobile, sender_address, sender_pincode,
-    receiver_name, receiver_mobile, receiver_address, receiver_pincode,
+    sender_name, sender_phone, sender_address, sender_pincode,
+    receiver_name, receiver_phone, receiver_address, receiver_pincode,
     origin_address, destination_address,
     price, weight, created_at, updated_at, estimated_delivery
             FROM shipments 
@@ -92,14 +92,14 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
             date: new Date(row.created_at).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }),
             amount: parseFloat(row.price),
             sender: row.sender_name || 'N/A',
-            mobile: row.sender_mobile || 'N/A',
+            mobile: row.sender_phone || 'N/A',
             // Detailed Data for Modal
             sender_name: row.sender_name,
-            sender_mobile: row.sender_mobile,
+            sender_mobile: row.sender_phone,
             sender_address: row.sender_address,
             sender_pincode: row.sender_pincode,
             receiver_name: row.receiver_name,
-            receiver_mobile: row.receiver_mobile,
+            receiver_mobile: row.receiver_phone,
             receiver_address: row.receiver_address,
             receiver_pincode: row.receiver_pincode,
             full_origin: row.origin_address,
@@ -200,8 +200,8 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
         const queryText = `
             INSERT INTO shipments(
         tracking_id,
-        sender_name, sender_mobile, sender_address, sender_pincode,
-        receiver_name, receiver_mobile, receiver_address, receiver_pincode,
+        sender_name, sender_phone, sender_address, sender_pincode,
+        receiver_name, receiver_phone, receiver_address, receiver_pincode,
         origin_address, destination_address,
         price, weight, status, created_at, estimated_delivery
     ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending', $14, $15)
@@ -1047,8 +1047,8 @@ router.get('/franchisee/shipments', validateSession, requireRole('franchisee'), 
         const result = await db.query(`
             SELECT 
                 shipment_id, tracking_id, status,
-                sender_name, sender_mobile, sender_address, sender_pincode,
-                receiver_name, receiver_mobile, receiver_address, receiver_pincode,
+                sender_name, sender_phone, sender_address, sender_pincode,
+                receiver_name, receiver_phone, receiver_address, receiver_pincode,
                 origin_address, destination_address,
                 price, weight,
                 created_at, updated_at, estimated_delivery,
@@ -1066,13 +1066,13 @@ router.get('/franchisee/shipments', validateSession, requireRole('franchisee'), 
             // Sender
             sender_name: row.sender_name,
             sender: row.sender_name,
-            sender_phone: row.sender_mobile,
+            sender_phone: row.sender_phone,
             sender_address: row.sender_address,
             sender_pincode: row.sender_pincode,
             sender_city: row.origin_address ? row.origin_address.split(',')[0].trim() : '',
             // Receiver  
             receiver_name: row.receiver_name,
-            receiver_phone: row.receiver_mobile,
+            receiver_phone: row.receiver_phone,
             receiver_address: row.receiver_address,
             receiver_pincode: row.receiver_pincode,
             receiver_city: row.destination_address ? row.destination_address.split(',')[0].trim() : '',
@@ -1237,8 +1237,8 @@ router.post('/franchisee/shipments/create', validateSession, requireRole('franch
         const result = await db.query(`
             INSERT INTO shipments (
                 tracking_id, status, organization_id, creator_username,
-                sender_name, sender_mobile, sender_address, sender_pincode,
-                receiver_name, receiver_mobile, receiver_address, receiver_pincode,
+                sender_name, sender_phone, sender_address, sender_pincode,
+                receiver_name, receiver_phone, receiver_address, receiver_pincode,
                 origin_address, destination_address,
                 weight, price,
                 created_at, updated_at
@@ -1304,7 +1304,7 @@ router.get('/franchisee/pickup-requests', validateSession, requireRole('franchis
         const requests = result.rows.map(row => ({
             id: row.tracking_id || row.shipment_id,
             customer_name: row.sender_name,
-            customer_phone: row.sender_mobile,
+            customer_phone: row.sender_phone,
             pickup_address: row.sender_address,
             pincode: row.sender_pincode,
             package_type: row.package_type || 'Parcel',
