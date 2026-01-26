@@ -378,11 +378,7 @@ HEALTH_CHECK_KEY=your_secret_key
 | organization_id | BIGINT | FK → organizations(organization_id) |
 | created_at | TIMESTAMPTZ | Booking date |
 
-#### `serviceable_cities`
-| Column | Type | Description |
-|--------|------|-------------|
-| city_id | SERIAL | **PRIMARY KEY** |
-| name | VARCHAR(255) | City Name (e.g. "Mumbai, MH") |
+
 
 ---
 

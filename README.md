@@ -211,7 +211,7 @@ MoveX uses PostgreSQL with the following tables:
 | sessions | session_id | Active login sessions |
 | password_resets | reset_id | Password recovery tokens |
 | shipments | tracking_id | Parcel tracking records |
-| serviceable_cities | city_id | Delivery coverage areas |
+
 
 **See:** `TABLE_DESIGN.md` for complete column-level details and `ERDIAGRAM/index.html` for visual ER diagram.
 

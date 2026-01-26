@@ -223,22 +223,7 @@ CREATE INDEX IF NOT EXISTS idx_shipments_status ON shipments(status);
 CREATE INDEX IF NOT EXISTS idx_shipments_creator ON shipments(creator_username);
 CREATE INDEX IF NOT EXISTS idx_shipments_org ON shipments(organization_id);
 
--- ═══════════════════════════════════════════════════════════════════════════════
--- 7. SERVICEABLE_CITIES TABLE
---    PRIMARY KEY: city_id
---    STANDALONE LOOKUP TABLE (No Foreign Keys)
--- ═══════════════════════════════════════════════════════════════════════════════
 
-CREATE TABLE IF NOT EXISTS serviceable_cities (
-    -- Primary Key
-    city_id SERIAL PRIMARY KEY,
-    
-    -- City Name
-    name VARCHAR(255) NOT NULL,
-    
-    -- Constraints
-    CONSTRAINT serviceable_cities_name_unique UNIQUE (name)
-);
 
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- FOREIGN KEY RELATIONSHIP DIAGRAM
@@ -267,9 +252,5 @@ CREATE TABLE IF NOT EXISTS serviceable_cities (
 --   │   FK: username          │  │   FK: username          │
 --   └─────────────────────────┘  └─────────────────────────┘
 --
---   ┌─────────────────────────┐
---   │   SERVICEABLE_CITIES    │ (Standalone Lookup Table)
---   │   PK: city_id           │
---   └─────────────────────────┘
---
+
 -- ═══════════════════════════════════════════════════════════════════════════════

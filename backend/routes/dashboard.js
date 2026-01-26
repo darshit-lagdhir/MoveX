@@ -707,30 +707,7 @@ o.pincodes LIKE '%,' || $2 || ',%'
     }
 });
 
-// Public API: Get Serviceable Cities
-router.get('/public/serviceable-cities', async (req, res) => {
-    try {
-        const { search } = req.query;
-        let query = 'SELECT name FROM serviceable_cities';
-        let params = [];
 
-        if (search) {
-            query += ' WHERE name ILIKE $1';
-            params.push(`% ${search.trim()}% `);
-        }
-
-        query += ' ORDER BY name ASC LIMIT 50'; // Limit results for performance
-
-        const result = await db.query(query, params);
-        res.json({
-            success: true,
-            cities: result.rows.map(r => r.name)
-        });
-    } catch (err) {
-        console.error("Fetch Cities Error:", err);
-        res.status(500).json({ success: false, error: 'Failed to fetch cities' });
-    }
-});
 
 // --- STAFF MANAGEMENT ---
 

@@ -453,17 +453,13 @@
             <div class="c" style="left: 18%; top: 58%;">N</div>
 
 
-            <!-- ═══════════ SERVICEABLE_CITIES (Standalone) ═══════════ -->
-            <div class="e" id="e-cities" style="left: 2%; top: 52%;">Serviceable_Cities</div>
 
-            <div class="a pk" id="a-cities-id" style="left: 2%; top: 44%;"><span>city_id</span></div>
-            <div class="a" id="a-cities-name" style="left: 10%; top: 44%;">name</div>
 
 
             <!-- Footer -->
             <div class="footer">
                 <strong>PRIMARY KEYS:</strong> username (users), organization_id (organizations), session_id (sessions),
-                reset_id (password_resets), city_id (serviceable_cities), tracking_id (shipments) &nbsp;|&nbsp;
+                reset_id (password_resets), tracking_id (shipments) &nbsp;|&nbsp;
                 <strong>FOREIGN KEYS:</strong> organization_id → organizations, username → users, creator_username →
                 users
             </div>
@@ -525,8 +521,7 @@
                 'a-ship-recvpin', 'a-ship-estdel', 'a-ship-creator', 'a-ship-orgid']
                 .forEach(a => line(a, 'e-shipments'));
 
-            // Cities attrs
-            ['a-cities-id', 'a-cities-name'].forEach(a => line(a, 'e-cities'));
+
 
             // ========== ENTITY RELATIONSHIPS ==========
 
