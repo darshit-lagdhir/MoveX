@@ -219,10 +219,6 @@ window.MoveXAdmin = (function () {
                     <div style="font-size:0.75rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:700;">Created</div>
                     <div>${s.created_at ? new Date(s.created_at).toLocaleString() : '-'}</div>
                 </div>
-                <div>
-                    <div style="font-size:0.75rem; color:var(--text-tertiary); text-transform:uppercase; font-weight:700;">Package Type</div>
-                    <div>${s.package_type || 'Standard'}</div>
-                </div>
             </div>
         `, [
             { label: 'Print Label', onClick: (c) => { window.open(`../print-label.html?id=${s.tracking_id || s.id}`, '_blank'); } },
@@ -298,7 +294,7 @@ window.MoveXAdmin = (function () {
                 </div>
                 <div>
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Sender Phone *</label>
-                    <input type="tel" id="cs_sender_phone" placeholder="+91 9876543210" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
+                    <input type="tel" id="cs_sender_phone" placeholder="10-digit Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
                 <div style="grid-column:span 2;">
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Sender Address *</label>
@@ -306,7 +302,7 @@ window.MoveXAdmin = (function () {
                 </div>
                 <div>
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Sender Pincode *</label>
-                    <input type="text" id="cs_sender_pincode" placeholder="560001" maxlength="6" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
+                    <input type="text" id="cs_sender_pincode" placeholder="6-digit Pincode" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
                 <div>
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Sender City</label>
@@ -322,7 +318,7 @@ window.MoveXAdmin = (function () {
                 </div>
                 <div>
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Receiver Phone *</label>
-                    <input type="tel" id="cs_receiver_phone" placeholder="+91 9876543210" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
+                    <input type="tel" id="cs_receiver_phone" placeholder="10-digit Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
                 <div style="grid-column:span 2;">
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Receiver Address *</label>
@@ -330,7 +326,7 @@ window.MoveXAdmin = (function () {
                 </div>
                 <div>
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Receiver Pincode *</label>
-                    <input type="text" id="cs_receiver_pincode" placeholder="560002" maxlength="6" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
+                    <input type="text" id="cs_receiver_pincode" placeholder="6-digit Pincode" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
                 <div>
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Receiver City</label>
@@ -347,16 +343,6 @@ window.MoveXAdmin = (function () {
                 <div>
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Amount (₹) *</label>
                     <input type="number" id="cs_amount" placeholder="100" min="0" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
-                </div>
-                <div>
-                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Package Type</label>
-                    <select id="cs_package_type" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
-                        <option>Document</option>
-                        <option>Parcel</option>
-                        <option>Fragile</option>
-                        <option>Electronics</option>
-                        <option>Other</option>
-                    </select>
                 </div>
                 <div>
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Contents Description</label>
@@ -381,7 +367,6 @@ window.MoveXAdmin = (function () {
                         receiver_city: document.getElementById('cs_receiver_city').value,
                         weight: document.getElementById('cs_weight').value,
                         amount: document.getElementById('cs_amount').value,
-                        package_type: document.getElementById('cs_package_type').value,
                         contents: document.getElementById('cs_contents').value
                     };
 
@@ -495,7 +480,7 @@ window.MoveXAdmin = (function () {
                                     <div style="font-size:0.85rem;">${r.pickup_address || ''}</div>
                                     <div style="font-size:0.75rem; color:var(--text-tertiary);">${r.pincode || ''}</div>
                                 </td>
-                                <td>${r.package_type || 'Parcel'} - ${r.weight || 0} kg</td>
+                                <td>${r.weight || 0} kg</td>
                                 <td><span class="status-badge status-pending">${r.status || 'Pending'}</span></td>
                                 <td>
                                     <button class="btn-primary approve-pickup" data-id="${r.id}" style="padding:4px 12px; font-size:0.8rem; margin-right:4px;">Approve</button>

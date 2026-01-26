@@ -595,8 +595,7 @@ window.MoveXAdmin = (function () {
                                         <div style="font-size: 0.75rem; color: var(--text-tertiary);">${row.sender_type || 'Individual'}</div>
                                     </td>
                                     <td>
-                                        <span class="status-badge status-default">${row.type}</span>
-                                        <span style="font-size: 0.75rem; color: var(--text-tertiary); margin-left: 6px;">${row.weight} kg</span>
+                                        <div style="font-weight: 600; color: var(--text-primary); text-transform: uppercase; font-size: 0.85rem;">${row.weight} kg</div>
                                     </td>
                                     <td style="max-width: 250px;">
                                         <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${row.location}">${row.location}</div>
@@ -2002,11 +2001,11 @@ window.MoveXAdmin = (function () {
                 </div>
                 <div>
                     <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Mobile <span style="color:red">*</span></label>
-                    <input type="tel" id="ship_sender_mobile" placeholder="+91 9876543210" style="width:100%;" autocomplete="off">
+                    <input type="tel" id="ship_sender_mobile" placeholder="10-digit Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%;" autocomplete="off">
                 </div>
                 <div>
                     <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Pincode <span style="color:red">*</span></label>
-                    <input type="text" id="ship_sender_pincode" placeholder="6-digit Pincode" maxlength="6" style="width:100%;" autocomplete="off">
+                    <input type="text" id="ship_sender_pincode" placeholder="6-digit Pincode" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%;" autocomplete="off">
                 </div>
                 <div style="grid-column: span 2;">
                     <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Address <span style="color:red">*</span></label>
@@ -2023,11 +2022,11 @@ window.MoveXAdmin = (function () {
                 </div>
                 <div>
                     <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Mobile <span style="color:red">*</span></label>
-                    <input type="tel" id="ship_receiver_mobile" placeholder="+91 9876543210" style="width:100%;" autocomplete="off">
+                    <input type="tel" id="ship_receiver_mobile" placeholder="10-digit Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%;" autocomplete="off">
                 </div>
                 <div>
                     <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Pincode <span style="color:red">*</span></label>
-                    <input type="text" id="ship_receiver_pincode" placeholder="6-digit Pincode" maxlength="6" style="width:100%;" autocomplete="off">
+                    <input type="text" id="ship_receiver_pincode" placeholder="6-digit Pincode" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%;" autocomplete="off">
                 </div>
                 <div style="grid-column: span 2;">
                     <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Address <span style="color:red">*</span></label>

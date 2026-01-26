@@ -141,9 +141,9 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
             return res.status(400).json({ success: false, error: 'Names must contain only letters' });
         }
 
-        const mobileRegex = /^[0-9+]+$/;
+        const mobileRegex = /^[0-9]{10}$/;
         if (!mobileRegex.test(sender_mobile) || !mobileRegex.test(receiver_mobile)) {
-            return res.status(400).json({ success: false, error: 'Mobile numbers must contain only numbers and +' });
+            return res.status(400).json({ success: false, error: 'Mobile numbers must be exactly 10 digits' });
         }
 
         const pincodeRegex = /^[0-9]{6}$/;
@@ -190,7 +190,7 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
             }
         }
 
-        const trackingId = `MX${String(nextNum).padStart(5, '0')} `;
+        const trackingId = `MX${String(nextNum).padStart(5, '0')}`;
 
         // Calculate estimated delivery
         const createdAt = date ? new Date(date) : new Date();
@@ -1091,7 +1091,6 @@ router.get('/franchisee/shipments', validateSession, requireRole('franchisee'), 
             amount: parseFloat(row.price || 0),
             price: parseFloat(row.price || 0),
             weight: parseFloat(row.weight || 0),
-            package_type: row.package_type || 'Standard',
             contents: row.contents || '',
             // Dates
             created_at: row.created_at,
@@ -1211,6 +1210,16 @@ router.post('/franchisee/shipments/create', validateSession, requireRole('franch
             return res.status(400).json({ success: false, error: 'Missing required fields' });
         }
 
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phoneRegex.test(sender_phone) || !phoneRegex.test(receiver_phone)) {
+            return res.status(400).json({ success: false, error: 'Phone numbers must be exactly 10 digits' });
+        }
+
+        const pincodeRegex = /^[0-9]{6}$/;
+        if (!pincodeRegex.test(sender_pincode) || !pincodeRegex.test(receiver_pincode)) {
+            return res.status(400).json({ success: false, error: 'Pincodes must be exactly 6 digits' });
+        }
+
         // Check if pincodes are serviceable
         const senderPincodeCheck = await db.query(`
             SELECT organization_id FROM organizations 
@@ -1315,7 +1324,6 @@ router.get('/franchisee/pickup-requests', validateSession, requireRole('franchis
             customer_phone: row.sender_phone,
             pickup_address: row.sender_address,
             pincode: row.sender_pincode,
-            package_type: row.package_type || 'Parcel',
             weight: row.weight || 0,
             status: row.status || 'pending',
             created_at: row.created_at
