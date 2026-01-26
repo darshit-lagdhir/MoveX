@@ -1989,108 +1989,101 @@ window.MoveXAdmin = (function () {
 
     function showCreateShipmentModal() {
         createModal('Create New Shipment', `
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
-                
-                <!-- Sender Section -->
-                <div style="grid-column: span 2; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 0.5rem;">
-                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.02em;">SENDER DETAILS</div>
-                </div>
-                <div style="grid-column: span 2;">
-                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Name <span style="color:red">*</span></label>
-                    <input type="text" id="ship_sender_name" placeholder="Full Name" style="width:100%;" autocomplete="off">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+                <!-- SENDER SECTION -->
+                <div style="grid-column:span 2; padding-bottom:0.5rem; border-bottom:1px solid var(--border-subtle);">
+                    <div style="font-weight:700; color:var(--brand-primary);">SENDER DETAILS</div>
                 </div>
                 <div>
-                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Mobile <span style="color:red">*</span></label>
-                    <input type="tel" id="ship_sender_mobile" placeholder="10-digit Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%;" autocomplete="off">
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Sender Name *</label>
+                    <input type="text" id="ship_sender_name" placeholder="Full name" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
                 <div>
-                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Pincode <span style="color:red">*</span></label>
-                    <input type="text" id="ship_sender_pincode" placeholder="6-digit Pincode" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%;" autocomplete="off">
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Sender Phone *</label>
+                    <input type="tel" id="ship_sender_phone" placeholder="10-digit Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
-                <div style="grid-column: span 2;">
-                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Sender Address <span style="color:red">*</span></label>
-                    <textarea id="ship_sender_address" placeholder="Complete address" rows="2" style="width:100%; resize: vertical;"></textarea>
+                <div style="grid-column:span 2;">
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Sender Address *</label>
+                    <textarea id="ship_sender_address" placeholder="Complete pickup address" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px; min-height:60px;"></textarea>
+                </div>
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Sender Pincode *</label>
+                    <input type="text" id="ship_sender_pincode" placeholder="6-digit Pincode" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
+                </div>
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Sender City</label>
+                    <input type="text" id="ship_sender_city" placeholder="City name" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
 
-                <!-- Receiver Section -->
-                <div style="grid-column: span 2; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 0.5rem; margin-top: 0.5rem;">
-                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.02em;">RECEIVER DETAILS</div>
-                </div>
-                <div style="grid-column: span 2;">
-                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Name <span style="color:red">*</span></label>
-                    <input type="text" id="ship_receiver_name" placeholder="Full Name" style="width:100%;" autocomplete="off">
+                <!-- RECEIVER SECTION -->
+                <div style="grid-column:span 2; padding:0.5rem 0; border-bottom:1px solid var(--border-subtle); margin-top:1rem;">
+                    <div style="font-weight:700; color:var(--brand-primary);">RECEIVER DETAILS</div>
                 </div>
                 <div>
-                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Mobile <span style="color:red">*</span></label>
-                    <input type="tel" id="ship_receiver_mobile" placeholder="10-digit Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%;" autocomplete="off">
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Receiver Name *</label>
+                    <input type="text" id="ship_receiver_name" placeholder="Full name" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
                 <div>
-                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Pincode <span style="color:red">*</span></label>
-                    <input type="text" id="ship_receiver_pincode" placeholder="6-digit Pincode" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%;" autocomplete="off">
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Receiver Phone *</label>
+                    <input type="tel" id="ship_receiver_phone" placeholder="10-digit Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
-                <div style="grid-column: span 2;">
-                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Receiver Address <span style="color:red">*</span></label>
-                    <textarea id="ship_receiver_address" placeholder="Complete address" rows="2" style="width:100%; resize: vertical;"></textarea>
+                <div style="grid-column:span 2;">
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Receiver Address *</label>
+                    <textarea id="ship_receiver_address" placeholder="Complete delivery address" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px; min-height:60px;"></textarea>
+                </div>
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Receiver Pincode *</label>
+                    <input type="text" id="ship_receiver_pincode" placeholder="6-digit Pincode" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
+                </div>
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Receiver City</label>
+                    <input type="text" id="ship_receiver_city" placeholder="City name" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
 
-                <!-- Shipment Logisitcs -->
-                <div style="grid-column: span 2; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 0.5rem; margin-top: 0.5rem;">
-                     <div style="font-size: 0.95rem; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.02em;">SHIPMENT INFO</div>
-                </div>
-                <div style="position: relative;">
-                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Origin City <span style="color:red">*</span></label>
-                    <input type="text" id="loc_origin_val" placeholder="Select City" style="width:100%;" autocomplete="new-password" name="no-fill-origin">
-                </div>
-                <div style="position: relative;">
-                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Destination City <span style="color:red">*</span></label>
-                    <input type="text" id="loc_dest_val" placeholder="Select City" style="width:100%;" autocomplete="new-password" name="no-fill-destination">
+                <!-- PACKAGE DETAILS -->
+                <div style="grid-column:span 2; padding:0.5rem 0; border-bottom:1px solid var(--border-subtle); margin-top:1rem;">
+                    <div style="font-weight:700; color:var(--brand-primary);">PACKAGE DETAILS</div>
                 </div>
                 <div>
-                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Amount (₹) <span style="color:red">*</span></label>
-                    <input type="number" id="ship_amount" placeholder="0.00" style="width:100%;" autocomplete="off">
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Weight (kg) *</label>
+                    <input type="number" id="ship_weight" placeholder="0.5" step="0.1" min="0" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
                 <div>
-                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Weight (Kg) <span style="color:red">*</span></label>
-                    <input type="number" id="ship_weight" placeholder="1.0" step="0.1" style="width:100%;" autocomplete="off">
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Amount (₹) *</label>
+                    <input type="number" id="ship_amount" placeholder="100" min="0" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
-                <div style="grid-column: span 2;">
-                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600;">Ship Date <span style="color:red">*</span></label>
-                    <input type="date" id="ship_date" style="width:100%;">
+                <div style="grid-column:span 2;">
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Contents Description</label>
+                    <input type="text" id="ship_contents" placeholder="e.g. Books, Clothes" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
             </div>
         `, [
             { label: 'Cancel', onClick: (close) => close() },
             {
                 label: 'Create Shipment', primary: true, onClick: async (close) => {
-                    const sender_name = document.getElementById('ship_sender_name').value.trim();
-                    const sender_mobile = document.getElementById('ship_sender_mobile').value.trim();
-                    const sender_address = document.getElementById('ship_sender_address').value.trim();
-                    const sender_pincode = document.getElementById('ship_sender_pincode').value.trim();
+                    const payload = {
+                        sender_name: document.getElementById('ship_sender_name').value.trim(),
+                        sender_phone: document.getElementById('ship_sender_phone').value.trim(),
+                        sender_address: document.getElementById('ship_sender_address').value.trim(),
+                        sender_pincode: document.getElementById('ship_sender_pincode').value.trim(),
+                        sender_city: document.getElementById('ship_sender_city').value.trim(),
+                        receiver_name: document.getElementById('ship_receiver_name').value.trim(),
+                        receiver_phone: document.getElementById('ship_receiver_phone').value.trim(),
+                        receiver_address: document.getElementById('ship_receiver_address').value.trim(),
+                        receiver_pincode: document.getElementById('ship_receiver_pincode').value.trim(),
+                        receiver_city: document.getElementById('ship_receiver_city').value.trim(),
+                        price: document.getElementById('ship_amount').value.trim(),
+                        weight: document.getElementById('ship_weight').value.trim(),
+                        contents: document.getElementById('ship_contents').value.trim()
+                    };
 
-                    const receiver_name = document.getElementById('ship_receiver_name').value.trim();
-                    const receiver_mobile = document.getElementById('ship_receiver_mobile').value.trim();
-                    const receiver_address = document.getElementById('ship_receiver_address').value.trim();
-                    const receiver_pincode = document.getElementById('ship_receiver_pincode').value.trim();
-
-                    const origin = document.getElementById('loc_origin_val').dataset.value || document.getElementById('loc_origin_val').value;
-                    const destination = document.getElementById('loc_dest_val').dataset.value || document.getElementById('loc_dest_val').value;
-                    const price = document.getElementById('ship_amount').value.trim();
-                    const weight = document.getElementById('ship_weight').value.trim();
-                    const date = document.getElementById('ship_date').value;
-
-                    if (!sender_name || !sender_mobile || !sender_address || !sender_pincode ||
-                        !receiver_name || !receiver_mobile || !receiver_address || !receiver_pincode ||
-                        !origin || !destination || !price || !weight || !date) {
-                        return showToast('All fields are mandatory', 'error');
+                    if (!payload.sender_name || !payload.sender_phone || !payload.sender_address || !payload.sender_pincode ||
+                        !payload.receiver_name || !payload.receiver_phone || !payload.receiver_address || !payload.receiver_pincode ||
+                        !payload.price || !payload.weight) {
+                        return showToast('Please fill all required fields', 'error');
                     }
 
                     try {
-                        const payload = {
-                            sender_name, sender_mobile, sender_address, sender_pincode,
-                            receiver_name, receiver_mobile, receiver_address, receiver_pincode,
-                            origin, destination, price, weight, date
-                        };
-
                         const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
                         const token = session.data?.token;
                         const headers = { 'Content-Type': 'application/json' };
@@ -2119,9 +2112,6 @@ window.MoveXAdmin = (function () {
                 }
             }
         ]);
-
-        initCityPicker('loc_origin_val');
-        initCityPicker('loc_dest_val');
     }
 
 

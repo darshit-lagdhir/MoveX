@@ -123,27 +123,21 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
 router.post('/admin/shipments/create', validateSession, requireRole('admin'), async (req, res) => {
     try {
         const {
-            sender_name, sender_mobile, sender_address, sender_pincode,
-            receiver_name, receiver_mobile, receiver_address, receiver_pincode,
-            origin, destination, price, weight, date
+            sender_name, sender_phone, sender_address, sender_pincode, sender_city,
+            receiver_name, receiver_phone, receiver_address, receiver_pincode, receiver_city,
+            price, weight, contents
         } = req.body;
 
         // Mandatory Field Check
-        if (!sender_name || !sender_mobile || !sender_address || !sender_pincode ||
-            !receiver_name || !receiver_mobile || !receiver_address || !receiver_pincode ||
-            !origin || !destination || !price) {
+        if (!sender_name || !sender_phone || !sender_address || !sender_pincode ||
+            !receiver_name || !receiver_phone || !receiver_address || !receiver_pincode ||
+            !price || !weight) {
             return res.status(400).json({ success: false, error: 'All fields are mandatory' });
         }
 
-        // Validate formats
-        const nameRegex = /^[a-zA-Z\s]+$/;
-        if (!nameRegex.test(sender_name) || !nameRegex.test(receiver_name)) {
-            return res.status(400).json({ success: false, error: 'Names must contain only letters' });
-        }
-
-        const mobileRegex = /^[0-9]{10}$/;
-        if (!mobileRegex.test(sender_mobile) || !mobileRegex.test(receiver_mobile)) {
-            return res.status(400).json({ success: false, error: 'Mobile numbers must be exactly 10 digits' });
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phoneRegex.test(sender_phone) || !phoneRegex.test(receiver_phone)) {
+            return res.status(400).json({ success: false, error: 'Phone numbers must be exactly 10 digits' });
         }
 
         const pincodeRegex = /^[0-9]{6}$/;
@@ -156,7 +150,7 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
             return res.status(400).json({ success: false, error: 'Amount must be a valid number' });
         }
 
-        // Check if pincodes are serviceable (at least one franchise covers them)
+        // Check if pincodes are serviceable
         const senderPincodeCheck = await db.query(`
             SELECT organization_id FROM organizations 
             WHERE status = 'active' AND pincodes LIKE '%' || $1 || '%'
@@ -178,7 +172,6 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
         }
 
         // Generate Sequential Tracking ID
-        // 1. Get the latest tracking ID that matches the MX pattern
         const maxIdResult = await db.query("SELECT tracking_id FROM shipments WHERE tracking_id LIKE 'MX%' ORDER BY LENGTH(tracking_id) DESC, tracking_id DESC LIMIT 1");
 
         let nextNum = 1;
@@ -193,27 +186,31 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
         const trackingId = `MX${String(nextNum).padStart(5, '0')}`;
 
         // Calculate estimated delivery
-        const createdAt = date ? new Date(date) : new Date();
+        const createdAt = new Date();
         const deliveryDate = new Date(createdAt);
         deliveryDate.setDate(deliveryDate.getDate() + Math.floor(Math.random() * 4) + 2);
 
+        // Build addresses
+        const origin_address = sender_city ? `${sender_city}, ${sender_pincode}` : sender_pincode;
+        const destination_address = receiver_city ? `${receiver_city}, ${receiver_pincode}` : receiver_pincode;
+
         const queryText = `
             INSERT INTO shipments(
-        tracking_id,
-        sender_name, sender_phone, sender_address, sender_pincode,
-        receiver_name, receiver_phone, receiver_address, receiver_pincode,
-        origin_address, destination_address,
-        price, weight, status, created_at, estimated_delivery
-    ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending', $14, $15)
+                tracking_id,
+                sender_name, sender_phone, sender_address, sender_pincode,
+                receiver_name, receiver_phone, receiver_address, receiver_pincode,
+                origin_address, destination_address,
+                price, weight, contents, status, created_at, estimated_delivery
+            ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'pending', NOW(), $15)
             RETURNING shipment_id, tracking_id
-    `;
+        `;
 
         const values = [
             trackingId,
-            sender_name, sender_mobile, sender_address, sender_pincode,
-            receiver_name, receiver_mobile, receiver_address, receiver_pincode,
-            origin, destination,
-            parseFloat(price), parseFloat(weight || 1.0), createdAt, deliveryDate
+            sender_name, sender_phone, sender_address, sender_pincode,
+            receiver_name, receiver_phone, receiver_address, receiver_pincode,
+            origin_address, destination_address,
+            parseFloat(price), parseFloat(weight || 1.0), contents || '', deliveryDate
         ];
 
         const result = await db.query(queryText, values);
