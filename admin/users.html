@@ -130,8 +130,8 @@
                 <div class="nav-right" style="display: flex; align-items: center; gap: 1.25rem;">
                     <div class="action-icons"
                         style="display: flex; align-items: center; gap: 1rem; color: var(--text-secondary);">
-                        
-                        
+
+
                     </div>
                     <div class="user-profile"
                         style="display: flex; align-items: center; gap: 0.75rem; border-left: 1px solid var(--border-default); padding-left: 1.25rem; cursor: pointer;">
@@ -179,25 +179,24 @@
                     </div>
 
                     <div class="card" style="padding: 0;">
-                        <div
-                            style="padding: 1.5rem; border-bottom: 1px solid var(--border-subtle); display: flex; gap: 1rem; align-items: center;">
-                            <div style="position: relative; flex: 1; max-width: 400px;">
+                        <div class="search-bar-container"
+                            style="padding: 1.5rem; border-bottom: 1px solid var(--border-subtle);">
+                            <div style="position: relative; flex: 2; height: 46px;">
                                 <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary);"
                                     width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
-                                <input type="text" placeholder="Search by username, name, or ID..."
+                                <input type="text" placeholder="Search by username, name, or ID..." class="search-input"
                                     style="width: 100%; padding-left: 3rem;">
                             </div>
-                            <select id="userRoleFilter">
+                            <select id="userRoleFilter" class="search-select">
                                 <option value="">All Roles</option>
                                 <option value="user">User</option>
-
                                 <option value="franchisee">Franchisee</option>
                                 <option value="admin">Admin</option>
                             </select>
-                            <select id="userStatusFilter">
+                            <select id="userStatusFilter" class="search-select">
                                 <option value="">All Status</option>
                                 <option value="active">Active</option>
                                 <option value="disabled">Disabled</option>
