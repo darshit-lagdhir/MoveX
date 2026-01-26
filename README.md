@@ -97,7 +97,6 @@ movex/
 ├── styles/                # CSS design files
 ├── ERDIAGRAM/             # ER Diagram visualization (Chen notation)
 ├── index.html             # Main login page
-├── TABLE_DESIGN.md        # Complete database table design
 ├── SETUP.md               # Guide for real online setup
 ├── API.md                 # Detailed server connection guide
 ├── ARCHITECTURE.md        # How the system is built
@@ -213,7 +212,7 @@ MoveX uses PostgreSQL with the following tables:
 | shipments | tracking_id | Parcel tracking records |
 
 
-**See:** `TABLE_DESIGN.md` for complete column-level details and `ERDIAGRAM/index.html` for visual ER diagram.
+**See:** `ERDIAGRAM/index.html` for visual ER diagram.
 
 ### Supabase (Recommended for Production)
 
@@ -308,7 +307,6 @@ Configuring the connection between them is handled via `js/config.js` (Frontend)
 
 ## 📄 Documentation
 
-- **[TABLE_DESIGN.md](./TABLE_DESIGN.md)** - Complete database table structures
 - **[ERDIAGRAM/index.html](./ERDIAGRAM/index.html)** - Visual ER Diagram (Chen Notation)
 - **[SETUP.md](./SETUP.md)** - Full guide for real setup.
 - **[API.md](./API.md)** - Full list of server paths and data.

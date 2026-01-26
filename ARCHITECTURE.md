@@ -58,7 +58,6 @@ MoveX uses table-specific column names for clarity:
 | **serviceable_cities** | city_id | name |
 
 **Visual Reference:** See `ERDIAGRAM/index.html` for Chen Notation ER Diagram.
-**Complete Schema:** See `TABLE_DESIGN.md` for detailed column specifications.
 
 ---
 
@@ -163,7 +162,6 @@ MoveX is designed to scale horizontally.
 
 | Document | Description |
 |----------|-------------|
-| `TABLE_DESIGN.md` | Complete database table structures |
 | `ERDIAGRAM/index.html` | Visual ER Diagram (Chen Notation) |
 | `backend/sql/001_schema.sql` | SQL schema definitions |
 | `API.md` | REST API documentation |

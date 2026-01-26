@@ -535,6 +535,11 @@ cd backend && npm start
 
 ## Appendix C: History (Changelog)
 
+### v1.4.0 (January 26, 2026) - Label Unification & Schema update
+- **Database**: Removed `email` column from `users` table as per user request to streamline registration.
+- **Labels**: Unified "Print Label" format for both Admin and Franchisee dashboards (removed + prefix, standardized layout).
+- **Bug Fixes**: Fixed password hashing issue during staff creation.
+
 ### v1.3.0 (January 18, 2026) - Franchisee Refinement & UI Clean-up
 - **UI**: Completely removed Dark Theme (CSS, JS, Toggles) - Application is now Light Mode only.
 - **UI**: Removed "Notifications" button from Admin Header and all Dashboard pages.
@@ -555,8 +560,7 @@ cd backend && npm start
   - `shipments.id` → `shipment_id`
   - `serviceable_cities.id` → `city_id`
 - **Database**: Made `tracking_id` the PRIMARY KEY of `shipments` table
-- **Documentation**: Added `TABLE_DESIGN.md` with complete schema
-- **Documentation**: Added `ERDIAGRAM/index.html` with Chen Notation ER Diagram
+- **Documentation**: Updated `ERDIAGRAM/index.html` references.
 - **ER Diagram**: Foreign keys shown with dashed borders
 
 ### v1.1.1 (January 9, 2026)
