@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard - MoveX</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="preload" href="../styles/base.css?v=4" as="style">
+    <link rel="preload" href="../styles/components.css?v=4" as="style">
+    <link rel="preload" href="../styles/admin.css?v=4" as="style">
+    <link rel="stylesheet" href="../styles/base.css?v=4">
+    <link rel="stylesheet" href="../styles/components.css?v=4">
+    <link rel="stylesheet" href="../styles/admin.css?v=4">
+    <script src="../js/config.js?v=1"></script>
+    <script src="../js/dashboard-guard.js?v=3"></script>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header" style="height: 60px; border-bottom: 1px solid var(--border-default);">
+                <a href="/staff/dashboard.html" class="nav-logo">
+                    <span class="logo-text">MoveX</span>
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-group-title">Home</div>
+                <a href="dashboard.html" class="nav-item active">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                        </path>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+
+                <div class="nav-group-title">Operations</div>
+                <a href="assignments.html" class="nav-item">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+                        </path>
+                    </svg>
+                    <span>My Tasks</span>
+                </a>
+
+
+                <div class="nav-group-title">Account</div>
+                <a href="profile.html" class="nav-item">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    <span>My Profile</span>
+                </a>
+            </nav>
+        </aside>
+
+        <div class="main-content">
+            <header class="top-nav"
+                style="background: var(--surface-primary); border-bottom: 1px solid var(--border-default); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; height: 60px;">
+                <div class="nav-left" style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="toggle-btn" id="sidebarToggle" title="Toggle Sidebar">
+                        <svg fill="none" width="20" height="20" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                    <h2 id="headerTitle" style="font-size: 1.1rem; font-weight: 700; margin: 0; display: none;">
+                        Staff Dashboard</h2>
+                </div>
+                <div class="nav-right" style="display: flex; align-items: center; gap: 1.25rem;">
+                    <div class="user-profile"
+                        style="display: flex; align-items: center; gap: 0.75rem; border-left: 1px solid var(--border-default); padding-left: 1.25rem; cursor: pointer;">
+                        <div style="text-align: right;">
+                            <div id="topBarUserName" style="font-weight: 600; font-size: 0.875rem;">Loading...</div>
+                            <div id="topBarRole"
+                                style="font-size: 0.75rem; color: var(--text-secondary); text-transform: capitalize;">
+                                Staff
+                            </div>
+                        </div>
+                        <div class="avatar"
+                            style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); border: 2px solid var(--surface-primary);">
+                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#ffffff">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <button class="logout-btn" onclick="window.MoveXLogout()" title="Logout"
+                        style="background:none; border:none; cursor:pointer; color: var(--text-secondary); padding: 4px; display:flex;">
+                        <svg fill="none" width="20" height="20" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <main>
+                <div class="dashboard-container">
+                    <div class="page-header">
+                        <h1 class="page-title">Operations Overview</h1>
+                        <p class="page-subtitle">Your Hub Activity & Daily Tasks</p>
+                    </div>
+
+                    <!-- KPI Cards -->
+                    <div class="grid-kpi" style="grid-template-columns: repeat(3, 1fr);">
+                        <div class="card">
+                            <div class="card-title">Pending At Hub</div>
+                            <div class="card-value" id="kpi-pending-hub">-</div>
+                            <div class="card-trend"><span>Requires Action</span></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">Out For Delivery</div>
+                            <div class="card-value" id="kpi-out-delivery">-</div>
+                            <div class="card-trend"><span>In Progress</span></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">Delivered Today</div>
+                            <div class="card-value" id="kpi-delivered-today">-</div>
+                            <div class="card-trend"><span style="color: var(--success);">Completed</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div style="margin-top: 2rem;">
+                        <h3 style="margin: 0 0 1rem; font-size: 1.1rem; font-weight: 700;">Quick Actions</h3>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <a href="assignments.html" class="btn-secondary"
+                                style="text-decoration: none; padding: 1rem 2rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; gap: 0.75rem; background: var(--surface-secondary); color: var(--text-primary);">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+                                    </path>
+                                </svg>
+                                View My Tasks
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/staff-layout.js"></script>
+    <script src="../js/staff-core.js"></script>
+    <script>
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load stats
+            if (window.StaffCore) window.StaffCore.loadStats();
+        });
+    </script>
+</body>
+
+</html>

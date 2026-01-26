@@ -8,10 +8,10 @@
     const API_BASE = window.MoveXConfig ? window.MoveXConfig.API_URL : 'https://movex-ffqu.onrender.com';
 
     const DASHBOARDS = {
-        admin: '/admin/dashboard',
-        franchisee: '/franchisee/dashboard',
-        staff: '/dashboards/staff',
-        user: '/dashboards/user'
+        admin: '/admin/dashboard.html',
+        franchisee: '/franchisee/dashboard.html',
+        staff: '/staff/dashboard.html',
+        user: '/dashboards/user.html'
     };
 
     const ROLE_HIERARCHY = {
@@ -26,7 +26,9 @@
         'reports': ['admin'],
         'settings': ['admin', 'franchisee', 'staff', 'user'],
         'franchisee': ['admin', 'franchisee'],
-        'user': ['admin', 'franchisee', 'staff', 'user']
+        'user': ['admin', 'franchisee', 'staff', 'user'],
+        'assignments': ['staff', 'admin'],
+        'profile': ['staff', 'admin', 'franchisee', 'user']
     };
 
     function getCurrentPage() {

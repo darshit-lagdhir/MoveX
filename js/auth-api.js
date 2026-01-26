@@ -24,7 +24,7 @@
           const dashboards = {
             admin: '/admin/dashboard.html',
             franchisee: '/franchisee/dashboard.html',
-            staff: '/dashboards/staff.html',
+            staff: '/staff/dashboard.html',
             user: '/dashboards/user.html'
           };
 
@@ -281,7 +281,7 @@
     const dashboards = {
       admin: 'admin/dashboard',
       franchisee: 'franchisee/dashboard',
-      staff: 'dashboards/staff',
+      staff: 'staff/dashboard',
       user: 'dashboards/user'
     };
 
@@ -354,7 +354,7 @@
           const dashboards = {
             admin: 'admin/dashboard',
             franchisee: 'franchisee/dashboard',
-            staff: 'dashboards/staff',
+            staff: 'staff/dashboard',
             user: 'dashboards/user'
           };
           const target = dashboards[user.role] || 'dashboards/user';

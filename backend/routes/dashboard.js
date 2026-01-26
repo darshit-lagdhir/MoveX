@@ -1505,6 +1505,134 @@ router.post('/franchisee/staff/status', validateSession, requireRole('franchisee
     }
 });
 
+// ═══════════════════════════════════════════════════════════
+//  STAFF DASHBOARD OPERATIONS
+// ═══════════════════════════════════════════════════════════
+
+// Get Staff Stats
+router.get('/staff/stats', validateSession, requireRole('staff'), async (req, res) => {
+    try {
+        const orgId = req.organization?.id;
+
+        // If staff is not linked to an org, return empty stats
+        if (!orgId) {
+            return res.json({
+                success: true,
+                stats: {
+                    pendingAtHub: 0,
+                    outForDelivery: 0,
+                    deliveredToday: 0
+                }
+            });
+        }
+
+        const pendingAtHubRes = await db.query("SELECT COUNT(*) FROM shipments WHERE organization_id = $1 AND status IN ('pending', 'in_transit', 'picked_up')", [orgId]);
+        const outForDeliveryRes = await db.query("SELECT COUNT(*) FROM shipments WHERE organization_id = $1 AND status = 'out_for_delivery'", [orgId]);
+
+        // Delivered TODAY by this hub
+        const deliveredTodayRes = await db.query("SELECT COUNT(*) FROM shipments WHERE organization_id = $1 AND status = 'delivered' AND updated_at >= CURRENT_DATE", [orgId]);
+
+        res.json({
+            success: true,
+            stats: {
+                pendingAtHub: parseInt(pendingAtHubRes.rows[0].count),
+                outForDelivery: parseInt(outForDeliveryRes.rows[0].count),
+                deliveredToday: parseInt(deliveredTodayRes.rows[0].count)
+            }
+        });
+    } catch (err) {
+        console.error("Staff Stats Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch stats' });
+    }
+});
+
+// Get Shipments at Hub (Active)
+router.get('/staff/shipments', validateSession, requireRole('staff'), async (req, res) => {
+    try {
+        const orgId = req.organization?.id;
+        if (!orgId) return res.json({ success: true, shipments: [] });
+
+        const result = await db.query(`
+            SELECT tracking_id, sender_name, receiver_name, origin_address, destination_address, status, created_at, weight
+            FROM shipments
+            WHERE organization_id = $1 AND status NOT IN ('delivered', 'cancelled', 'returned')
+            ORDER BY created_at ASC
+        `, [orgId]);
+
+        const shipments = result.rows.map(row => ({
+            id: row.tracking_id,
+            tracking_id: row.tracking_id,
+            sender: row.sender_name,
+            receiver: row.receiver_name,
+            origin: row.origin_address,
+            destination: row.destination_address,
+            status: row.status.replace(/_/g, ' ').toUpperCase(),
+            date: row.created_at,
+            weight: row.weight
+        }));
+
+        res.json({ success: true, shipments });
+    } catch (err) {
+        console.error("Staff Shipments Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch shipments' });
+    }
+});
+
+// Search Shipment by Tracking ID (For Scanning)
+router.get('/staff/search/:id', validateSession, requireRole('staff'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await db.query(`
+            SELECT * FROM shipments WHERE tracking_id = $1
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Shipment not found' });
+        }
+
+        const s = result.rows[0];
+        const shipment = {
+            id: s.tracking_id,
+            tracking_id: s.tracking_id,
+            sender: s.sender_name,
+            receiver: s.receiver_name,
+            origin: s.origin_address,
+            destination: s.destination_address,
+            status: s.status,
+            weight: s.weight,
+            price: s.price,
+            created_at: s.created_at
+        };
+
+        res.json({ success: true, shipment });
+    } catch (err) {
+        console.error("Staff Search Error:", err);
+        res.status(500).json({ success: false, error: 'Search failed' });
+    }
+});
+
+// Update Status (Staff)
+router.post('/staff/shipments/update-status', validateSession, requireRole('staff'), async (req, res) => {
+    try {
+        const { tracking_id, status } = req.body;
+
+        if (!tracking_id || !status) {
+            return res.status(400).json({ success: false, error: 'Tracking ID and Status required' });
+        }
+
+        await db.query(`
+            UPDATE shipments 
+            SET status = $1, updated_at = NOW() 
+            WHERE tracking_id = $2
+        `, [status.toLowerCase().replace(' ', '_'), tracking_id]);
+
+        res.json({ success: true, message: 'Status updated successfully' });
+    } catch (err) {
+        console.error("Staff Update Status Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to update status' });
+    }
+});
+
 module.exports = router;
 
 

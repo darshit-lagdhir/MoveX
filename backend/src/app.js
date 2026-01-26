@@ -131,7 +131,8 @@ const protectStaticDashboards = async (req, res, next) => {
     'admin/dashboard': ['admin'],
     'franchisee/dashboard': ['admin', 'franchisee'],
     'dashboards/franchisee': ['admin', 'franchisee'], // Legacy path support
-    'dashboards/staff': ['admin', 'franchisee', 'staff'],
+    'dashboards/staff': ['admin', 'franchisee', 'staff'], // Legacy
+    'staff/dashboard': ['admin', 'franchisee', 'staff'],
     'dashboards/user': ['admin', 'franchisee', 'staff', 'user']
   };
 
@@ -157,7 +158,7 @@ const protectStaticDashboards = async (req, res, next) => {
       const correctDashboardMap = {
         admin: 'admin/dashboard',
         franchisee: 'franchisee/dashboard',
-        staff: 'dashboards/staff',
+        staff: 'staff/dashboard',
         user: 'dashboards/user'
       };
       const correctDashboard = correctDashboardMap[role] || 'dashboards/user';
@@ -187,7 +188,7 @@ app.get(['/', '/index.html'], async (req, res, next) => {
       const dashboards = {
         admin: '/admin/dashboard.html',
         franchisee: '/franchisee/dashboard.html',
-        staff: '/dashboards/staff.html',
+        staff: '/staff/dashboard.html',
         user: '/dashboards/user.html'
       };
       const target = dashboards[session.role];
