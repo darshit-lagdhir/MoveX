@@ -574,7 +574,9 @@ window.MoveXAdmin = (function () {
         },
 
         'finance': async function () {
+            const tbody = document.getElementById('transactions-table-body');
             try {
+                // 1. Fetch Stats
                 const res = await fetch(`${API_BASE}/api/dashboard/franchisee/stats`, {
                     credentials: 'include',
                     headers: getAuthHeaders()
@@ -582,8 +584,37 @@ window.MoveXAdmin = (function () {
                 const data = await res.json();
                 if (data.success) {
                     animateValue(document.getElementById('kpi-total-revenue'), 0, data.stats.totalRevenue || 0, 800, '₹ ');
+                    animateValue(document.getElementById('kpi-monthly-revenue'), 0, data.stats.monthlyRevenue || 0, 800, '₹ ');
                 }
-            } catch (err) { console.error('Finance error:', err); }
+
+                // 2. Fetch Transactions (using shipments API)
+                const shipRes = await fetch(`${API_BASE}/api/dashboard/franchisee/shipments`, {
+                    credentials: 'include',
+                    headers: getAuthHeaders()
+                });
+                const shipData = await shipRes.json();
+                if (shipData.success && tbody) {
+                    if (shipData.shipments.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:3rem; color:var(--text-tertiary);">No shipment revenue data found.</td></tr>';
+                    } else {
+                        tbody.innerHTML = shipData.shipments.slice(0, 10).map(s => `
+                            <tr>
+                                <td style="font-family:monospace; font-weight:700; color:var(--brand-primary);">${s.tracking_id}</td>
+                                <td>${new Date(s.created_at).toLocaleDateString()}</td>
+                                <td>
+                                    <div style="font-weight:600;">${s.sender_name}</div>
+                                    <div style="font-size:0.75rem; color:var(--text-tertiary);">${s.sender_phone}</div>
+                                </td>
+                                <td><span class="status-badge status-${(s.status || 'pending').toLowerCase().replace(/\s+/g, '-')}">${s.status}</span></td>
+                                <td style="font-weight:700;">₹ ${s.amount || 0}</td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+            } catch (err) {
+                console.error('Finance error:', err);
+                if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:3rem; color:var(--error);">Failed to load revenue data.</td></tr>';
+            }
         },
 
         'settings': async function () {

@@ -103,7 +103,7 @@
                 <div class="nav-right" style="display: flex; align-items: center; gap: 1.25rem;">
                     <div class="action-icons"
                         style="display: flex; align-items: center; gap: 1rem; color: var(--text-secondary);">
-                        
+
                     </div>
                     <div class="user-profile"
                         style="display: flex; align-items: center; gap: 0.75rem; border-left: 1px solid var(--border-default); padding-left: 1.25rem; cursor: pointer;">
@@ -141,13 +141,11 @@
                         <p class="page-subtitle">Track your earnings from shipments.</p>
                     </div>
 
-                    <div class="grid-kpi" style="grid-template-columns: repeat(2, 1fr);">
-                        <div class="card"
-                            style="background: linear-gradient(135deg, var(--brand-primary) 0%, #4338ca 100%); color: white;">
-                            <div class="card-title" style="color: rgba(255,255,255,0.8);">Total Revenue</div>
+                    <div class="grid-kpi" style="grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+                        <div class="card">
+                            <div class="card-title">Total Revenue</div>
                             <div class="card-value" id="kpi-total-revenue">₹ 0</div>
-                            <div class="card-trend" style="color: rgba(255,255,255,0.6);"><span>Gross Earnings</span>
-                            </div>
+                            <div class="card-trend trend-up"><span>Gross Earnings</span></div>
                         </div>
                         <div class="card">
                             <div class="card-title">This Month</div>
@@ -156,8 +154,8 @@
                         </div>
                     </div>
 
-                    <div class="card" style="padding: 0; margin-top: 2rem;">
-                        <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-default);">
+                    <div class="card card-table" style="margin-top: 2rem;">
+                        <div style="padding: 1.5rem 1.5rem 0 1.5rem;">
                             <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700;">Recent Shipment Revenue</h3>
                         </div>
                         <div class="data-table-container" style="border: none; box-shadow: none;">

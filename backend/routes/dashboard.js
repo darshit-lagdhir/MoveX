@@ -1021,6 +1021,13 @@ router.get('/franchisee/stats', validateSession, requireRole('franchisee'), asyn
         const deliveredTodayRes = await db.query("SELECT COUNT(*) FROM shipments WHERE organization_id = $1 AND status = 'delivered' AND updated_at >= NOW() - INTERVAL '24 HOURS'", [orgId]);
         const revenueRes = await db.query('SELECT SUM(price) FROM shipments WHERE organization_id = $1', [orgId]);
 
+        // Monthly Revenue
+        const monthlyRevenueRes = await db.query(`
+            SELECT SUM(price) FROM shipments 
+            WHERE organization_id = $1 
+            AND created_at >= DATE_TRUNC('month', NOW())
+        `, [orgId]);
+
         res.json({
             success: true,
             stats: {
@@ -1028,6 +1035,7 @@ router.get('/franchisee/stats', validateSession, requireRole('franchisee'), asyn
                 pendingPickups: parseInt(pendingPickupsRes.rows[0].count),
                 deliveredToday: parseInt(deliveredTodayRes.rows[0].count),
                 totalRevenue: parseFloat(revenueRes.rows[0].sum || 0),
+                monthlyRevenue: parseFloat(monthlyRevenueRes.rows[0].sum || 0),
                 payouts: 0 // Mock for now
             }
         });

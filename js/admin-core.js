@@ -1183,6 +1183,70 @@ window.MoveXAdmin = (function () {
             if (searchInput) searchInput.oninput = performFilter;
             if (roleFilter) roleFilter.onchange = performFilter;
         },
+
+        'finance': async () => {
+            const revEl = document.getElementById('fin-total-revenue');
+            const pendEl = document.getElementById('fin-pending-cod');
+            const payEl = document.getElementById('fin-franchise-payouts');
+            const tbody = document.getElementById('fin-transactions-body');
+
+            if (!tbody) return;
+
+            // Show skeletons while loading
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:2rem;">
+                    <div class="skeleton" style="height:20px; width:100%; margin-bottom:10px;"></div>
+                    <div class="skeleton" style="height:20px; width:100%; margin-bottom:10px;"></div>
+                    <div class="skeleton" style="height:20px; width:100%;"></div>
+                </td></tr>`;
+            }
+
+            const fetchFinance = async () => {
+                try {
+                    const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
+                    const token = session.data?.token;
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                    // 1. Fetch Stats
+                    const statsRes = await fetch(`${API_BASE}/api/dashboard/admin/finance/stats`, { credentials: 'include', headers });
+                    const statsData = await statsRes.json();
+
+                    if (statsData.success) {
+                        const { totalRevenue, pendingRevenue, payouts } = statsData.stats;
+                        if (revEl) animateValue(revEl, 0, totalRevenue, 1000, '₹');
+                        if (pendEl) animateValue(pendEl, 0, pendingRevenue, 1000, '₹');
+                        if (payEl) animateValue(payEl, 0, payouts, 1000, '₹');
+                    }
+
+                    // 2. Fetch Transactions
+                    const transRes = await fetch(`${API_BASE}/api/dashboard/admin/finance/transactions`, { credentials: 'include', headers });
+                    const transData = await transRes.json();
+
+                    if (transData.success) {
+                        if (transData.transactions.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--text-tertiary);">No transactions found.</td></tr>';
+                        } else {
+                            tbody.innerHTML = transData.transactions.map(t => `
+                                <tr style="border-bottom: 1px solid var(--border-subtle);">
+                                    <td style="padding: 1rem; font-family: monospace; font-weight: 600; color: var(--brand-primary);">${t.ref_id}</td>
+                                    <td style="padding: 1rem;">${new Date(t.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                                    <td style="padding: 1rem;"><span style="font-size:0.85rem; color:var(--text-secondary);">${t.type}</span></td>
+                                    <td style="padding: 1rem; color: var(--text-primary);">${t.entity}</td>
+                                    <td style="padding: 1rem;"><strong style="color:var(--text-primary); font-family: monospace;">₹${t.amount.toLocaleString('en-IN')}</strong></td>
+                                    <td style="padding: 1rem;"><span class="status-badge ${t.status === 'Paid' ? 'status-active' : 'status-warn'}">${t.status}</span></td>
+                                </tr>
+                            `).join('');
+                        }
+                    }
+                } catch (err) {
+                    console.error("Finance Error:", err);
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--error); padding: 2rem;">Failed to load financial data.</td></tr>';
+                }
+            };
+
+            await fetchFinance();
+        },
     };
 
     function renderUserTable(data = MOCK_DATA.users) {

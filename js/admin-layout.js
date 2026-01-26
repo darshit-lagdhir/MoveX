@@ -270,12 +270,9 @@
                 const roleEl = document.getElementById('topBarRole');
                 if (nameEl) {
                     nameEl.textContent = window.MoveXUser.full_name || 'Admin';
-                    nameEl.style.background = 'none';
-                    nameEl.style.textAlign = 'right';
-                    nameEl.style.color = 'var(--brand-primary)';
-                    nameEl.style.fontWeight = '800';
-                    nameEl.style.fontSize = '1.1rem';
-                    nameEl.style.letterSpacing = '0.5px';
+                    nameEl.style.color = 'var(--text-primary)';
+                    nameEl.style.fontWeight = '600';
+                    nameEl.style.fontSize = '0.875rem';
                 }
                 if (roleEl) roleEl.style.display = 'none';
             } else {
