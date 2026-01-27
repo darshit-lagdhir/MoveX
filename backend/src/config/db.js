@@ -94,7 +94,22 @@ function buildPoolConfig() {
     return {
       ...baseConfig,
       connectionString: process.env.DATABASE_URL,
-      ssl: getSSLConfig(process.env.DATABASE_URL)
+      ssl: getSSLConfig(process.env.DATABASE_URL),
+      // Advanced DNS: Handle Render's IPv4/IPv6 resolution quirks
+      lookup: (hostname, options, callback) => {
+        if (typeof options === 'function') {
+          callback = options;
+          options = {};
+        }
+        const opts = { ...(options || {}), family: 4, all: false };
+        dns.lookup(hostname, opts, (err, address, family) => {
+          if (err && err.code === 'ENOTFOUND') {
+            // Fallback to default if IPv4-only fails
+            return dns.lookup(hostname, options, callback);
+          }
+          callback(err, address, family);
+        });
+      }
     };
   }
 
@@ -144,11 +159,6 @@ pool.on('error', (err, client) => {
   }
 });
 
-/**
- * Log when new clients connect (development only)
- */
-// pool.on('connect') listener removed to reduce noise
-
 // ═══════════════════════════════════════════════════════════
 // CONNECTION VALIDATION
 // ═══════════════════════════════════════════════════════════
@@ -158,6 +168,20 @@ pool.on('error', (err, client) => {
  * Logs connection status but doesn't block startup
  */
 async function validateConnection(retries = 5) {
+  // Safe check for DB_URL presence (don't log the actual URL for security)
+  if (isProduction) {
+    if (!process.env.DATABASE_URL) {
+      console.warn('[DB] WARNING: DATABASE_URL is not set. Falling back to individual credentials.');
+    } else {
+      try {
+        const urlInfo = new URL(process.env.DATABASE_URL);
+        console.log(`[DB] Attempting connection to host: ${urlInfo.hostname}:${urlInfo.port || 5432} (SSL: ${poolConfig.ssl ? 'Yes' : 'No'})`);
+      } catch (e) {
+        console.warn('[DB] Could not parse DATABASE_URL for logging');
+      }
+    }
+  }
+
   for (let i = 0; i < retries; i++) {
     try {
       const client = await pool.connect();
@@ -165,26 +189,27 @@ async function validateConnection(retries = 5) {
       client.release();
 
       const { db } = result.rows[0];
-      // Success - only log success once
+      console.log(`✅ Database connection established: ${db}`);
       return true;
     } catch (err) {
-      if (i === retries - 1) {
-        console.error('❌ Database connection failed after retries:', err.message);
+      const isLastAttempt = i === retries - 1;
+      const delay = (i + 1) * 3000;
 
-        // Provide helpful error messages
-        if (err.code === 'ECONNREFUSED' || err.code === 'ECONNRESET') {
-          console.error('   → Connection issues detected. Please check your network and DATABASE_URL.');
+      console.warn(`⏳ Attempt ${i + 1} failed: ${err.message}`);
+
+      if (isLastAttempt) {
+        console.error('❌ Database connection failed after maximum retries.');
+
+        if (err.message.includes('timeout')) {
+          console.error('   → TIMEOUT: Is the DB URL correct? If using Supabase, check if the project is paused.');
         }
 
-        // In production, exit on final failure
         if (isProduction) {
           console.error('   Exiting due to database connection failure in production mode.');
           process.exit(1);
         }
       } else {
-        // Wait and retry (useful for waking up paused Supabase instances)
-        const delay = (i + 1) * 2000;
-        console.warn(`⏳ Database connection attempt ${i + 1} failed. Retrying in ${delay}ms...`);
+        console.log(`   Retrying in ${delay / 1000}s...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
@@ -207,7 +232,6 @@ validateConnection();
  */
 module.exports = pool;
 
-// Also export query helper for convenience (backward compatible)
 // Also export query helper for convenience (backward compatible)
 // module.exports.query is already natively provided by the pool object
 
