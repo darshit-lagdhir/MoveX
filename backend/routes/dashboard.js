@@ -503,42 +503,7 @@ router.post('/admin/shipments/update-status', validateSession, requireRole('admi
 });
 
 
-// Get Bookings (Pending Shipments)
-router.get('/admin/bookings', validateSession, requireRole('admin'), async (req, res) => {
-    try {
-        const pendingRes = await db.query(`
-SELECT * FROM shipments 
-            WHERE status = 'pending' 
-            ORDER BY created_at ASC
-    `);
 
-        const newRequests = pendingRes.rowCount;
-        const scheduledToday = await db.query(`
-            SELECT COUNT(*) FROM shipments 
-            WHERE status = 'pending' 
-            AND created_at >= CURRENT_DATE
-    `);
-
-        res.json({
-            success: true,
-            stats: {
-                newRequests,
-                scheduledToday: parseInt(scheduledToday.rows[0].count)
-            },
-            bookings: pendingRes.rows.map(row => ({
-                id: row.tracking_id,
-                sender: row.sender_name,
-                type: parseFloat(row.weight) < 1.0 ? 'Document' : 'Parcel',
-                location: row.origin_address,
-                created_at: row.created_at,
-                weight: row.weight
-            }))
-        });
-    } catch (err) {
-        console.error("Bookings API Error:", err);
-        res.status(500).json({ success: false, error: 'Failed to fetch bookings' });
-    }
-});
 
 
 // --- User Management ---
