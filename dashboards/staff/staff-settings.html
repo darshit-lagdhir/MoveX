@@ -4,15 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Dashboard - MoveX</title>
-
+    <title>Settings - Staff Dashboard - MoveX</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
-    <link rel="preload" href="../../styles/base.css?v=4" as="style">
-    <link rel="preload" href="../../styles/components.css?v=4" as="style">
-    <link rel="preload" href="../../styles/admin.css?v=4" as="style">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../styles/base.css?v=4">
     <link rel="stylesheet" href="../../styles/components.css?v=4">
     <link rel="stylesheet" href="../../styles/admin.css?v=4">
@@ -30,7 +25,7 @@
             </div>
             <nav class="sidebar-nav">
                 <div class="nav-group-title">Home</div>
-                <a href="staff-dashboard.html" class="nav-item active">
+                <a href="staff-dashboard.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
@@ -50,7 +45,7 @@
                 </a>
 
                 <div class="nav-group-title">Settings</div>
-                <a href="staff-settings.html" class="nav-item">
+                <a href="staff-settings.html" class="nav-item active">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
@@ -74,7 +69,7 @@
                         </svg>
                     </button>
                     <h2 id="headerTitle" style="font-size: 1.1rem; font-weight: 700; margin: 0; display: none;">
-                        Dashboard</h2>
+                        Settings</h2>
                 </div>
                 <div class="nav-right" style="display: flex; align-items: center; gap: 1.25rem;">
                     <div class="action-icons"
@@ -121,51 +116,36 @@
             <main>
                 <div class="dashboard-container">
                     <div class="page-header">
-                        <h1 class="page-title">Operations Overview</h1>
-                        <p class="page-subtitle">Your Hub Activity & Daily Tasks</p>
+                        <h1 class="page-title">Settings</h1>
+                        <p class="page-subtitle">Manage your account preferences</p>
                     </div>
 
-                    <!-- KPI Cards -->
-                    <div class="grid-kpi" style="grid-template-columns: repeat(3, 1fr);">
-                        <div class="card">
-                            <div class="card-title">Pending At Hub</div>
-                            <div class="card-value" id="kpi-pending-hub">-</div>
-                            <div class="card-trend"><span>Requires Action</span></div>
-                        </div>
-                        <div class="card">
-                            <div class="card-title">Out For Delivery</div>
-                            <div class="card-value" id="kpi-out-delivery">-</div>
-                            <div class="card-trend"><span>In Progress</span></div>
-                        </div>
-                        <div class="card">
-                            <div class="card-title">Delivered Today</div>
-                            <div class="card-value" id="kpi-delivered-today">-</div>
-                            <div class="card-trend"><span style="color: var(--success);">Completed</span></div>
-                        </div>
-                    </div>
+                    <div
+                        style="background: var(--surface-primary); padding: 2rem; border-radius: var(--radius-lg); border: 1px solid var(--border-default); max-width: 600px;">
+                        <h3 style="margin-top: 0;">Profile Information</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 2rem;">Staff accounts are managed by your
+                            Franchise Administrator.</p>
 
-                    <!-- Quick Actions -->
-                    <div style="margin-top: 2rem;">
-                        <h3 style="margin: 0 0 1rem; font-size: 1.1rem; font-weight: 700;">Quick Actions</h3>
-                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                            <a href="staff-assignments.html" class="btn-secondary"
-                                style="text-decoration: none; padding: 1rem 2rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; gap: 0.75rem; background: var(--surface-secondary); color: var(--text-primary);">
-                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path
-                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
-                                    </path>
-                                </svg>
-                                View My Tasks
-                            </a>
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Role</label>
+                            <input type="text" value="Staff Member" disabled class="form-input"
+                                style="background: var(--surface-secondary); cursor: not-allowed;">
                         </div>
+
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Status</label>
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+
+                        <p style="font-size: 0.875rem; color: var(--text-secondary);">
+                            To update your phone number or password, please contact your Franchise Administrator.
+                        </p>
                     </div>
                 </div>
             </main>
         </div>
     </div>
 
-    <!-- Scripts -->
     <script src="../../js/dashboard-layout.js"></script>
     <script src="../../js/staff-core.js"></script>
 </body>

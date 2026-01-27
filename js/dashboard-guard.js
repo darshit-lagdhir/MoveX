@@ -33,6 +33,7 @@
         'franchisee-assignments': ['staff', 'admin', 'franchisee'],
         'staff-dashboard': ['admin', 'franchisee', 'staff'],
         'staff-assignments': ['admin', 'franchisee', 'staff'],
+        'staff-settings': ['admin', 'franchisee', 'staff'],
         'dashboard': ['admin', 'franchisee', 'staff', 'user'],
         'users': ['admin'],
         'franchises': ['admin'],
