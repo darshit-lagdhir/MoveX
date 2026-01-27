@@ -144,15 +144,57 @@ router.post('/franchisee/assign', validateSession, requireRole('franchisee'), as
     }
 });
 
-// ... [Existing Code] ...
+// ═══════════════════════════════════════════════════════════
+//  STAFF - DASHBOARD STATS (LIVE DATA)
+// ═══════════════════════════════════════════════════════════
+
+router.get('/staff/stats', validateSession, requireRole('staff'), async (req, res) => {
+    try {
+        const userId = req.session.userId;
+
+        // Pending Tasks (assigned to this staff, at hub status)
+        const pendingRes = await db.query(`
+            SELECT COUNT(*) FROM shipments 
+            WHERE assigned_staff_id = $1 
+            AND LOWER(status) IN ('reached at final delivery hub', 'pending', 'in_transit')
+        `, [userId]);
+
+        // Out for Delivery
+        const outRes = await db.query(`
+            SELECT COUNT(*) FROM shipments 
+            WHERE assigned_staff_id = $1 
+            AND LOWER(status) = 'out for delivery'
+        `, [userId]);
+
+        // Delivered Today
+        const deliveredRes = await db.query(`
+            SELECT COUNT(*) FROM shipments 
+            WHERE assigned_staff_id = $1 
+            AND LOWER(status) = 'delivered'
+            AND DATE(updated_at) = CURRENT_DATE
+        `, [userId]);
+
+        res.json({
+            success: true,
+            stats: {
+                pendingTasks: parseInt(pendingRes.rows[0].count) || 0,
+                outForDelivery: parseInt(outRes.rows[0].count) || 0,
+                deliveredToday: parseInt(deliveredRes.rows[0].count) || 0
+            }
+        });
+    } catch (err) {
+        console.error("Staff Stats Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch stats' });
+    }
+});
 
 // Get Shipments at Hub (Active) --> UPDATED FOR STAFF VIEW
 router.get('/staff/shipments', validateSession, requireRole('staff'), async (req, res) => {
     try {
         const userId = req.session.userId;
 
-        // Include: reached at final delivery hub, out for delivery, in transit, pending
-        // Exclude: delivered, cancelled, returned
+        // Show all shipments assigned to this staff member that are still actionable
+        // Only exclude: delivered, cancelled, returned
         const result = await db.query(`
             SELECT tracking_id, sender_name, receiver_name, origin_address, destination_address, status, created_at, weight
             FROM shipments

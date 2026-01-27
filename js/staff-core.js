@@ -2,9 +2,8 @@
 /**
  * Staff Core Logic
  * Handles API calls for Staff Dashboard
+ * Note: API_URL is defined in staff-layout.js which loads first
  */
-
-const API_URL = window.MoveXConfig ? window.MoveXConfig.API_URL : 'https://movex-ffqu.onrender.com';
 
 const StaffCore = {
 
@@ -23,7 +22,7 @@ const StaffCore = {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    hPending.textContent = data.stats.pendingAtHub || 0;
+                    hPending.textContent = data.stats.pendingTasks || 0;
                     hOut.textContent = data.stats.outForDelivery || 0;
                     hDelivered.textContent = data.stats.deliveredToday || 0;
                 }

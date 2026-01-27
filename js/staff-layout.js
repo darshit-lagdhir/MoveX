@@ -4,6 +4,8 @@
  * Handles Sidebar and Header injection for Staff pages
  */
 
+const API_URL = window.MoveXConfig ? window.MoveXConfig.API_URL : 'https://movex-ffqu.onrender.com';
+
 const StaffLayout = {
     init: function (activePage) {
         this.injectSidebar(activePage);
