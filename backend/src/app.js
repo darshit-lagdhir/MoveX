@@ -199,8 +199,14 @@ app.get(['/', '/index.html'], async (req, res, next) => {
     console.warn('Auto-redirect check failed (non-critical):', err.message);
   }
 
-  // If no session or error, serve index.html for root
+  // If no session or error, handle root request
   if (req.path === '/') {
+    // Redirect to Main Frontend (Workers) in Production to avoid duplicate UI
+    const frontendUrl = process.env.FRONTEND_URL?.split(',')[0]?.trim();
+    if (process.env.NODE_ENV === 'production' && frontendUrl && !req.hostname.includes('localhost')) {
+      return res.redirect(frontendUrl);
+    }
+    // Fallback for dev or missing env
     return res.sendFile(path.join(__dirname, '../../index.html'));
   }
   // Otherwise let other handlers (like express.static) handle it
