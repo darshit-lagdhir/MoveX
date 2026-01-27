@@ -40,29 +40,26 @@ function getSSLConfig(connectionString) {
 
 function buildPoolConfig() {
   const baseConfig = {
-    max: 10, // Reduced from 20 -> 10 for Supabase Transaction Mode compatibility
-    min: 0,  // Allow pool to scale down to 0 to prevent holding stale connections
-    idleTimeoutMillis: 5000, // Disconnect idle clients after 5 seconds
-    connectionTimeoutMillis: 10000, // Fail fast (10s) to avoid hanging requests
+    max: 5,  // Strict limit for Session Mode (5432) to prevent "Too many clients"
+    min: 0,  // Scale to zero to release unrestricted connections
+    idleTimeoutMillis: 3000,
+    connectionTimeoutMillis: 15000, // Give it a bit more time to handshake on 5432
     allowExitOnIdle: true,
     keepAlive: true,
     family: 4
   };
 
+
   if (process.env.DATABASE_URL) {
     let connectionString = process.env.DATABASE_URL;
 
-    // AUTO-FIX: Switch Supabase Pooler port from 5432 to 6543 (Transaction Mode) to prevent timeouts
-    if (connectionString.includes('supabase.com') && connectionString.includes('5432')) {
-      console.log('🔧 Auto-switching Supabase port 5432 -> 6543 (Transaction Mode) for stability');
-      connectionString = connectionString.replace(':5432', ':6543');
+    // NOTE: Reverted auto-switch to 6543 (Transaction Mode) as it caused 'Connection terminated unexpectedly'
+    // with node-postgres prepared statements.
+    // We are sticking to 5432 (Session Mode) but using strict pooling (max: 5, min: 0) to handle serverless limits.
+    if (connectionString.includes('supabase.com') && connectionString.includes('6543')) {
+      console.log('🔧 Reverting Supabase port 6543 -> 5432 (Session Mode) for compatibility');
+      connectionString = connectionString.replace(':6543', ':5432');
     }
-
-    // DEBUG: Log the actual connection string parameters (masked)
-    try {
-      const dbUrl = new URL(connectionString);
-      console.log(`[DB Config] Connecting to Host: ${dbUrl.hostname}, Port: ${dbUrl.port}, User: ${dbUrl.username}`);
-    } catch (e) { console.log('[DB Config] Could not parse connection string for logging'); }
 
     return {
       ...baseConfig,
