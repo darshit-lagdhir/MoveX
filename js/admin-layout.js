@@ -1,15 +1,12 @@
 /**
  * ADMIN LAYOUT MANAGER (SPA Version)
- * Handles Sidebar, Header, and Partial Navigation for all Admin Pages.
+ * Handles Sidebar toggle, Active state, and SPA Navigation.
  */
-
-// LOADING FIX: Prevent UI flash and "settling" animations during initial load
-// document.documentElement.classList.add('loading');
 
 (function () {
     'use strict';
 
-    // Failsafe: Always reveal UI after 1.5s in case of hanging fetches
+    // Failsafe: Always reveal UI after 1.5s
     const revealTimeout = setTimeout(revealUI, 1500);
 
     function revealUI() {
@@ -20,55 +17,11 @@
         });
     }
 
-
-    // Track state to avoid double loading
     let isLayoutInitialized = false;
-
-    async function fetchPartial(url) {
-        try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-            return await response.text();
-        } catch (err) {
-            console.error(err);
-            return '';
-        }
-    }
 
     async function initAdminLayout() {
         const layout = document.querySelector('.admin-layout');
         if (!layout || isLayoutInitialized) return;
-
-        // 1. Fetch and Inject Sidebar if not present
-        if (!document.getElementById('sidebar')) {
-            const isFranchisee = window.location.pathname.includes('/franchisee/');
-            const sidebarUrl = isFranchisee ? '/partials/franchisee-sidebar.html' : '/partials/admin-sidebar.html';
-            const sidebarHTML = await fetchPartial(sidebarUrl);
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = sidebarHTML;
-            const sidebar = tempDiv.firstElementChild;
-            layout.insertBefore(sidebar, layout.firstChild);
-        }
-
-        // 2. Wrap main content if needed and inject header
-        let mainContent = document.querySelector('.main-content');
-        if (!mainContent) {
-            mainContent = document.createElement('div');
-            mainContent.className = 'main-content';
-            const existingMain = layout.querySelector('main');
-            if (existingMain) {
-                layout.appendChild(mainContent);
-                mainContent.appendChild(existingMain);
-            }
-        }
-
-        if (!document.querySelector('.top-nav')) {
-            const headerHTML = await fetchPartial('/partials/admin-header.html');
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = headerHTML;
-            const header = tempDiv.firstElementChild;
-            mainContent.insertBefore(header, mainContent.firstChild);
-        }
 
         isLayoutInitialized = true;
 
@@ -76,9 +29,8 @@
         updateActiveState();
         updateUserInfo();
 
-        // 3. SECURE INITIALIZATION: Wait for core JS before calling init
-        let currentPath = window.location.pathname.split('/').pop();
-        if (!currentPath || currentPath === 'admin') currentPath = 'dashboard';
+        // Initialize core JS for the current page
+        let currentPath = window.location.pathname.split('/').pop() || 'dashboard';
         if (currentPath.endsWith('.html')) currentPath = currentPath.slice(0, -5);
 
         await ensureCoreLoaded();
@@ -88,14 +40,11 @@
             window.MoveXAdmin.init(currentPath.toLowerCase());
         }
 
-        // Final step: Reveal the UI once everything is stable
         revealUI();
     }
 
-
-
     async function ensureCoreLoaded() {
-        // Load Flatpickr for premium date selection
+        // Load Flatpickr 
         if (!document.querySelector('link[href*="flatpickr"]')) {
             const link = document.createElement('link');
             link.rel = 'stylesheet';
@@ -110,7 +59,6 @@
         const isFranchisee = window.location.pathname.includes('/franchisee/');
         const expectedCore = isFranchisee ? '/js/franchisee-core.js' : '/js/admin-core.js';
 
-        // If wrong core is loaded or no core, load the right one
         if (window.MoveXAdmin && window.MoveXAdmin._source === expectedCore) return;
 
         return new Promise((resolve, reject) => {
@@ -139,19 +87,11 @@
             let href = link.getAttribute('href');
             if (!href) return;
 
-            // Handle internal navigation
             const isInternal = (!href.startsWith('http') && !href.startsWith('//')) || href.startsWith(window.location.origin);
 
             if (isInternal) {
-                // Strip extension if present for internal links
-                if (href.endsWith('.html')) {
-                    href = href.slice(0, -5);
-                }
-
-                // Avoid empty or same-page links unless it's a specific route
+                if (href.endsWith('.html')) href = href.slice(0, -5);
                 if (href === '#' || href === '') return;
-
-                // Check if it looks like an admin page or relative path
                 if (!href.includes('.') || href.startsWith('/')) {
                     e.preventDefault();
                     navigateTo(href);
@@ -161,35 +101,29 @@
 
         window.addEventListener('popstate', (e) => {
             const path = window.location.pathname.split('/').pop() || 'dashboard';
-            // Strip extension if present
             const cleanPath = path.endsWith('.html') ? path.slice(0, -5) : path;
-            loadPageContent(cleanPath, false);
+            loadPageContent(cleanPath);
         });
     }
 
     async function navigateTo(url) {
-        // Strip .html if present
         if (url.endsWith('.html')) url = url.slice(0, -5);
-
         if (window.location.pathname.endsWith(url)) return;
         history.pushState(null, '', url);
-        await loadPageContent(url, true);
+        await loadPageContent(url);
     }
 
-    async function loadPageContent(url, shouldHighlight = true) {
+    async function loadPageContent(url) {
         try {
             const main = document.querySelector('main');
             if (main) {
-                // Initial fade out
                 main.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
                 main.style.opacity = '0';
                 main.style.transform = 'translateY(10px)';
             }
 
-            // Create and show progress bar
-            let progressBar = document.getElementById('navProgressBar');
-            if (!progressBar) {
-                progressBar = document.createElement('div');
+            let progressBar = document.getElementById('navProgressBar') || document.createElement('div');
+            if (!progressBar.id) {
                 progressBar.id = 'navProgressBar';
                 progressBar.style.cssText = 'position:fixed; top:0; left:0; height:3px; background:var(--brand-primary); z-index:10001; transition: width 0.3s ease; width:0; box-shadow: 0 0 10px var(--brand-primary-glow);';
                 document.body.appendChild(progressBar);
@@ -211,14 +145,10 @@
                 setTimeout(() => {
                     main.innerHTML = newMain.innerHTML;
                     document.title = doc.title || 'MoveX Admin';
-
-                    // Reset and show
                     main.style.opacity = '1';
                     main.style.transform = 'translateY(0)';
-
                     updateActiveState();
 
-                    // Hide progress bar
                     setTimeout(() => {
                         progressBar.style.opacity = '0';
                         setTimeout(() => {
@@ -227,12 +157,9 @@
                         }, 300);
                     }, 200);
 
-                    // Initialize functionality for the new content
                     const pageName = url.split('/').pop();
-                    if (window.MoveXAdmin) {
-                        window.MoveXAdmin.init(pageName);
-                    }
-                }, 200); // Small delay for visual comfort
+                    if (window.MoveXAdmin) window.MoveXAdmin.init(pageName);
+                }, 200);
             } else {
                 window.location.href = url;
             }
@@ -261,20 +188,13 @@
         });
     }
 
-    // Theme toggle removed - light mode only
-
     function updateUserInfo() {
         const update = () => {
             if (window.MoveXUser) {
                 const nameEl = document.getElementById('topBarUserName');
-                const roleEl = document.getElementById('topBarRole');
                 if (nameEl) {
                     nameEl.textContent = window.MoveXUser.full_name || 'Admin';
-                    nameEl.style.color = 'var(--text-primary)';
-                    nameEl.style.fontWeight = '600';
-                    nameEl.style.fontSize = '0.875rem';
                 }
-                if (roleEl) roleEl.style.display = 'none';
             } else {
                 setTimeout(update, 500);
             }
