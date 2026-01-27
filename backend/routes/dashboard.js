@@ -9,16 +9,218 @@ const jwt = require('jsonwebtoken');
 // --- RECOVERY/MIGRATION: Ensure staff columns exist ---
 (async () => {
     try {
-        await db.query(`
-            ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_role TEXT;
-            ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_status TEXT DEFAULT 'Active';
-            UPDATE users SET staff_role = 'Warehouse Staff' WHERE staff_role = 'Warehouse Manager';
-`);
-        // console.log('[Migration] Staff columns verified.');
+        console.log('[Migration] Running staff/shipment column migrations...');
+        await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_role TEXT;`);
+        await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_status TEXT DEFAULT 'Active';`);
+        await db.query(`UPDATE users SET staff_role = 'Warehouse Staff' WHERE staff_role = 'Warehouse Manager';`);
+        await db.query(`ALTER TABLE shipments ADD COLUMN IF NOT EXISTS assigned_staff_id INTEGER;`);
+        console.log('[Migration] Staff columns verified successfully.');
     } catch (e) {
-        // console.warn('[Migration] Staff columns check failed (might already exist):', e.message);
+        console.error('[Migration] Column migration failed:', e.message);
     }
 })();
+
+// ... [Existing Code] ...
+
+// ═══════════════════════════════════════════════════════════
+//  FRANCHISEE - TASK ASSIGNMENT
+// ═══════════════════════════════════════════════════════════
+
+// Manual Migration Endpoint - Call this once to add columns
+router.get('/migrate/add-assignment-column', async (req, res) => {
+    try {
+        await db.query(`ALTER TABLE shipments ADD COLUMN IF NOT EXISTS assigned_staff_id INTEGER;`);
+        res.json({ success: true, message: 'Migration completed - assigned_staff_id column added' });
+    } catch (err) {
+        console.error('Migration Error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Debug endpoint to check statuses
+router.get('/debug/shipment-statuses', async (req, res) => {
+    try {
+        const statuses = await db.query(`SELECT DISTINCT status, COUNT(*) as count FROM shipments GROUP BY status`);
+        const pincodes = await db.query(`SELECT organization_id, name, pincodes FROM organizations`);
+        const sample = await db.query(`SELECT tracking_id, status, receiver_pincode, organization_id, assigned_staff_id FROM shipments ORDER BY created_at DESC LIMIT 10`);
+        const staff = await db.query(`SELECT user_id, username, full_name, organization_id FROM users WHERE role = 'staff'`);
+        res.json({
+            success: true,
+            statuses: statuses.rows,
+            organizations: pincodes.rows,
+            recentShipments: sample.rows,
+            staffMembers: staff.rows
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Get shipments available for assignment (At hub, not delivered, not yet assigned)
+router.get('/franchisee/assignments/available', validateSession, requireRole('franchisee'), async (req, res) => {
+    try {
+        const orgId = req.organization?.id;
+        if (!orgId) return res.status(403).json({ success: false, error: 'No organization linked' });
+
+        // 1. Get Franchisee's Pincodes
+        const orgRes = await db.query('SELECT pincodes FROM organizations WHERE organization_id = $1', [orgId]);
+        if (orgRes.rows.length === 0) return res.status(404).json({ success: false, error: 'Organization not found' });
+
+        const pincodeStr = orgRes.rows[0].pincodes || '';
+        const pincodes = pincodeStr.split(',').map(p => p.trim()).filter(Boolean);
+
+        if (pincodes.length === 0) {
+            // Fallback: If no pincodes, only show created by self (intra-city fallback)
+            const result = await db.query(`
+                SELECT tracking_id, sender_name, receiver_name, destination_address, status, created_at, weight
+                FROM shipments 
+                WHERE organization_id = $1 
+                AND LOWER(status) = 'reached at final delivery hub'
+                ORDER BY created_at DESC
+            `, [orgId]);
+            return res.json({ success: true, shipments: result.rows });
+        }
+
+        // 2. Query based on Receiver Pincode coverage
+        const placeholders = pincodes.map((_, i) => `$${i + 1}`).join(', ');
+
+        // We match if receiver_pincode is in our list OR if we created it (local/backup)
+        // AND status is correct (case-insensitive)
+        const query = `
+            SELECT tracking_id, sender_name, receiver_name, destination_address, status, created_at, weight
+            FROM shipments 
+            WHERE (receiver_pincode IN (${placeholders}) OR organization_id = $${pincodes.length + 1})
+            AND LOWER(status) = 'reached at final delivery hub'
+            ORDER BY created_at DESC
+        `;
+
+        const result = await db.query(query, [...pincodes, orgId]);
+
+        res.json({ success: true, shipments: result.rows });
+    } catch (err) {
+        console.error("Fetch Available Shipments Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch shipments' });
+    }
+});
+
+// Bulk Assign Shipments to Staff
+router.post('/franchisee/assign', validateSession, requireRole('franchisee'), async (req, res) => {
+    try {
+        const { tracking_ids, staff_id } = req.body;
+        const orgId = req.organization?.id;
+
+        if (!tracking_ids || !Array.isArray(tracking_ids) || tracking_ids.length === 0) {
+            return res.status(400).json({ success: false, error: 'No shipments selected' });
+        }
+        if (!staff_id) {
+            return res.status(400).json({ success: false, error: 'Staff member is required' });
+        }
+
+        // Verify staff belongs to this org
+        const staffCheck = await db.query('SELECT user_id FROM users WHERE user_id = $1 AND organization_id = $2', [staff_id, orgId]);
+        if (staffCheck.rows.length === 0) {
+            return res.status(400).json({ success: false, error: 'Invalid staff member selected' });
+        }
+
+        // Update shipments
+        // optional: change status to 'out_for_delivery' or keep current? 
+        // User said: "assign them to deliver". Usually this implies moving to 'out_for_delivery' or just 'assigned'.
+        // Let's just assign them for now. Staff can mark them 'Out for Delivery' or we can do it here.
+        // Let's sets assigned_staff_id. 
+
+        const placeholders = tracking_ids.map((_, i) => `$${i + 2}`).join(', ');
+        const query = `
+            UPDATE shipments 
+            SET assigned_staff_id = $1, updated_at = NOW()
+            WHERE tracking_id IN (${placeholders}) 
+            AND organization_id = $${tracking_ids.length + 2}
+        `;
+
+        await db.query(query, [staff_id, ...tracking_ids, orgId]);
+
+        res.json({ success: true, message: `Assigned ${tracking_ids.length} shipments to staff.` });
+
+    } catch (err) {
+        console.error("Assign Shipments Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to assign shipments' });
+    }
+});
+
+// ... [Existing Code] ...
+
+// Get Shipments at Hub (Active) --> UPDATED FOR STAFF VIEW
+router.get('/staff/shipments', validateSession, requireRole('staff'), async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        console.log('[Staff Shipments] Fetching for user_id:', userId);
+
+        // Include: reached at final delivery hub, out for delivery, in transit, pending
+        // Exclude: delivered, cancelled, returned
+        const result = await db.query(`
+            SELECT tracking_id, sender_name, receiver_name, origin_address, destination_address, status, created_at, weight
+            FROM shipments
+            WHERE assigned_staff_id = $1
+            AND LOWER(status) NOT IN ('delivered', 'cancelled', 'returned')
+            ORDER BY created_at ASC
+        `, [userId]);
+
+        console.log('[Staff Shipments] Found:', result.rows.length, 'shipments');
+
+        const shipments = result.rows.map(row => ({
+            id: row.tracking_id,
+            tracking_id: row.tracking_id,
+            sender: row.sender_name,
+            receiver: row.receiver_name,
+            origin: row.origin_address,
+            destination: row.destination_address,
+            status: row.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+            date: row.created_at,
+            weight: row.weight
+        }));
+
+        res.json({ success: true, shipments });
+    } catch (err) {
+        console.error("Staff Shipments Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch shipments' });
+    }
+});
+
+// Staff Bulk Update Status
+router.post('/staff/shipments/bulk-update', validateSession, requireRole('staff'), async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const { tracking_ids, status } = req.body;
+
+        if (!tracking_ids || !Array.isArray(tracking_ids) || tracking_ids.length === 0) {
+            return res.status(400).json({ success: false, error: 'No shipments selected' });
+        }
+
+        const validStatuses = ['Out for Delivery', 'Delivered', 'Not Delivered'];
+        if (!status || !validStatuses.includes(status)) {
+            return res.status(400).json({ success: false, error: 'Invalid status. Use: Out for Delivery, Delivered, or Not Delivered' });
+        }
+
+        console.log(`[Staff Bulk Update] User ${userId} updating ${tracking_ids.length} shipments to "${status}"`);
+
+        // Update only shipments assigned to this staff member
+        const placeholders = tracking_ids.map((_, i) => `$${i + 3}`).join(', ');
+        const query = `
+            UPDATE shipments 
+            SET status = $1, updated_at = NOW()
+            WHERE assigned_staff_id = $2 
+            AND tracking_id IN (${placeholders})
+        `;
+
+        const result = await db.query(query, [status, userId, ...tracking_ids]);
+
+        console.log(`[Staff Bulk Update] Updated ${result.rowCount} rows`);
+
+        res.json({ success: true, updated: result.rowCount });
+    } catch (err) {
+        console.error("Staff Bulk Update Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to update shipments' });
+    }
+});
 
 // Dashboard Stats
 router.get('/admin/stats', validateSession, requireRole('admin'), async (req, res) => {
@@ -1256,6 +1458,12 @@ router.post('/franchisee/shipments/create', validateSession, requireRole('franch
         const origin_address = sender_city ? `${sender_city}, ${sender_pincode}` : sender_pincode;
         const destination_address = receiver_city ? `${receiver_city}, ${receiver_pincode}` : receiver_pincode;
 
+        // Auto-status logic for same-hub deliveries
+        let initialStatus = 'Pending';
+        if (sender_pincode && receiver_pincode && (sender_pincode.toString().trim() === receiver_pincode.toString().trim())) {
+            initialStatus = 'Reached at Final Delivery Hub';
+        }
+
         // Insert shipment
         const result = await db.query(`
             INSERT INTO shipments (
@@ -1266,7 +1474,7 @@ router.post('/franchisee/shipments/create', validateSession, requireRole('franch
                 weight, price,
                 created_at, updated_at
             ) VALUES (
-                $1, 'pending', $2, $3,
+                $1, $16, $2, $3,
                 $4, $5, $6, $7,
                 $8, $9, $10, $11,
                 $12, $13,
@@ -1278,9 +1486,9 @@ router.post('/franchisee/shipments/create', validateSession, requireRole('franch
             sender_name, sender_phone, sender_address, sender_pincode,
             receiver_name, receiver_phone, receiver_address, receiver_pincode,
             origin_address, destination_address,
-            weight, amount
+            weight, amount,
+            initialStatus
         ]);
-
         res.json({
             success: true,
             message: 'Shipment created successfully',
@@ -1546,37 +1754,7 @@ router.get('/staff/stats', validateSession, requireRole('staff'), async (req, re
     }
 });
 
-// Get Shipments at Hub (Active)
-router.get('/staff/shipments', validateSession, requireRole('staff'), async (req, res) => {
-    try {
-        const orgId = req.organization?.id;
-        if (!orgId) return res.json({ success: true, shipments: [] });
 
-        const result = await db.query(`
-            SELECT tracking_id, sender_name, receiver_name, origin_address, destination_address, status, created_at, weight
-            FROM shipments
-            WHERE organization_id = $1 AND status NOT IN ('delivered', 'cancelled', 'returned')
-            ORDER BY created_at ASC
-        `, [orgId]);
-
-        const shipments = result.rows.map(row => ({
-            id: row.tracking_id,
-            tracking_id: row.tracking_id,
-            sender: row.sender_name,
-            receiver: row.receiver_name,
-            origin: row.origin_address,
-            destination: row.destination_address,
-            status: row.status.replace(/_/g, ' ').toUpperCase(),
-            date: row.created_at,
-            weight: row.weight
-        }));
-
-        res.json({ success: true, shipments });
-    } catch (err) {
-        console.error("Staff Shipments Error:", err);
-        res.status(500).json({ success: false, error: 'Failed to fetch shipments' });
-    }
-});
 
 // Search Shipment by Tracking ID (For Scanning)
 router.get('/staff/search/:id', validateSession, requireRole('staff'), async (req, res) => {

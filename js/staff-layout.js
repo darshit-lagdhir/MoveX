@@ -61,7 +61,7 @@ const StaffLayout = {
         if (header.children.length === 0) {
             header.innerHTML = `
                 <div class="nav-left" style="display: flex; align-items: center; gap: 1rem;">
-                    <button class="toggle-btn" id="sidebarToggle" title="Toggle Sidebar">
+                    <button class="toggle-btn" id="sidebarToggle" title="Toggle Sidebar" onclick="toggleSidebar()">
                         <svg fill="none" width="20" height="20" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
                     </button>
                     <h2 id="headerTitle" style="font-size: 1.1rem; font-weight: 700; margin: 0; display: none;">Staff Dashboard</h2>
@@ -110,10 +110,21 @@ const StaffLayout = {
         const sidebar = document.getElementById('sidebar');
         if (toggle && sidebar) {
             toggle.addEventListener('click', () => {
+                // Simply toggle both to ensure it works across all breakpoints/zoom levels
                 sidebar.classList.toggle('active');
+                sidebar.classList.toggle('collapsed');
             });
         }
     }
 };
 
 window.StaffLayout = StaffLayout;
+
+// Global Toggle Function for direct onclick access
+window.toggleSidebar = function () {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('active');
+        sidebar.classList.toggle('collapsed');
+    }
+};

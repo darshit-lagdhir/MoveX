@@ -64,14 +64,18 @@ async function requireSession(req, res, next) {
   }
   req.session = session;
 
-  // 3. Load user organization data for franchisees/staff
-  if (session.role === 'franchisee' || session.role === 'staff') {
-    try {
-      const userResult = await db.query(
-        'SELECT user_id, organization_id FROM users WHERE username = $1',
-        [session.username]
-      );
-      if (userResult.rows.length > 0 && userResult.rows[0].organization_id) {
+  // 3. Load user data (userId and organization) for all roles
+  try {
+    const userResult = await db.query(
+      'SELECT user_id, organization_id FROM users WHERE username = $1',
+      [session.username]
+    );
+    if (userResult.rows.length > 0) {
+      // CRITICAL: Store userId in session for staff queries
+      req.session.userId = userResult.rows[0].user_id;
+
+      // Load organization data for franchisees/staff
+      if ((session.role === 'franchisee' || session.role === 'staff') && userResult.rows[0].organization_id) {
         const orgResult = await db.query(
           'SELECT organization_id, name, pincodes, full_address, status FROM organizations WHERE organization_id = $1',
           [userResult.rows[0].organization_id]
@@ -83,9 +87,9 @@ async function requireSession(req, res, next) {
           };
         }
       }
-    } catch (err) {
-      console.warn('Failed to load organization data:', err.message);
     }
+  } catch (err) {
+    console.warn('Failed to load user/organization data:', err.message);
   }
 
   next();

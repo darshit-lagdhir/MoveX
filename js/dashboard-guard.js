@@ -27,7 +27,7 @@
         'settings': ['admin', 'franchisee', 'staff', 'user'],
         'franchisee': ['admin', 'franchisee'],
         'user': ['admin', 'franchisee', 'staff', 'user'],
-        'assignments': ['staff', 'admin'],
+        'assignments': ['staff', 'admin', 'franchisee'],
         'profile': ['staff', 'admin', 'franchisee', 'user']
     };
 
@@ -162,6 +162,8 @@
         const userRoleEl = document.getElementById('userRole');
         const userNameEl = document.getElementById('userName');
         const orgNameEl = document.getElementById('orgName');
+        const topBarUserName = document.getElementById('topBarUserName');
+        const topBarRole = document.getElementById('topBarRole');
 
         if (userEmailEl) userEmailEl.textContent = user.username;
         if (userRoleEl) userRoleEl.textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
@@ -169,6 +171,10 @@
         if (orgNameEl && result.organization) {
             orgNameEl.textContent = result.organization.name;
         }
+
+        // Fix for Loading... issue on Staff Dashboard
+        if (topBarUserName) topBarUserName.textContent = user.full_name || user.username;
+        if (topBarRole) topBarRole.textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1) + ' (Hub Member)';
 
         document.body.classList.add('authenticated');
 

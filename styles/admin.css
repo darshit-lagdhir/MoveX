@@ -47,7 +47,8 @@ body {
 input,
 select,
 textarea {
-    background-color: var(--surface-secondary);
+    background-color: var(--surface-primary) !important;
+    /* Force white/surface color */
     color: var(--text-primary);
     border: 1px solid var(--border-default);
     border-radius: var(--radius-md);
@@ -57,7 +58,16 @@ textarea {
     outline: none;
     transition: all var(--transition-base);
     height: 46px;
-    /* Uniform height for all inputs */
+    width: 100%;
+    /* Ensure full width in containers */
+    max-width: 100%;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px var(--brand-primary-soft);
 }
 
 /* Ensure buttons match input height exactly */
@@ -277,8 +287,36 @@ textarea {
     overflow-x: hidden;
 }
 
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        left: -250px;
+        position: fixed;
+        height: 100vh;
+        z-index: 1000;
+        width: 250px !important;
+        /* Force full width on mobile open */
+    }
+
+    .sidebar.collapsed {
+        width: 250px;
+        /* Disable collapse on mobile, just hide */
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
 .sidebar.collapsed {
     width: 80px;
+}
+
+/* Open Sidebar on Mobile when Toggled */
+.sidebar.active {
+    transform: translateX(0) !important;
+    left: 0 !important;
 }
 
 .sidebar-header {
@@ -772,6 +810,33 @@ textarea {
     color: var(--error);
 }
 
+.status-out-for-delivery {
+    background: var(--info-soft);
+    color: var(--info);
+    border: 1px solid var(--info);
+}
+
+.status-reached-at-final-delivery-hub {
+    background: #e0e7ff;
+    /* Indigo soft */
+    color: #4338ca;
+    /* Indigo dark */
+    border: 1px solid #4338ca;
+}
+
+.status-not-delivered {
+    background: #fef3c7; /* Amber soft */
+    color: #d97706; /* Amber dark */
+    border: 1px solid #d97706;
+}
+
+.status-returned {
+    background: #f3e8ff;
+    /* Purple soft */
+    color: #9333ea;
+    /* Purple */
+}
+
 /* Utility Classes to Replace Inline Styles */
 .h-60 {
     height: 60px;
@@ -849,6 +914,24 @@ textarea {
     font-weight: 700;
 }
 
-.text-primary {
-    color: var(--text-primary);
+/* Staff Modal Styling */
+.modal-overlay {
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+}
+
+.modal-content {
+    animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }

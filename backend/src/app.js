@@ -133,6 +133,7 @@ const protectStaticDashboards = async (req, res, next) => {
     'dashboards/franchisee': ['admin', 'franchisee'], // Legacy path support
     'dashboards/staff': ['admin', 'franchisee', 'staff'], // Legacy
     'staff/dashboard': ['admin', 'franchisee', 'staff'],
+    'franchisee/assignments': ['admin', 'franchisee'], // New Task Assignment Page
     'dashboards/user': ['admin', 'franchisee', 'staff', 'user']
   };
 

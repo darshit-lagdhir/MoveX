@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Tasks - Franchise Dashboard - MoveX</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/base.css">
+    <link rel="stylesheet" href="../styles/components.css">
+    <link rel="stylesheet" href="../styles/admin.css">
+    <script src="../js/config.js"></script>
+    <script src="../js/dashboard-guard.js"></script>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar and Header will be injected by admin-layout.js -->
+
+        <main>
+            <div class="dashboard-container">
+                <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h1 class="page-title">Assign Tasks</h1>
+                        <p class="page-subtitle">Select shipments and assign them to your staff.</p>
+                    </div>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="filters-bar"
+                    style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; background: var(--surface-primary); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-default);">
+                    <div style="flex: 1;">
+                        <label
+                            style="display: block; font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Select
+                            Staff Member</label>
+                        <select id="staffSelect" class="form-input" style="max-width: 300px;">
+                            <option value="">Loading Staff...</option>
+                        </select>
+                    </div>
+                    <div
+                        style="flex: 1; text-align: right; display: flex; justify-content: flex-end; align-items: flex-end;">
+                        <button id="assignBtn" class="btn-primary" disabled onclick="assignShipments()">
+                            Assign Selected
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Shipments Table -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
+                                <th>Tracking ID</th>
+                                <th>Recipient</th>
+                                <th>Destination</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shipmentsTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align:center; padding: 2rem;">Loading shipments...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Load Core Scripts First -->
+    <script src="../js/franchisee-core.js"></script>
+    <!-- Load Admin Layout Manager -->
+    <script src="../js/admin-layout.js"></script>
+
+    <script>
+        // Inline script for assignment logic
+        let allShipments = [];
+        let selectedShipments = new Set();
+        const API_URL = window.MoveXConfig ? window.MoveXConfig.API_URL : 'https://movex-ffqu.onrender.com';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStaff();
+            loadAvailableShipments();
+
+            // Select All Handler
+            document.getElementById('selectAll').addEventListener('change', (e) => {
+                const checkboxes = document.querySelectorAll('.shipment-checkbox');
+                checkboxes.forEach(cb => {
+                    cb.checked = e.target.checked;
+                    if (e.target.checked) selectedShipments.add(cb.value);
+                    else selectedShipments.delete(cb.value);
+                });
+                updateAssignButton();
+            });
+        });
+
+        async function loadStaff() {
+            try {
+                const res = await fetch(`${API_URL}/api/dashboard/franchisee/staff`, { credentials: 'include' });
+                const data = await res.json();
+                const select = document.getElementById('staffSelect');
+                select.innerHTML = '<option value="">-- Select Staff to Assign --</option>';
+
+                if (data.success && data.staff.length > 0) {
+                    data.staff.forEach(s => {
+                        // Only active staff
+                        if (s.status === 'Active') {
+                            const option = document.createElement('option');
+                            option.value = s.user_id;
+                            option.textContent = `${s.full_name} (${s.staff_role})`;
+                            select.appendChild(option);
+                        }
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.textContent = 'No Staff Found';
+                    select.appendChild(option);
+                }
+            } catch (err) {
+                console.error("Load Staff Error:", err);
+            }
+        }
+
+        async function loadAvailableShipments() {
+            const tbody = document.getElementById('shipmentsTableBody');
+            try {
+                const res = await fetch(`${API_URL}/api/dashboard/franchisee/assignments/available`, { credentials: 'include' });
+                const data = await res.json();
+
+                tbody.innerHTML = '';
+
+                if (data.success && data.shipments.length > 0) {
+                    allShipments = data.shipments;
+                    data.shipments.forEach(s => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><input type="checkbox" class="shipment-checkbox" value="${s.tracking_id}" onchange="toggleSelection('${s.tracking_id}')"></td>
+                            <td class="font-medium">${s.tracking_id}</td>
+                            <td>${s.receiver_name}</td>
+                            <td>${s.destination_address}</td>
+                            <td><span class="status-badge ${s.status.toLowerCase().replace(' ', '-')}">${s.status}</span></td>
+                            <td>${new Date(s.created_at).toLocaleDateString()}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem;">No shipments available for assignment.</td></tr>`;
+                }
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">Error loading shipments</td></tr>`;
+            }
+        }
+
+        window.toggleSelection = function (id) {
+            if (selectedShipments.has(id)) {
+                selectedShipments.delete(id);
+            } else {
+                selectedShipments.add(id);
+            }
+            updateAssignButton();
+        }
+
+        function updateAssignButton() {
+            const btn = document.getElementById('assignBtn');
+            const select = document.getElementById('staffSelect');
+            const count = selectedShipments.size;
+
+            if (count > 0 && select.value) {
+                btn.disabled = false;
+                btn.textContent = `Assign ${count} Shipment${count > 1 ? 's' : ''}`;
+            } else {
+                btn.disabled = true;
+                btn.textContent = count > 0 ? `Select Staff to Assign` : 'Select Shipments';
+            }
+        }
+
+        // Listen to select change too
+        document.getElementById('staffSelect').addEventListener('change', updateAssignButton);
+
+        window.assignShipments = async function () {
+            const staffIds = document.getElementById('staffSelect').value;
+            const trackingIds = Array.from(selectedShipments);
+            const btn = document.getElementById('assignBtn');
+
+            if (!staffIds || trackingIds.length === 0) return;
+
+            btn.disabled = true;
+            btn.textContent = 'Assigning...';
+
+            try {
+                const res = await fetch(`${API_URL}/api/dashboard/franchisee/assign`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ staff_id: staffIds, tracking_ids: trackingIds })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('Successfully assigned ' + trackingIds.length + ' shipments!');
+                    selectedShipments.clear();
+                    document.getElementById('selectAll').checked = false;
+                    loadAvailableShipments(); // Refresh table
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Network Error');
+            } finally {
+                btn.disabled = false;
+                // Button text updates on next interaction or we reset it
+                updateAssignButton();
+            }
+        }
+    </script>
+</body>
+
+</html>

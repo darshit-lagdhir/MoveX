@@ -260,12 +260,10 @@ window.MoveXAdmin = (function () {
                         <option value="Pending" ${currentStatus === 'Pending' ? 'selected' : ''}>Pending</option>
                         <option value="Picked Up" ${currentStatus === 'Picked Up' ? 'selected' : ''}>Picked Up</option>
                         <option value="In Transit" ${currentStatus === 'In Transit' ? 'selected' : ''}>In Transit</option>
+                        <option value="Reached at Final Delivery Hub" ${currentStatus === 'Reached at Final Delivery Hub' ? 'selected' : ''}>Reached at Final Delivery Hub</option>
                         <option value="Out for Delivery" ${currentStatus === 'Out for Delivery' ? 'selected' : ''}>Out for Delivery</option>
                         <option value="Delivered" ${currentStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                        <option value="Hold" ${currentStatus === 'Hold' ? 'selected' : ''}>Hold</option>
-                        <option value="RTO" ${currentStatus === 'RTO' ? 'selected' : ''}>RTO (Return to Origin)</option>
-                        <option value="Failed" ${currentStatus === 'Failed' ? 'selected' : ''}>Failed</option>
-                        <option value="Cancelled" ${currentStatus === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                        <option value="Returned" ${currentStatus === 'Returned' ? 'selected' : ''}>Returned</option>
                     </select>
                 </div>
                 <div>
@@ -653,7 +651,6 @@ window.MoveXAdmin = (function () {
                         const data = await res.json();
                         if (data.success) {
                             showToast('Profile updated successfully', 'success');
-                            // Update display
                             const displayEl = document.getElementById('profile-name-display');
                             if (displayEl) displayEl.textContent = full_name;
                             const topName = document.getElementById('topBarUserName');
@@ -667,7 +664,6 @@ window.MoveXAdmin = (function () {
                 };
             }
 
-            // Password change
             const pwdBtn = document.getElementById('btn-save-password');
             if (pwdBtn) {
                 pwdBtn.onclick = async () => {
@@ -707,7 +703,6 @@ window.MoveXAdmin = (function () {
                 };
             }
 
-            // Load franchise info
             if (window.MoveXOrganization) {
                 const org = window.MoveXOrganization;
                 const nameEl = document.getElementById('franchise-name-display');
@@ -725,15 +720,158 @@ window.MoveXAdmin = (function () {
                     pinEl.placeholder = 'No pincodes assigned';
                 }
 
-                // Removed email logic to match schema
                 const emailEl = document.getElementById('franchise_email');
                 if (emailEl) {
-                    emailEl.style.display = 'none'; // Hide if exists in DOM
+                    emailEl.style.display = 'none';
                 }
 
                 const avatarEl = document.getElementById('profile-avatar');
                 if (avatarEl) avatarEl.textContent = (org.name || 'F').charAt(0).toUpperCase();
             }
+        },
+
+        'assignments': async function () {
+            console.log('Initializing Assignments Page');
+            let allShipments = [];
+            let selectedShipments = new Set();
+            const API_BASE = window.MoveXConfig ? window.MoveXConfig.API_URL : 'https://movex-ffqu.onrender.com';
+
+            // 1. Load Staff
+            async function loadStaff() {
+                try {
+                    const res = await fetch(`${API_BASE}/api/dashboard/franchisee/staff`, { credentials: 'include', headers: getAuthHeaders() });
+                    const data = await res.json();
+                    const select = document.getElementById('staffSelect');
+                    if (!select) return;
+                    select.innerHTML = '<option value="">-- Select Staff to Assign --</option>';
+
+                    if (data.success && data.staff && data.staff.length > 0) {
+                        data.staff.forEach(s => {
+                            if (s.status === 'Active') {
+                                const option = document.createElement('option');
+                                option.value = s.user_id;
+                                option.textContent = `${s.full_name} (${s.staff_role})`;
+                                select.appendChild(option);
+                            }
+                        });
+                    } else {
+                        const option = document.createElement('option');
+                        option.textContent = 'No Active Staff Found';
+                        select.appendChild(option);
+                    }
+                } catch (err) { console.error("Load Staff Error:", err); }
+            }
+
+            // 2. Load Shipments
+            async function loadAvailableShipments() {
+                const tbody = document.getElementById('shipmentsTableBody');
+                if (!tbody) return;
+                try {
+                    const res = await fetch(`${API_BASE}/api/dashboard/franchisee/assignments/available`, { credentials: 'include', headers: getAuthHeaders() });
+                    const data = await res.json();
+
+                    tbody.innerHTML = '';
+
+                    if (data.success && data.shipments && data.shipments.length > 0) {
+                        allShipments = data.shipments;
+                        data.shipments.forEach(s => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td><input type="checkbox" class="shipment-checkbox" value="${s.tracking_id}"></td>
+                                <td class="font-medium" style="color:var(--brand-primary); font-weight:600;">${s.tracking_id}</td>
+                                <td>${s.receiver_name}</td>
+                                <td>${s.destination_address}</td>
+                                <td><span class="status-badge status-reached-at-final-delivery-hub" style="background:#e0e7ff; color:#4338ca; border:1px solid #4338ca;">At Hub</span></td>
+                                <td>${new Date(s.created_at).toLocaleDateString()}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+
+                        // Re-bind checkbox listeners
+                        tbody.querySelectorAll('.shipment-checkbox').forEach(cb => {
+                            cb.addEventListener('change', (e) => {
+                                if (e.target.checked) selectedShipments.add(e.target.value);
+                                else selectedShipments.delete(e.target.value);
+                                updateAssignButton();
+                            });
+                        });
+                    } else {
+                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color:var(--text-secondary);">No shipments at hub ready for assignment.</td></tr>`;
+                    }
+                } catch (err) {
+                    console.error(err);
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--error);">Error loading shipments</td></tr>`;
+                }
+            }
+
+            function updateAssignButton() {
+                const btn = document.getElementById('assignBtn');
+                const select = document.getElementById('staffSelect');
+                if (!btn || !select) return;
+
+                const count = selectedShipments.size;
+
+                if (count > 0 && select.value) {
+                    btn.disabled = false;
+                    btn.textContent = `Assign ${count} Shipment${count > 1 ? 's' : ''}`;
+                } else {
+                    btn.disabled = true;
+                    btn.textContent = count > 0 ? `Select Staff to Assign` : 'Select Shipments';
+                }
+            }
+
+            // 3. Bind Events
+            const selectAll = document.getElementById('selectAll');
+            if (selectAll) {
+                selectAll.addEventListener('change', (e) => {
+                    const checkboxes = document.querySelectorAll('.shipment-checkbox');
+                    checkboxes.forEach(cb => {
+                        cb.checked = e.target.checked;
+                        if (e.target.checked) selectedShipments.add(cb.value);
+                        else selectedShipments.delete(cb.value);
+                    });
+                    updateAssignButton();
+                });
+            }
+
+            const staffSelect = document.getElementById('staffSelect');
+            if (staffSelect) staffSelect.addEventListener('change', updateAssignButton);
+
+            const assignBtn = document.getElementById('assignBtn');
+            if (assignBtn) {
+                assignBtn.onclick = async () => {
+                    const staffIds = staffSelect.value;
+                    const trackingIds = Array.from(selectedShipments);
+
+                    if (!staffIds || trackingIds.length === 0) return;
+
+                    assignBtn.disabled = true;
+                    assignBtn.textContent = 'Assigning...';
+
+                    try {
+                        const res = await fetch(`${API_BASE}/api/dashboard/franchisee/assign`, {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: getAuthHeaders(),
+                            body: JSON.stringify({ staff_id: staffIds, tracking_ids: trackingIds })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            showToast(`Successfully assigned ${trackingIds.length} shipments!`, 'success');
+                            selectedShipments.clear();
+                            if (selectAll) selectAll.checked = false;
+                            loadAvailableShipments();
+                        } else {
+                            showToast(data.error || 'Assignment failed', 'error');
+                        }
+                    } catch (e) { showToast('Network Error', 'error'); }
+                    finally { updateAssignButton(); }
+                };
+            }
+
+            // Initial Load
+            loadStaff();
+            loadAvailableShipments();
         }
     };
 
