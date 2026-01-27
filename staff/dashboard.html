@@ -48,15 +48,6 @@
                     </svg>
                     <span>My Tasks</span>
                 </a>
-
-
-                <div class="nav-group-title">Account</div>
-                <a href="profile.html" class="nav-item">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                    </svg>
-                    <span>My Profile</span>
-                </a>
             </nav>
         </aside>
 
@@ -84,7 +75,7 @@
                             <div id="topBarUserName" style="font-weight: 600; font-size: 0.875rem;">Loading...</div>
                             <div id="topBarRole"
                                 style="font-size: 0.75rem; color: var(--text-secondary); text-transform: capitalize;">
-                                ...
+                                Hub Member
                             </div>
                         </div>
                         <div class="avatar"
@@ -155,18 +146,8 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../js/staff-layout.js"></script>
+    <script src="../js/admin-layout.js"></script>
     <script src="../js/staff-core.js"></script>
-    <script>
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load stats
-            if (window.StaffCore) window.StaffCore.loadStats();
-
-            // Init Layout (Sidebar/Toggle)
-            if (window.StaffLayout) window.StaffLayout.init('dashboard');
-        });
-    </script>
 </body>
 
 </html>

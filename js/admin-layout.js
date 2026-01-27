@@ -1,10 +1,15 @@
 /**
  * ADMIN LAYOUT MANAGER (SPA Version)
  * Handles Sidebar toggle, Active state, and SPA Navigation.
+ * Supports Admin, Franchisee, and Staff roles.
  */
 
 (function () {
     'use strict';
+
+    // Set global API_URL for core scripts (Staff, Admin, Franchisee)
+    const API_URL = window.MoveXConfig ? window.MoveXConfig.API_URL : 'https://movex-ffqu.onrender.com';
+    window.API_URL = API_URL;
 
     // Failsafe: Always reveal UI after 1.5s
     const revealTimeout = setTimeout(revealUI, 1500);
@@ -35,7 +40,12 @@
 
         await ensureCoreLoaded();
 
-        if (window.MoveXAdmin) {
+        const isStaff = window.location.pathname.includes('/staff/');
+        if (isStaff && window.StaffCore) {
+            console.log('Layout Manager: Triggering staff core init for', currentPath);
+            if (currentPath === 'dashboard') window.StaffCore.loadStats();
+            if (currentPath === 'assignments') window.StaffCore.loadTasks();
+        } else if (window.MoveXAdmin) {
             console.log('Layout Manager: Triggering core init for', currentPath);
             window.MoveXAdmin.init(currentPath.toLowerCase());
         }
@@ -57,15 +67,24 @@
         }
 
         const isFranchisee = window.location.pathname.includes('/franchisee/');
-        const expectedCore = isFranchisee ? '/js/franchisee-core.js' : '/js/admin-core.js';
+        const isStaff = window.location.pathname.includes('/staff/');
 
-        if (window.MoveXAdmin && window.MoveXAdmin._source === expectedCore) return;
+        let expectedCore = '/js/admin-core.js';
+        if (isFranchisee) expectedCore = '/js/franchisee-core.js';
+        if (isStaff) expectedCore = '/js/staff-core.js';
+
+        const isCoreLoaded = () => {
+            if (isStaff) return !!window.StaffCore;
+            return !!window.MoveXAdmin;
+        };
+
+        if (isCoreLoaded() && window._lastLoadedCore === expectedCore) return;
 
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.src = expectedCore;
             script.onload = () => {
-                if (window.MoveXAdmin) window.MoveXAdmin._source = expectedCore;
+                window._lastLoadedCore = expectedCore;
                 resolve();
             };
             script.onerror = reject;
@@ -142,9 +161,9 @@
             const newMain = doc.querySelector('main');
 
             if (newMain && main) {
-                setTimeout(() => {
+                setTimeout(async () => {
                     main.innerHTML = newMain.innerHTML;
-                    document.title = doc.title || 'MoveX Admin';
+                    document.title = doc.title || 'MoveX';
                     main.style.opacity = '1';
                     main.style.transform = 'translateY(0)';
                     updateActiveState();
@@ -157,8 +176,16 @@
                         }, 300);
                     }, 200);
 
-                    const pageName = url.split('/').pop();
-                    if (window.MoveXAdmin) window.MoveXAdmin.init(pageName);
+                    let currentPath = window.location.pathname.split('/').pop() || 'dashboard';
+                    if (currentPath.endsWith('.html')) currentPath = currentPath.slice(0, -5);
+
+                    const isStaff = window.location.pathname.includes('/staff/');
+                    if (isStaff && window.StaffCore) {
+                        if (currentPath === 'dashboard') window.StaffCore.loadStats();
+                        if (currentPath === 'assignments') window.StaffCore.loadTasks();
+                    } else if (window.MoveXAdmin) {
+                        window.MoveXAdmin.init(currentPath.toLowerCase());
+                    }
                 }, 200);
             } else {
                 window.location.href = url;
@@ -176,7 +203,7 @@
 
         navItems.forEach(item => {
             const href = item.getAttribute('href');
-            if (href === currentPage) {
+            if (href === currentPage || (href + '.html') === currentPage) {
                 item.classList.add('active');
                 if (headerTitle) {
                     headerTitle.textContent = item.querySelector('span')?.textContent || '';
@@ -193,7 +220,7 @@
             if (window.MoveXUser) {
                 const nameEl = document.getElementById('topBarUserName');
                 if (nameEl) {
-                    nameEl.textContent = window.MoveXUser.full_name || 'Admin';
+                    nameEl.textContent = window.MoveXUser.full_name || 'User';
                 }
             } else {
                 setTimeout(update, 500);
@@ -201,6 +228,16 @@
         };
         update();
     }
+
+    // Exported global toggle for sidebar
+    window.toggleSidebar = function () {
+        const sidebar = document.getElementById('sidebar');
+        const layout = document.querySelector('.admin-layout');
+        if (sidebar) {
+            sidebar.classList.toggle('collapsed');
+            if (layout) layout.classList.toggle('sidebar-collapsed');
+        }
+    };
 
     document.addEventListener('movex:authenticated', updateUserInfo);
 
