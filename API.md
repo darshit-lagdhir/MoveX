@@ -124,13 +124,21 @@ These paths are used by the Admin to manage the whole business.
     *   `status`: Its current stage (Pending, In Transit, etc.).
 
 ### ➕ Create a New Shipment (Parcel)
-*   **Path:** `POST /admin/shipments/create`
+*   **Path:** `POST /api/dashboard/admin/shipments/create`
 *   **Validation Rules:**
-    *   **Names**: Only letters.
-    *   **Mobile**: Only numbers and `+`.
-    *   **Pincode**: Exactly 6 digits.
-    *   **Price**: Must be a valid number.
-*   **What to send:** All fields for sender and receiver (Name, Mobile, Address, Pincode), plus `origin`, `destination`, `price`, and `weight`.
+    *   **Names**: Letters and spaces only.
+    *   **Mobile**: Exactly 10 digits (Numbers only).
+    *   **Pincode**: Exactly 6 digits (Numbers only).
+    *   **Price**: Valid number (amount).
+*   **What to send:**
+    ```json
+    {
+      "sender_name": "John Doe", "sender_phone": "9876543210", "sender_address": "Street 1", "sender_pincode": "560001", "sender_city": "Mumbai",
+      "receiver_name": "Jane Smith", "receiver_phone": "9988776655", "receiver_address": "Street 2", "receiver_pincode": "560002", "receiver_city": "Delhi",
+      "weight": 5.0, "amount": 250, "contents": "Books and Stationery"
+    }
+    ```
+*   **Sequential IDs:** Tracking IDs are now created in series (e.g., `MX10001`, `MX10002`).
 
 ### 🔄 Update Parcel Status
 *   **Path:** `POST /api/dashboard/admin/shipments/update-status`
@@ -141,7 +149,7 @@ These paths are used by the Admin to manage the whole business.
       "status": "in_transit"
     }
     ```
-*   **Allowed Statuses:** `pending`, `in_transit`, `delivered`, `failed`, `returned`.
+*   **Allowed Statuses:** `pending`, `in_transit`, `reached at final delivery hub`, `delivered`, `not delivered`, `returned`.
 
 ---
 
@@ -215,28 +223,34 @@ These paths are for Franchise Owners to manage their business.
 
 ### 👥 Franchise Staff Management
 *   **Path:** `GET /api/dashboard/franchisee/staff`
-*   **Create:** `POST /api/dashboard/franchisee/staff/create` (Requires `username`, `password`, `full_name`, `staff_role`)
+*   **Create:** `POST /api/dashboard/franchisee/staff/create` (Requires `username`, `password`, `full_name`, `phone`)
 *   **Update:** `POST /api/dashboard/franchisee/staff/update`
 *   **Disable:** `POST /api/dashboard/franchisee/staff/status`
 
+### 📋 Task Assignment
+*   **Get Available Tasks:** `GET /api/dashboard/franchisee/assignments/available` (Only shows shipments with status `reached at final delivery hub`)
+*   **Bulk Assign:** `POST /api/dashboard/franchisee/assign`
+    ```json
+    {
+      "staff_id": 123,
+      "shipment_ids": ["MX10001", "MX10002"]
+    }
+    ```
+
 ---
 
-## 👥 5. Staff Management (Logistics Team)
-
-These paths are for managing the ground team (Drivers, Warehouse Staff, etc.).
-
-### 📋 List All Staff
+### 📋 List All Staff (Admin View)
 *   **Path:** `GET /api/dashboard/admin/staff`
 *   **Who can use it:** Only **Admins**.
 *   **What you get:** A list of all staff members with their role, hub, and contact info.
 
-### ➕ Register New Staff
+### ➕ Register New Staff (Admin View)
 *   **Path:** `POST /api/dashboard/admin/staff/create`
-*   **What to send:** `full_name`, `username`, `password`, `staff_role` (e.g., Driver, Warehouse Staff), `phone`, and `organization_id` (Hub).
+*   **What to send:** `full_name`, `username`, `password`, `phone`, and `organization_id` (Hub).
 
 ### ✏️ Update Staff Details
 *   **Path:** `POST /api/dashboard/admin/staff/update`
-*   **What to send:** `id` (Staff ID) and any fields you want to change (`full_name`, `staff_role`, etc.).
+*   **What to send:** `id` (Staff ID) and any fields you want to change (`full_name`, `phone`, etc.).
 
 ### 🛡️ Disable Staff Account
 *   **Path:** `POST /api/dashboard/admin/staff/status`
@@ -245,16 +259,38 @@ These paths are for managing the ground team (Drivers, Warehouse Staff, etc.).
 
 ---
 
+## 👥 5. Staff Operations (Ground Team)
+
+These paths are for Staff members to manage their assigned deliveries.
+
+### 📋 List Assigned Tasks
+*   **Path:** `GET /api/dashboard/staff/shipments`
+*   **Who can use it:** Logged-in **Staff** members.
+*   **What you get:** A list of shipments assigned specifically to this staff member by their Franchisee.
+
+### 🔄 Bulk Update Status
+*   **Path:** `POST /api/dashboard/staff/shipments/bulk-update`
+*   **What to send:**
+    ```json
+    {
+      "shipment_ids": ["MX10001", "MX10002"],
+      "status": "out_for_delivery"
+    }
+    ```
+*   **Allowed Statuses:** `out_for_delivery`, `delivered`, `not_delivered`.
+
+### 📉 Staff Stats
+*   **Path:** `GET /api/dashboard/staff/stats`
+*   **What you get:** Counts for 'Pending at Hub', 'Out for Delivery', and 'Delivered Today'.
+
+---
+
 ## 6. Public Tools (No Login Needed)
 
 ### 🧐 Can you deliver here? (Service Check)
 *   **Path:** `GET /api/dashboard/public/check-service/:query`
-*   **Usage:** Replace `:query` with a Pincode (e.g., `400001`) or a City Name.
-*   **What you get back:** `{"serviceable": true, "details": { ... }}` if we can deliver there.
-
-### 🏙️ List of Cities
-*   **Path:** `GET /api/dashboard/public/serviceable-cities`
-*   **Usage:** Shows up to 50 cities where we work. You can add `?search=Mum` to find "Mumbai."
+*   **Usage:** Replace `:query` with a Pincode (e.g., `560048`).
+*   **What you get back:** `{"serviceable": true, "details": { ... }}` if we have a franchise covering that area.
 
 ---
 

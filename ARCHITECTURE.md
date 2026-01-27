@@ -50,12 +50,11 @@ MoveX uses table-specific column names for clarity:
 
 | Table | Primary Key | Key Columns |
 |-------|-------------|-------------|
-| **organizations** | organization_id | name, type, status |
-| **users** | username | user_id, role, status |
+| **organizations** | organization_id | name, type, status, pincodes |
+| **users** | username | user_id, role, status, phone |
 | **sessions** | session_id | token, username, expires_at |
 | **password_resets** | reset_id | username, token_hash |
-| **shipments** | tracking_id | shipment_id, creator_username, organization_id |
-| **serviceable_cities** | city_id | name |
+| **shipments** | tracking_id | creator_username, organization_id, status, assigned_staff_id |
 
 **Visual Reference:** See `ERDIAGRAM/index.html` for Chen Notation ER Diagram.
 
@@ -100,10 +99,10 @@ In `app.js`, we set special instructions for the browser:
 movex/
 ├── _headers                # Cloudflare/Nginx security settings
 ├── dashboards/             # REAL HTML files (Protected by Backend)
-│   ├── admin/              # Admin dashboard files
-│   ├── franchisee/         # Franchisee dashboard files
-│   ├── staff/              # Staff dashboard files
-│   └── user/               # User dashboard files
+│   ├── admin/              # admin-dashboard.html, etc.
+│   ├── franchisee/         # franchisee-dashboard.html, etc.
+│   ├── staff/              # staff-dashboard.html, etc.
+│   └── user/               # user-dashboard.html
 ├── backend/
 │   ├── routes/             # All URL paths (Dashboard, Profile, Login)
 │   ├── src/
@@ -113,7 +112,9 @@ movex/
 │   │   └── controllers/    # Calculations and business rules
 │   └── sql/                # THE BLUEPRINTS (Table structures)
 ├── js/                     # Frontend scripts (How the UI works)
+│   ├── dashboard-layout.js # Unified Layout Manager
 │   ├── config.js           # Public Frontend Settings (API URL)
+│   └── dashboard-guard.js  # Role-based protection logic
 └── styles/                 # Designing the premium look (CSS)
 ```
 

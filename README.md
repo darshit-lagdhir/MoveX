@@ -38,7 +38,7 @@ npm start
 
 - **Main App:** http://localhost:4000
 - **System Status:** http://localhost:4000/api/health
-- **Admin Section:** http://localhost:4000/admin/dashboard.html
+- **Admin Section:** http://localhost:4000/dashboards/admin/admin-dashboard.html
 
 ---
 
@@ -76,11 +76,11 @@ MoveX uses a **Single-system design built for safety**, made to be an "Iron Fort
 
 ```
 movex/
-├── admin/                  # Admin dashboard pages
-│   ├── dashboard.html      # Main admin page
-│   ├── staff.html          # Staff & Logistics management
-│   ├── franchises.html     # Branch management
-│   └── print_label.html    # Printing labels for parcels
+├── dashboards/             # Unified Dashboard System
+│   ├── admin/              # admin-dashboard.html, admin-users.html, etc.
+│   ├── franchisee/         # franchisee-dashboard.html, franchisee-shipments.html, etc.
+│   ├── staff/              # staff-dashboard.html, staff-assignments.html
+│   └── user/               # user-dashboard.html
 ├── backend/               
 │   ├── middleware/        # Security check-posts (auth, limits, etc.)
 │   ├── routes/            # Main URL paths
@@ -88,12 +88,13 @@ movex/
 │   │   ├── app.js         # Main server file
 │   │   ├── config/        # Database setup
 │   │   ├── controllers/   # App logic
-│   │   ├── routes/        # Extra URL paths
 │   │   └── session.js     # Managing logins (saved in DB)
 │   ├── sql/               # Combined database setup files (001-003)
 │   └── utils/             # Helper tools
-├── dashboards/            # Pages for various roles
 ├── js/                    # Frontend JavaScript files
+│   ├── dashboard-layout.js # Unified Layout Manager
+│   ├── dashboard-guard.js  # Role-based protection logic
+│   └── ...                 # Role-specific core files
 ├── styles/                # CSS design files
 ├── ERDIAGRAM/             # ER Diagram visualization (Chen notation)
 ├── index.html             # Main login page
@@ -115,10 +116,10 @@ movex/
 
 | Role | What they can do | Dashboard link |
 |------|--------------|-----------|
-| **Admin** | Full control of the system | `/admin/dashboard.html` |
-| **Franchisee** | Manage their own branch | `/dashboards/franchisee.html` |
-| **Staff** | Daily work and parcel updates | `/dashboards/staff.html` |
-| **User** | Simple tasks and viewing | `/dashboards/user.html` |
+| **Admin** | Full control of the system | `/dashboards/admin/admin-dashboard.html` |
+| **Franchisee** | Manage their own branch | `/dashboards/franchisee/franchisee-dashboard.html` |
+| **Staff** | Daily work and parcel updates | `/dashboards/staff/staff-dashboard.html` |
+| **User** | Simple tasks and viewing | `/dashboards/user/user-dashboard.html` |
 
 ---
 
@@ -170,8 +171,8 @@ DB_NAME=movex_auth
 ### Shipments (Admin)
 | Method | Path | Description |
 |--------|----------|-------------|
-| GET | `/admin/shipments` | List all parcels |
-| POST | `/admin/shipments/create` | Create a new parcel |
+| GET | `/api/dashboard/admin/shipments` | List all parcels |
+| POST | `/api/dashboard/admin/shipments/create` | Create a new parcel |
 
 ### System Status
 | Method | Path | Description |

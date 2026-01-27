@@ -117,7 +117,7 @@ For MoveX, being "Ready for Real Customers" means the app can:
 │                       DATABASE                               │
 │  ┌─────────────────────────────────────────────────────┐    │
 │  │              PostgreSQL (Supabase)                   │    │
-│| Tables: users, organizations, shipments, serviceable_cities |
+│| Tables: users, organizations, shipments, sessions        |
 │  └─────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────┘
 
@@ -322,7 +322,7 @@ HEALTH_CHECK_KEY=your_secret_key
 | username | VARCHAR(255) | **PRIMARY KEY** - Unique login name |
 | password_hash | TEXT | Hidden password |
 | full_name | VARCHAR(100) | Person's name |
-| phone | VARCHAR(50) | Contact number |
+| phone | VARCHAR(10) | **10-digit** contact number |
 | role | user_role | admin, franchisee, staff, user |
 | status | user_status | active, disabled, suspended |
 | organization_id | BIGINT | FK → organizations(organization_id) |
@@ -362,20 +362,21 @@ HEALTH_CHECK_KEY=your_secret_key
 | Column | Type | Description |
 |--------|------|-------------|
 | shipment_id | BIGSERIAL | Auto-increment ID |
-| tracking_id | VARCHAR(50) | **PRIMARY KEY** - Unique tracking code |
-| sender_name | VARCHAR(100) | Who is sending |
-| sender_mobile | VARCHAR(20) | Sender phone |
-| sender_address | TEXT | Sender full address |
-| sender_pincode | VARCHAR(10) | Sender pincode |
-| receiver_name | VARCHAR(100) | Who is receiving |
-| receiver_mobile | VARCHAR(20) | Receiver phone |
-| receiver_address | TEXT | Receiver full address |
-| receiver_pincode | VARCHAR(10) | Receiver pincode |
-| status | VARCHAR(50) | pending, in_transit, delivered, failed |
-| price | DECIMAL | Cost of delivery |
-| weight | DECIMAL | Parcel weight in KG |
-| creator_username | VARCHAR(255) | FK → users(username) |
-| organization_id | BIGINT | FK → organizations(organization_id) |
+| tracking_id | VARCHAR(50) | **PRIMARY KEY** - Sequential (MX10001+) |
+| sender_name | VARCHAR(100) | Sender Name |
+| sender_phone | VARCHAR(10) | **10-digit** Mobile |
+| sender_address | TEXT | Sender Address |
+| sender_pincode | VARCHAR(6) | **6-digit** Pincode |
+| receiver_name | VARCHAR(100) | Receiver Name |
+| receiver_phone | VARCHAR(10) | **10-digit** Mobile |
+| receiver_address | TEXT | Receiver Address |
+| receiver_pincode | VARCHAR(6) | **6-digit** Pincode |
+| status | VARCHAR(50) | pending, in_transit, reached at final delivery hub, delivered |
+| price | DECIMAL | Cost (Amount) |
+| weight | DECIMAL | Parcel weight (kg) |
+| creator_username | VARCHAR(255) | User who booked it |
+| organization_id | BIGINT | Hub handling the parcel |
+| assigned_staff_id | BIGINT | Driver/Staff Assigned |
 | created_at | TIMESTAMPTZ | Booking date |
 
 
@@ -534,6 +535,14 @@ cd backend && npm start
 ---
 
 ## Appendix C: History (Changelog)
+
+### v1.5.0 (January 27, 2026) - Major Restructuring & Validation
+- **Architecture**: Moved all role pages into `dashboards/` with role prefixes (e.g., `admin-dashboard.html`).
+- **Layout**: Unified layout management in `dashboard-layout.js` for all platform roles.
+- **Validation**: Enforced strict **10-digit Phone Numbers** and **6-digit Pincodes** project-wide.
+- **Shipments**: Implemented **Sequential Tracking IDs** (MX10001+ series) for better organization.
+- **Cleanup**: Removed `Package Type` and `Serviceable Cities` table; switched to manual city entry and weight tracking.
+- **Workflows**: Added `Reached at Final Delivery Hub` status and Staff Assignment system.
 
 ### v1.4.0 (January 26, 2026) - Label Unification & Schema update
 - **Database**: Removed `email` column from `users` table as per user request to streamline registration.
