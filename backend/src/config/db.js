@@ -40,10 +40,11 @@ function getSSLConfig(connectionString) {
 
 function buildPoolConfig() {
   const baseConfig = {
-    max: 20,
-    min: 2,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 60000, // 60s for stability
+    max: 10, // Reduced from 20 -> 10 for Supabase Transaction Mode compatibility
+    min: 0,  // Allow pool to scale down to 0 to prevent holding stale connections
+    idleTimeoutMillis: 5000, // Disconnect idle clients after 5 seconds
+    connectionTimeoutMillis: 10000, // Fail fast (10s) to avoid hanging requests
+    allowExitOnIdle: true,
     keepAlive: true,
     family: 4
   };
@@ -56,6 +57,12 @@ function buildPoolConfig() {
       console.log('🔧 Auto-switching Supabase port 5432 -> 6543 (Transaction Mode) for stability');
       connectionString = connectionString.replace(':5432', ':6543');
     }
+
+    // DEBUG: Log the actual connection string parameters (masked)
+    try {
+      const dbUrl = new URL(connectionString);
+      console.log(`[DB Config] Connecting to Host: ${dbUrl.hostname}, Port: ${dbUrl.port}, User: ${dbUrl.username}`);
+    } catch (e) { console.log('[DB Config] Could not parse connection string for logging'); }
 
     return {
       ...baseConfig,
@@ -83,12 +90,7 @@ pool.on('error', (err) => {
 });
 
 async function validateConnection(retries = 5) {
-  if (isProduction && process.env.DATABASE_URL) {
-    try {
-      const urlInfo = new URL(process.env.DATABASE_URL);
-      console.log(`[DB] Connecting to: ${urlInfo.hostname}:${urlInfo.port || 5432}`);
-    } catch (e) { }
-  }
+
 
   for (let i = 0; i < retries; i++) {
     try {
