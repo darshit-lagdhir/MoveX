@@ -18,11 +18,16 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
 // ═══════════════════════════════════════════════════════════
 // SUPABASE TLS FIX (Windows Certificate Chain Issue)
 // ═══════════════════════════════════════════════════════════
-// Supabase uses valid SSL certificates, but Windows has issues
-// with certificate chain validation. This bypass is safe for Supabase.
-if (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('supabase.co')) {
+// Supabase uses valid SSL certificates, but Windows and some Render regions have issues
+// with certificate chain validation. This bypass ensures connectivity.
+const hasSupabaseUrl = process.env.DATABASE_URL && (
+  process.env.DATABASE_URL.includes('supabase.co') ||
+  process.env.DATABASE_URL.includes('supabase.org') ||
+  process.env.DATABASE_URL.includes('pooler.supabase.com')
+);
+
+if (hasSupabaseUrl) {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-  // console.log('⚠️ TLS certificate validation disabled for Supabase connection (Windows compatibility)');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -41,16 +46,18 @@ const isProduction = process.env.NODE_ENV === 'production';
  * 2. Supabase is a trusted service
  */
 function getSSLConfig(connectionString) {
-  // If DATABASE_URL contains sslmode=require, enable SSL with relaxed verification
-  if (connectionString && connectionString.includes('sslmode=require')) {
-    return {
-      rejectUnauthorized: false,
-      // Supabase uses valid certs but Windows may have chain issues
-    };
-  }
+  if (!connectionString) return process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false;
 
-  // If DATABASE_URL contains supabase.co, always use SSL
-  if (connectionString && connectionString.includes('supabase.co')) {
+  const isCloudDB =
+    connectionString.includes('sslmode=require') ||
+    connectionString.includes('supabase.co') ||
+    connectionString.includes('supabase.org') ||
+    connectionString.includes('pooler.supabase.com') ||
+    connectionString.includes('render.com') ||
+    connectionString.includes('railway.app') ||
+    connectionString.includes('neon.tech');
+
+  if (isCloudDB) {
     return {
       rejectUnauthorized: false
     };
@@ -73,8 +80,8 @@ function buildPoolConfig() {
     // Connection pool settings (conservative for production)
     max: parseInt(process.env.DB_POOL_MAX, 10) || 10, // Maximum connections
     min: 0,                                            // Allow all connections to close if idle
-    idleTimeoutMillis: 15000,                          // Close idle connections after 15s
-    connectionTimeoutMillis: 5000,                     // Fail fast (5s)
+    idleTimeoutMillis: 30000,                          // Close idle connections after 30s
+    connectionTimeoutMillis: 15000,                    // Increased timeout (15s) for Render/Supabase cold starts
     keepAlive: true,                                   // Keep TCP connection healthy
     // Force IPv4 to prevent Render/Supabase IPv6 resolution issues (ENETUNREACH)
     family: 4,
