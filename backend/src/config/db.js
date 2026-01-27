@@ -49,10 +49,18 @@ function buildPoolConfig() {
   };
 
   if (process.env.DATABASE_URL) {
+    let connectionString = process.env.DATABASE_URL;
+
+    // AUTO-FIX: Switch Supabase Pooler port from 5432 to 6543 (Transaction Mode) to prevent timeouts
+    if (connectionString.includes('supabase.com') && connectionString.includes('5432')) {
+      console.log('🔧 Auto-switching Supabase port 5432 -> 6543 (Transaction Mode) for stability');
+      connectionString = connectionString.replace(':5432', ':6543');
+    }
+
     return {
       ...baseConfig,
-      connectionString: process.env.DATABASE_URL,
-      ssl: getSSLConfig(process.env.DATABASE_URL)
+      connectionString: connectionString,
+      ssl: getSSLConfig(connectionString)
     };
   }
 
