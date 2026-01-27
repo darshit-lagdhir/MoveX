@@ -204,16 +204,29 @@
     }
 
     window.MoveXLogout = async function () {
-        // Get token BEFORE clearing storage
         const token = getToken();
+
+        try {
+            // Attempt server-side logout via fetch to clear HttpOnly cookies
+            await fetch(`${API_BASE}/api/auth/logout`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : undefined
+                },
+                credentials: 'include'
+            });
+        } catch (e) {
+            console.warn('Logout API call failed', e);
+        }
 
         // Clear local state
         document.cookie = 'movex_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         document.cookie = 'movex.sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         sessionStorage.removeItem('movexsecuresession');
 
-        // Navigate to backend logout with token as fallback
-        window.location.href = `${API_BASE}/api/logout-redirect?token=${encodeURIComponent(token || '')}`;
+        // Redirect to Client-Side Login Page (Stay on current domain)
+        window.location.href = '/?logout=true';
     };
 
     if (document.readyState === 'loading') {
