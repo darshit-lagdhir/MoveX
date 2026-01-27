@@ -63,7 +63,7 @@ MoveX uses a **Single-system design built for safety**, made to be an "Iron Fort
 
 ### 1. The "Fast & Simple" Frontend
 - **No special setup needed:** We do not use complex tools like Webpack. The code you see is exactly what runs in the browser.
-- **Shadow Router (`admin-layout.js`):** A custom tool that catches clicks to load pages quickly without reloading the whole site.
+- **Shadow Router (`dashboard-layout.js`):** A custom tool that catches clicks to load pages quickly without reloading the whole site.
 - **Keeps your data visible:** The Sidebar and Header stay active while you move between pages, so the screen doesn't "blink."
 
 ### 2. The "Protected" Backend

@@ -77,7 +77,7 @@ For MoveX, being "Ready for Real Customers" means the app can:
 │                          │                                   │
 │  ┌───────────────────────────────────────────────────────┐  │
 │  │                    js/*.js                             │  │
-│  │  auth-api.js | admin-layout.js | admin-core.js         │  │
+│  │  auth-api.js | dashboard-layout.js | admin-core.js         │  │
 │  │  dashboard-guard.js                                    │  │
 │  │                                                        │  │
 │  └───────────────────────────────────────────────────────┘  │

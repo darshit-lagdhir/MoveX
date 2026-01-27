@@ -2,7 +2,7 @@
 /**
  * Staff Core Logic
  * Handles API calls for Staff Dashboard
- * Note: API_URL is defined in staff-layout.js which loads first
+ * Note: API_URL is defined globally in dashboard-layout.js
  */
 
 const StaffCore = {

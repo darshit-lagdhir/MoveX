@@ -8,17 +8,27 @@
     const API_BASE = window.MoveXConfig ? window.MoveXConfig.API_URL : 'https://movex-ffqu.onrender.com';
 
     const DASHBOARDS = {
-        admin: '/admin/dashboard.html',
+        admin: '/dashboards/admin/admin-dashboard.html',
         franchisee: '/franchisee/dashboard.html',
         staff: '/staff/dashboard.html',
         user: '/dashboards/user.html'
     };
 
     const ROLE_HIERARCHY = {
+        'admin-dashboard': ['admin'],
+        'admin-users': ['admin'],
+        'admin-franchises': ['admin'],
+        'admin-staff': ['admin'],
+        'admin-shipments': ['admin'],
+        'admin-bookings': ['admin'],
+        'admin-finance': ['admin'],
+        'admin-reports': ['admin'],
+        'admin-settings': ['admin'],
+        'admin-print_label': ['admin'],
         'dashboard': ['admin', 'franchisee', 'staff', 'user'],
         'users': ['admin'],
         'franchises': ['admin'],
-        'staff': ['admin', 'franchisee', 'staff'],
+        'staff': ['admin', 'franchisee', 'staff', 'franchisee'],
         'shipments': ['admin', 'franchisee'],
         'bookings': ['admin', 'franchisee'],
         'pickup-requests': ['admin', 'franchisee'],

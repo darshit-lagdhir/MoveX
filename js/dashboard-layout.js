@@ -1,5 +1,5 @@
 /**
- * ADMIN LAYOUT MANAGER (SPA Version)
+ * PLATFORM LAYOUT MANAGER (SPA Version)
  * Handles Sidebar toggle, Active state, and SPA Navigation.
  * Supports Admin, Franchisee, and Staff roles.
  */
@@ -24,7 +24,7 @@
 
     let isLayoutInitialized = false;
 
-    async function initAdminLayout() {
+    async function initPlatformLayout() {
         const layout = document.querySelector('.admin-layout');
         if (!layout || isLayoutInitialized) return;
 
@@ -38,16 +38,22 @@
         let currentPath = window.location.pathname.split('/').pop() || 'dashboard';
         if (currentPath.endsWith('.html')) currentPath = currentPath.slice(0, -5);
 
+        // Strip prefixes for internal logic if needed
+        let logicPath = currentPath;
+        if (logicPath.startsWith('admin-')) logicPath = logicPath.replace('admin-', '');
+        if (logicPath.startsWith('franchisee-')) logicPath = logicPath.replace('franchisee-', '');
+        if (logicPath.startsWith('staff-')) logicPath = logicPath.replace('staff-', '');
+
         await ensureCoreLoaded();
 
         const isStaff = window.location.pathname.includes('/staff/');
         if (isStaff && window.StaffCore) {
-            console.log('Layout Manager: Triggering staff core init for', currentPath);
-            if (currentPath === 'dashboard') window.StaffCore.loadStats();
-            if (currentPath === 'assignments') window.StaffCore.loadTasks();
+            console.log('Layout Manager: Triggering staff core init for', logicPath);
+            if (logicPath === 'dashboard') window.StaffCore.loadStats();
+            if (logicPath === 'assignments') window.StaffCore.loadTasks();
         } else if (window.MoveXAdmin) {
-            console.log('Layout Manager: Triggering core init for', currentPath);
-            window.MoveXAdmin.init(currentPath.toLowerCase());
+            console.log('Layout Manager: Triggering core init for', logicPath);
+            window.MoveXAdmin.init(logicPath.toLowerCase());
         }
 
         revealUI();
@@ -176,15 +182,21 @@
                         }, 300);
                     }, 200);
 
+                    // Re-init core logic for the new path
                     let currentPath = window.location.pathname.split('/').pop() || 'dashboard';
                     if (currentPath.endsWith('.html')) currentPath = currentPath.slice(0, -5);
 
+                    let logicPath = currentPath;
+                    if (logicPath.startsWith('admin-')) logicPath = logicPath.replace('admin-', '');
+                    if (logicPath.startsWith('franchisee-')) logicPath = logicPath.replace('franchisee-', '');
+                    if (logicPath.startsWith('staff-')) logicPath = logicPath.replace('staff-', '');
+
                     const isStaff = window.location.pathname.includes('/staff/');
                     if (isStaff && window.StaffCore) {
-                        if (currentPath === 'dashboard') window.StaffCore.loadStats();
-                        if (currentPath === 'assignments') window.StaffCore.loadTasks();
+                        if (logicPath === 'dashboard') window.StaffCore.loadStats();
+                        if (logicPath === 'assignments') window.StaffCore.loadTasks();
                     } else if (window.MoveXAdmin) {
-                        window.MoveXAdmin.init(currentPath.toLowerCase());
+                        window.MoveXAdmin.init(logicPath.toLowerCase());
                     }
                 }, 200);
             } else {
@@ -242,9 +254,9 @@
     document.addEventListener('movex:authenticated', updateUserInfo);
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initAdminLayout);
+        document.addEventListener('DOMContentLoaded', initPlatformLayout);
     } else {
-        initAdminLayout();
+        initPlatformLayout();
     }
 
 })();

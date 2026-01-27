@@ -22,7 +22,7 @@
           // Role is directly at data.data.role, NOT data.data.user.role
           const storedRole = data.data.role || 'user';
           const dashboards = {
-            admin: '/admin/dashboard.html',
+            admin: '/dashboards/admin/admin-dashboard.html',
             franchisee: '/franchisee/dashboard.html',
             staff: '/staff/dashboard.html',
             user: '/dashboards/user.html'
@@ -279,7 +279,7 @@
     );
 
     const dashboards = {
-      admin: 'admin/dashboard',
+      admin: 'dashboards/admin/admin-dashboard.html',
       franchisee: 'franchisee/dashboard',
       staff: 'staff/dashboard',
       user: 'dashboards/user'
@@ -352,7 +352,7 @@
 
         setTimeout(() => {
           const dashboards = {
-            admin: 'admin/dashboard',
+            admin: 'dashboards/admin/admin-dashboard.html',
             franchisee: 'franchisee/dashboard',
             staff: 'staff/dashboard',
             user: 'dashboards/user'

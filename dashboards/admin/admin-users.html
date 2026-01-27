@@ -4,36 +4,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shipment Management - MoveX Admin</title>
+    <title>User Management - MoveX Admin</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="preload" href="../styles/base.css?v=4" as="style">
-    <link rel="preload" href="../styles/components.css?v=4" as="style">
-    <link rel="preload" href="../styles/admin.css?v=5" as="style">
-    <link rel="stylesheet" href="../styles/base.css?v=4">
-    <link rel="stylesheet" href="../styles/components.css?v=4">
-    <link rel="stylesheet" href="../styles/admin.css?v=5">
-    <script src="../js/config.js?v=1"></script>
-    <script src="../js/dashboard-guard.js?v=3"></script>
-    <script src="../js/admin-core.js?v=3"></script>
+
+    <link rel="preload" href="../../styles/base.css?v=4" as="style">
+    <link rel="preload" href="../../styles/components.css?v=4" as="style">
+    <link rel="preload" href="../../styles/admin.css?v=5" as="style">
+    <link rel="stylesheet" href="../../styles/base.css?v=4">
+    <link rel="stylesheet" href="../../styles/components.css?v=4">
+    <link rel="stylesheet" href="../../styles/admin.css?v=4">
+    <script src="../../js/config.js?v=1"></script>
+    <script src="../../js/dashboard-guard.js?v=3"></script>
 </head>
 
 <body>
     <div class="admin-layout">
-        <!-- ⚡ INSTANT PAINT: Sidebar with Shipments Active -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header" style="height: 60px; border-bottom: 1px solid var(--border-default);">
-                <a href="/admin/dashboard.html" class="nav-logo">
+                <a href="/dashboards/admin/admin-dashboard.html" class="nav-logo">
 
                     <span class="logo-text">MoveX</span>
                 </a>
             </div>
             <nav class="sidebar-nav">
                 <div class="nav-group-title">Home</div>
-                <a href="dashboard.html" class="nav-item">
+                <a href="admin-dashboard.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
@@ -43,7 +42,7 @@
                 </a>
 
                 <div class="nav-group-title">Logistics</div>
-                <a href="shipments.html" class="nav-item active">
+                <a href="admin-shipments.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path>
                         <path
@@ -52,7 +51,7 @@
                     </svg>
                     <span>Shipments</span>
                 </a>
-                <a href="bookings.html" class="nav-item">
+                <a href="admin-bookings.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
@@ -62,7 +61,7 @@
                 </a>
 
                 <div class="nav-group-title">Organization</div>
-                <a href="users.html" class="nav-item">
+                <a href="admin-users.html" class="nav-item active">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
@@ -70,7 +69,7 @@
                     </svg>
                     <span>Users</span>
                 </a>
-                <a href="franchises.html" class="nav-item">
+                <a href="admin-franchises.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
@@ -78,7 +77,7 @@
                     </svg>
                     <span>Franchises</span>
                 </a>
-                <a href="staff.html" class="nav-item">
+                <a href="admin-staff.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z">
@@ -88,7 +87,7 @@
                 </a>
 
                 <div class="nav-group-title">Business</div>
-                <a href="finance.html" class="nav-item">
+                <a href="admin-finance.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
@@ -96,7 +95,7 @@
                     </svg>
                     <span>Finance</span>
                 </a>
-                <a href="reports.html" class="nav-item">
+                <a href="admin-reports.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
@@ -106,7 +105,7 @@
                 </a>
 
                 <div class="nav-group-title">System</div>
-                <a href="settings.html" class="nav-item">
+                <a href="admin-settings.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
@@ -115,18 +114,8 @@
                     </svg>
                     <span>Settings</span>
                 </a>
-                <a href="audit-logs.html" class="nav-item">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                        </path>
-                    </svg>
-                    <span>Audit Logs</span>
-                </a>
             </nav>
         </aside>
-
-        <!-- ⚡ INSTANT PAINT: Content Wrapper + Header + Main -->
         <div class="main-content">
             <header class="top-nav"
                 style="background: var(--surface-primary); border-bottom: 1px solid var(--border-default); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; height: 60px;">
@@ -141,8 +130,8 @@
                 <div class="nav-right" style="display: flex; align-items: center; gap: 1.25rem;">
                     <div class="action-icons"
                         style="display: flex; align-items: center; gap: 1rem; color: var(--text-secondary);">
-                        
-                        
+
+
                     </div>
                     <div class="user-profile"
                         style="display: flex; align-items: center; gap: 0.75rem; border-left: 1px solid var(--border-default); padding-left: 1.25rem; cursor: pointer;">
@@ -150,8 +139,7 @@
                             <div id="topBarUserName" style="font-weight: 600; font-size: 0.875rem;">Loading...</div>
                             <div id="topBarRole"
                                 style="font-size: 0.75rem; color: var(--text-secondary); text-transform: capitalize;">
-                                ...
-                            </div>
+                                ...</div>
                         </div>
                         <div class="avatar"
                             style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #4F46E5 0%, #3b82f6 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); border: 2px solid var(--surface-primary);">
@@ -172,83 +160,84 @@
                     </button>
                 </div>
             </header>
-
             <main>
                 <div class="dashboard-container">
-                    <div class="page-header"
-                        style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <h1 class="page-title">Shipment Management</h1>
-                            <p class="page-subtitle">Monitor and manage all logistics operations in real-time.</p>
+                    <div class="page-header">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h1 class="page-title">User Management</h1>
+                                <p class="page-subtitle">Manage system access, roles, and security.</p>
+                            </div>
+                            <button class="btn-primary">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Add User
+                            </button>
                         </div>
-                        <button class="btn-primary" id="createNewShipment">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4v16m8-8H4">
-                                </path>
-                            </svg>
-                            Create Shipment
-                        </button>
                     </div>
 
-                    <div class="card" style="margin-bottom: 2rem; padding: 1.5rem;">
-                        <div class="search-bar-container">
-                            <input type="text" id="shipmentSearchInput" placeholder="Enter Tracking ID..."
-                                class="search-input">
-                            <select id="shipmentStatusFilter" class="search-select">
-                                <option>All Status</option>
-                                <option>Pending</option>
-                                <option>Picked Up</option>
-                                <option>In Transit</option>
-                                <option>Out for Delivery</option>
-                                <option>Delivered</option>
-                                <option>Hold</option>
-                                <option>RTO</option>
-                                <option>Failed</option>
-                                <option>Cancelled</option>
+                    <div class="card" style="padding: 0;">
+                        <div class="search-bar-container"
+                            style="padding: 1.5rem; border-bottom: 1px solid var(--border-subtle);">
+                            <div style="position: relative; flex: 2; height: 46px;">
+                                <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary);"
+                                    width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                                <input type="text" placeholder="Search by username, name, or ID..." class="search-input"
+                                    style="width: 100%; padding-left: 3rem;">
+                            </div>
+                            <select id="userRoleFilter" class="search-select">
+                                <option value="">All Roles</option>
+                                <option value="user">User</option>
+                                <option value="franchisee">Franchisee</option>
+                                <option value="admin">Admin</option>
                             </select>
-                            <input type="date" id="shipmentDateFilter" class="search-date">
-                            <button id="shipmentSearchBtn" class="search-btn">Search</button>
+                            <select id="userStatusFilter" class="search-select">
+                                <option value="">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="disabled">Disabled</option>
+                            </select>
                         </div>
-                    </div>
 
-                    <div class="card card-table" style="padding: 0 !important; overflow: hidden !important;">
-                        <div class="data-table-container" style="border: none;">
+                        <div class="data-table-container" style="border: none; border-radius: 0;">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Tracking ID</th>
+                                        <th>User</th>
+                                        <th>Role</th>
+                                        <th>Organization</th>
                                         <th>Status</th>
-                                        <th>Sender</th>
-                                        <th>Origin</th>
-                                        <th>Destination</th>
-                                        <th>Ship Date</th>
-                                        <th>Amount</th>
+                                        <th>Joined</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="shipmentsTableBody">
-                                    <!-- Data will be populated by JS -->
+                                <tbody id="users-table-body">
                                     <tr>
-                                        <td colspan="8"
+                                        <td colspan="6"
                                             style="text-align: center; padding: 2rem; color: var(--text-secondary);">
                                             Loading
-                                            shipments...</td>
+                                            users...</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <div id="paginationControls"
-                            style="padding: 1rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; border-top: 1px solid var(--border-subtle); background: var(--surface-primary);">
-                            <!-- Injected by JS -->
+                        <div
+                            style="padding: 1rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end; gap: 0.5rem;">
+                            <button class="btn-secondary" style="padding: 0.4rem 1rem;">Previous</button>
+                            <button class="btn-primary" style="padding: 0.4rem 1rem;">1</button>
+                            <button class="btn-secondary" style="padding: 0.4rem 1rem;">2</button>
+                            <button class="btn-secondary" style="padding: 0.4rem 1rem;">Next</button>
                         </div>
                     </div>
                 </div>
             </main>
         </div>
     </div>
-
-    <script src="../js/admin-layout.js?v=2"></script>
+    <script src="../../js/dashboard-layout.js"></script>
 </body>
 
 </html>

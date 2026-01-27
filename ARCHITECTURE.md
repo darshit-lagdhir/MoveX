@@ -24,7 +24,7 @@ We built MoveX with the idea that the **Server is the Master**. The browser (Fro
 
 ### Pillar 1: The Modern Frontend (HTML, CSS, JS)
 We don't use heavy tools like "React" or "Angular." instead, we use a custom **Hybrid SPA** design.
-*   **admin-layout.js**: This is the "Brain" of the Admin pages. It has a **Shadow Router** that:
+*   **dashboard-layout.js**: This is the "Brain" of the Admin pages. It has a **Shadow Router** that:
     1. Catches every time you click a sidebar link.
     2. Stops the browser from refreshing the page.
     3. Fetches the new content in the background.
