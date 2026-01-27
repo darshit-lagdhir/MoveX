@@ -71,8 +71,8 @@ For MoveX, being "Ready for Real Customers" means the app can:
 ┌─────────────────────────────────────────────────────────────┐
 │                        FRONTEND                              │
 │  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐   │
-│  │ index.html  │  │ login.html   │  │ admin/*.html     │   │
-│  │ (Home)      │  │ (Auth UI)    │  │ (Dashboard)      │   │
+│  │ (Home)      │  │ (Auth UI)    │  │ dashboards/*.html│   │
+│  │             │  │               │  │ (Role folders)│   │
 │  └─────────────┘  └──────────────┘  └──────────────────┘   │
 │                          │                                   │
 │  ┌───────────────────────────────────────────────────────┐  │

@@ -240,7 +240,7 @@ window.MoveXAdmin = (function () {
                         r_pincode: s.receiver_pincode || '',
                         s_addr: (s.sender_address || s.origin || '').trim()
                     });
-                    window.open(`../dashboards/admin/admin-print_label.html?${params.toString()}`, '_blank');
+                    window.open(`../admin/admin-print_label.html?${params.toString()}`, '_blank');
                 }
             },
             { label: 'Close', primary: true, onClick: c => c() }

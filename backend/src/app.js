@@ -128,13 +128,13 @@ const protectStaticDashboards = async (req, res, next) => {
   // Simple mapping of who can see what
   // Hierarchy: admin > franchisee > staff > user
   const dashboardMap = {
-    'admin/dashboard': ['admin'],
-    'franchisee/dashboard': ['admin', 'franchisee'],
+    'dashboards/admin/admin-dashboard': ['admin'],
+    'dashboards/franchisee/franchisee-dashboard': ['admin', 'franchisee'],
     'dashboards/franchisee': ['admin', 'franchisee'], // Legacy path support
-    'dashboards/staff': ['admin', 'franchisee', 'staff'], // Legacy
-    'staff/dashboard': ['admin', 'franchisee', 'staff'],
-    'franchisee/assignments': ['admin', 'franchisee'], // New Task Assignment Page
-    'dashboards/user': ['admin', 'franchisee', 'staff', 'user']
+    'dashboards/staff': ['admin', 'franchisee', 'staff'], // Legacy path support
+    'dashboards/staff/staff-dashboard': ['admin', 'franchisee', 'staff'],
+    'dashboards/franchisee/franchisee-assignments': ['admin', 'franchisee'], // New Task Assignment Page
+    'dashboards/user/user-dashboard': ['admin', 'franchisee', 'staff', 'user']
   };
 
   if (dashboardMap[target]) {
@@ -157,12 +157,12 @@ const protectStaticDashboards = async (req, res, next) => {
 
     if (!dashboardMap[target].includes(role)) {
       const correctDashboardMap = {
-        admin: 'admin/dashboard',
-        franchisee: 'franchisee/dashboard',
-        staff: 'staff/dashboard',
-        user: 'dashboards/user'
+        admin: 'dashboards/admin/admin-dashboard',
+        franchisee: 'dashboards/franchisee/franchisee-dashboard',
+        staff: 'dashboards/staff/staff-dashboard',
+        user: 'dashboards/user/user-dashboard'
       };
-      const correctDashboard = correctDashboardMap[role] || 'dashboards/user';
+      const correctDashboard = correctDashboardMap[role] || 'dashboards/user/user-dashboard';
       return res.redirect(`/${correctDashboard}?error=role_mismatch`);
     }
   }
@@ -187,10 +187,10 @@ app.get(['/', '/index.html'], async (req, res, next) => {
 
     if (session && session.role) {
       const dashboards = {
-        admin: '/admin/dashboard.html',
-        franchisee: '/franchisee/dashboard.html',
-        staff: '/staff/dashboard.html',
-        user: '/dashboards/user.html'
+        admin: '/dashboards/admin/admin-dashboard.html',
+        franchisee: '/dashboards/franchisee/franchisee-dashboard.html',
+        staff: '/dashboards/staff/staff-dashboard.html',
+        user: '/dashboards/user/user-dashboard.html'
       };
       const target = dashboards[session.role];
       if (target) return res.redirect(target);

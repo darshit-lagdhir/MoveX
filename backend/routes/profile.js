@@ -108,12 +108,12 @@ function requireRole(...allowedRoles) {
 
 function getDashboardForRole(role) {
     const dashboards = {
-        admin: '/admin/dashboard.html',
-        franchisee: '/franchisee/dashboard.html',
-        staff: '/dashboards/staff.html',
-        user: '/dashboards/user.html'
+        admin: '/dashboards/admin/admin-dashboard.html',
+        franchisee: '/dashboards/franchisee/franchisee-dashboard.html',
+        staff: '/dashboards/staff/staff-dashboard.html',
+        user: '/dashboards/user/user-dashboard.html'
     };
-    return dashboards[role] || '/dashboards/user.html';
+    return dashboards[role] || '/dashboards/user/user-dashboard.html';
 }
 
 router.get('/me', validateSession, (req, res) => {

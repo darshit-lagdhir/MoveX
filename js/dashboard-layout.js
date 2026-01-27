@@ -46,7 +46,7 @@
 
         await ensureCoreLoaded();
 
-        const isStaff = window.location.pathname.includes('/staff/');
+        const isStaff = window.location.pathname.includes('/dashboards/staff/');
         if (isStaff && window.StaffCore) {
             console.log('Layout Manager: Triggering staff core init for', logicPath);
             if (logicPath === 'dashboard') window.StaffCore.loadStats();
@@ -72,8 +72,8 @@
             document.head.appendChild(script);
         }
 
-        const isFranchisee = window.location.pathname.includes('/franchisee/');
-        const isStaff = window.location.pathname.includes('/staff/');
+        const isFranchisee = window.location.pathname.includes('/dashboards/franchisee/');
+        const isStaff = window.location.pathname.includes('/dashboards/staff/');
 
         let expectedCore = '/js/admin-core.js';
         if (isFranchisee) expectedCore = '/js/franchisee-core.js';
@@ -191,7 +191,7 @@
                     if (logicPath.startsWith('franchisee-')) logicPath = logicPath.replace('franchisee-', '');
                     if (logicPath.startsWith('staff-')) logicPath = logicPath.replace('staff-', '');
 
-                    const isStaff = window.location.pathname.includes('/staff/');
+                    const isStaff = window.location.pathname.includes('/dashboards/staff/');
                     if (isStaff && window.StaffCore) {
                         if (logicPath === 'dashboard') window.StaffCore.loadStats();
                         if (logicPath === 'assignments') window.StaffCore.loadTasks();

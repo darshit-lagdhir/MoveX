@@ -99,7 +99,11 @@ In `app.js`, we set special instructions for the browser:
 ```
 movex/
 ├── _headers                # Cloudflare/Nginx security settings
-├── admin/                  # REAL HTML files (Protected by Backend)
+├── dashboards/             # REAL HTML files (Protected by Backend)
+│   ├── admin/              # Admin dashboard files
+│   ├── franchisee/         # Franchisee dashboard files
+│   ├── staff/              # Staff dashboard files
+│   └── user/               # User dashboard files
 ├── backend/
 │   ├── routes/             # All URL paths (Dashboard, Profile, Login)
 │   ├── src/

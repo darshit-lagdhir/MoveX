@@ -4,33 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Franchisee Dashboard - MoveX</title>
+    <title>My Staff - MoveX Franchisee</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="preload" href="../styles/base.css?v=4" as="style">
-    <link rel="preload" href="../styles/components.css?v=4" as="style">
-    <link rel="preload" href="../styles/admin.css?v=4" as="style">
-    <link rel="stylesheet" href="../styles/base.css?v=4">
-    <link rel="stylesheet" href="../styles/components.css?v=4">
-    <link rel="stylesheet" href="../styles/admin.css?v=4">
-    <script src="../js/config.js?v=1"></script>
-    <script src="../js/dashboard-guard.js?v=3"></script>
+    <link rel="stylesheet" href="../../styles/base.css?v=4">
+    <link rel="stylesheet" href="../../styles/components.css?v=4">
+    <link rel="stylesheet" href="../../styles/admin.css?v=4">
+    <script src="../../js/config.js?v=1"></script>
+    <script src="../../js/dashboard-guard.js?v=3"></script>
 </head>
 
 <body>
     <div class="admin-layout">
+        <!-- Sidebar will be injected -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header" style="height: 60px; border-bottom: 1px solid var(--border-default);">
-                <a href="/franchisee/dashboard.html" class="nav-logo">
+                <a href="/dashboards/franchisee/franchisee-dashboard.html" class="nav-logo">
                     <span class="logo-text">MoveX</span>
                 </a>
             </div>
             <nav class="sidebar-nav">
                 <div class="nav-group-title">Home</div>
-                <a href="dashboard.html" class="nav-item active">
+                <a href="franchisee-dashboard.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
@@ -40,7 +38,7 @@
                 </a>
 
                 <div class="nav-group-title">Logistics</div>
-                <a href="shipments.html" class="nav-item">
+                <a href="franchisee-shipments.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path>
                         <path
@@ -49,7 +47,7 @@
                     </svg>
                     <span>My Shipments</span>
                 </a>
-                <a href="pickup-requests.html" class="nav-item">
+                <a href="franchisee-pickup-requests.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
@@ -58,17 +56,8 @@
                     <span>Pickup Requests</span>
                 </a>
 
-                <a href="assignments.html" class="nav-item">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
-                        </path>
-                    </svg>
-                    <span>Assign Tasks</span>
-                </a>
-
                 <div class="nav-group-title">Organization</div>
-                <a href="staff.html" class="nav-item">
+                <a href="franchisee-staff.html" class="nav-item active">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z">
@@ -78,7 +67,7 @@
                 </a>
 
                 <div class="nav-group-title">Business</div>
-                <a href="finance.html" class="nav-item">
+                <a href="franchisee-finance.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
@@ -88,7 +77,7 @@
                 </a>
 
                 <div class="nav-group-title">System</div>
-                <a href="settings.html" class="nav-item">
+                <a href="franchisee-settings.html" class="nav-item">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path
                             d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
@@ -110,13 +99,11 @@
                             <path d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
                     </button>
-                    <h2 id="headerTitle" style="font-size: 1.1rem; font-weight: 700; margin: 0; display: none;">
-                        Dashboard</h2>
                 </div>
                 <div class="nav-right" style="display: flex; align-items: center; gap: 1.25rem;">
                     <div class="action-icons"
                         style="display: flex; align-items: center; gap: 1rem; color: var(--text-secondary);">
-
+                        
                     </div>
                     <div class="user-profile"
                         style="display: flex; align-items: center; gap: 0.75rem; border-left: 1px solid var(--border-default); padding-left: 1.25rem; cursor: pointer;">
@@ -149,39 +136,44 @@
 
             <main>
                 <div class="dashboard-container">
-                    <div class="page-header">
-                        <h1 class="page-title">Franchise Overview</h1>
-                        <p class="page-subtitle">Manage your local hub operations and deliveries.</p>
+                    <div class="page-header"
+                        style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+                        <div>
+                            <h1 class="page-title">Branch Staff</h1>
+                            <p class="page-subtitle">Manage drivers and warehouse personnel for your hub.</p>
+                        </div>
+                        <button class="btn-primary" id="addStaffBtn"
+                            style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem;">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z">
+                                </path>
+                            </svg>
+                            Add Staff
+                        </button>
                     </div>
 
-                    <!-- KPI Cards -->
-                    <div class="grid-kpi" style="grid-template-columns: repeat(2, 1fr);">
-                        <div class="card">
-                            <div class="card-title">My Total Shipments</div>
-                            <div class="card-value" id="kpi-total-shipments">-</div>
-                            <div class="card-trend"><span>Lifetime</span></div>
-                        </div>
-                        <div class="card">
-                            <div class="card-title">Pending Pickups</div>
-                            <div class="card-value" id="kpi-pending-pickups">-</div>
-                            <div class="card-trend"><span>Action Required</span></div>
-                        </div>
-                    </div>
-
-                    <!-- Quick Actions Only -->
-                    <div style="margin-top: 2rem;">
-                        <div class="card" style="max-width: 400px;">
-                            <h3 style="margin: 0 0 1.5rem; font-size: 1.1rem; font-weight: 700;">Quick Actions</h3>
-                            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                <button id="action-create-shipment" class="btn-primary"
-                                    style="width: 100%; padding: 1rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
-                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
-                                        viewBox="0 0 24 24">
-                                        <path d="M12 4v16m8-8H4"></path>
-                                    </svg>
-                                    New Shipment
-                                </button>
-                            </div>
+                    <div class="card" style="padding: 0;">
+                        <div class="data-table-container" style="border: none; box-shadow: none;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Staff Name</th>
+                                        <th>Role</th>
+                                        <th>Phone</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="staff-table-body">
+                                    <tr>
+                                        <td colspan="5"
+                                            style="text-align: center; padding: 3rem; color: var(--text-tertiary);">
+                                            Loading branch staff...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -189,8 +181,8 @@
         </div>
     </div>
 
-    <script src="../js/franchisee-core.js"></script>
-    <script src="../js/dashboard-layout.js"></script>
+    <script src="../../js/franchisee-core.js"></script>
+    <script src="../../js/dashboard-layout.js"></script>
 </body>
 
 </html>

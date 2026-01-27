@@ -9,9 +9,9 @@
 
     const DASHBOARDS = {
         admin: '/dashboards/admin/admin-dashboard.html',
-        franchisee: '/franchisee/dashboard.html',
-        staff: '/staff/dashboard.html',
-        user: '/dashboards/user.html'
+        franchisee: '/dashboards/franchisee/franchisee-dashboard.html',
+        staff: '/dashboards/staff/staff-dashboard.html',
+        user: '/dashboards/user/user-dashboard.html'
     };
 
     const ROLE_HIERARCHY = {
@@ -25,6 +25,16 @@
         'admin-reports': ['admin'],
         'admin-settings': ['admin'],
         'admin-print_label': ['admin'],
+        'franchisee-dashboard': ['admin', 'franchisee'],
+        'franchisee-shipments': ['admin', 'franchisee'],
+        'franchisee-bookings': ['admin', 'franchisee'],
+        'franchisee-pickup-requests': ['admin', 'franchisee'],
+        'franchisee-finance': ['admin', 'franchisee'],
+        'franchisee-settings': ['admin', 'franchisee', 'staff', 'user'],
+        'franchisee-staff': ['admin', 'franchisee', 'staff'],
+        'franchisee-assignments': ['staff', 'admin', 'franchisee'],
+        'staff-dashboard': ['admin', 'franchisee', 'staff'],
+        'staff-assignments': ['admin', 'franchisee', 'staff'],
         'dashboard': ['admin', 'franchisee', 'staff', 'user'],
         'users': ['admin'],
         'franchises': ['admin'],
@@ -36,8 +46,7 @@
         'reports': ['admin'],
         'settings': ['admin', 'franchisee', 'staff', 'user'],
         'franchisee': ['admin', 'franchisee'],
-        'user': ['admin', 'franchisee', 'staff', 'user'],
-        'assignments': ['staff', 'admin', 'franchisee'],
+        'user-dashboard': ['admin', 'franchisee', 'staff', 'user'],
         'profile': ['staff', 'admin', 'franchisee', 'user']
     };
 

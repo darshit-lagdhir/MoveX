@@ -4,23 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pickup Requests - MoveX Franchisee</title>
+    <title>Manage Bookings - MoveX Franchisee</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="../styles/base.css?v=4">
-    <link rel="stylesheet" href="../styles/components.css?v=4">
-    <link rel="stylesheet" href="../styles/admin.css?v=4">
-    <script src="../js/config.js?v=1"></script>
-    <script src="../js/dashboard-guard.js?v=3"></script>
+    <link rel="stylesheet" href="../../styles/base.css?v=4">
+    <link rel="stylesheet" href="../../styles/components.css?v=4">
+    <link rel="stylesheet" href="../../styles/admin.css?v=4">
+    <script src="../../js/config.js?v=1"></script>
+    <script src="../../js/dashboard-guard.js?v=3"></script>
 </head>
 
 <body>
     <div class="admin-layout">
-        <!-- Sidebar will be injected -->
-        <aside class="sidebar" id="sidebar"></aside>
 
         <div class="main-content">
             <header class="top-nav" id="top-nav-placeholder">
@@ -31,10 +29,10 @@
                 <div class="dashboard-container">
                     <div class="page-header">
                         <h1 class="page-title">Pickup Requests</h1>
-                        <p class="page-subtitle">Manage new booking requests from customers in your area.</p>
+                        <p class="page-subtitle">Manage new booking requests in your area.</p>
                     </div>
 
-                    <div class="grid-kpi" style="grid-template-columns: repeat(2, 1fr);">
+                    <div class="grid-kpi">
                         <div class="card">
                             <div class="card-title">New Requests</div>
                             <div class="card-value" id="kpi-new-bookings">0</div>
@@ -54,18 +52,16 @@
                                     <tr>
                                         <th>Request ID</th>
                                         <th>Customer</th>
-                                        <th>Pickup Address</th>
-                                        <th>Weight</th>
-                                        <th>Status</th>
+                                        <th>Area / Address</th>
+                                        <th>Package Info</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="pickup-requests-table-body">
+                                <tbody id="bookings-table-body">
                                     <tr>
-                                        <td colspan="6"
-                                            style="text-align: center; padding: 3rem; color: var(--text-tertiary);">
-                                            Loading pickup requests...
-                                        </td>
+                                        <td colspan="5"
+                                            style="text-align: center; padding: 3rem; color: var(--text-tertiary);">No
+                                            pickup requests available in your area.</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -76,8 +72,8 @@
         </div>
     </div>
 
-    <script src="../js/franchisee-core.js"></script>
-    <script src="../js/dashboard-layout.js"></script>
+    <script src="../../js/franchisee-core.js"></script>
+    <script src="../../js/dashboard-layout.js"></script>
 </body>
 
 </html>

@@ -1456,7 +1456,7 @@ window.MoveXAdmin = (function () {
                         s_addr: (s.sender_address || s.full_origin || s.origin || '').trim()
                     });
 
-                    window.open(`print_label.html?${params.toString()}`, '_blank');
+                    window.open(`admin-print_label.html?${params.toString()}`, '_blank');
                     // close(); // Optional: keep modal open or close it? User said "preview comes, i print and thats it". 
                     // Keeping modal open might be better user experience so they can print again if failed.
                 }

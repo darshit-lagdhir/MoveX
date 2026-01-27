@@ -23,9 +23,9 @@
           const storedRole = data.data.role || 'user';
           const dashboards = {
             admin: '/dashboards/admin/admin-dashboard.html',
-            franchisee: '/franchisee/dashboard.html',
-            staff: '/staff/dashboard.html',
-            user: '/dashboards/user.html'
+            franchisee: '/dashboards/franchisee/franchisee-dashboard.html',
+            staff: '/dashboards/staff/staff-dashboard.html',
+            user: '/dashboards/user/user-dashboard.html'
           };
 
           // Verify session with backend and get authoritative role
@@ -280,9 +280,9 @@
 
     const dashboards = {
       admin: 'dashboards/admin/admin-dashboard.html',
-      franchisee: 'franchisee/dashboard',
-      staff: 'staff/dashboard',
-      user: 'dashboards/user'
+      franchisee: 'dashboards/franchisee/franchisee-dashboard.html',
+      staff: 'dashboards/staff/staff-dashboard.html',
+      user: 'dashboards/user/user-dashboard.html'
     };
 
     const target = dashboards[user.role] || 'dashboards/user';
@@ -353,9 +353,9 @@
         setTimeout(() => {
           const dashboards = {
             admin: 'dashboards/admin/admin-dashboard.html',
-            franchisee: 'franchisee/dashboard',
-            staff: 'staff/dashboard',
-            user: 'dashboards/user'
+            franchisee: 'dashboards/franchisee/franchisee-dashboard.html',
+            staff: 'dashboards/staff/staff-dashboard.html',
+            user: 'dashboards/user/user-dashboard.html'
           };
           const target = dashboards[user.role] || 'dashboards/user';
           window.location.href = target;
