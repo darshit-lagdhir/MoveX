@@ -1,126 +1,59 @@
 /**
  * Database Connection Configuration (Production-Safe)
- * 
- * This module provides a PostgreSQL connection pool with:
- * - SSL support for Supabase/cloud databases
- * - Connection pooling with appropriate limits
- * - Error handling and reconnection logic
- * - Startup validation
- * 
- * BACKWARD COMPATIBLE: All existing code using pool.query() will work unchanged.
+ * Optimized for Render + Supabase
  */
 
 const { Pool } = require('pg');
 const path = require('path');
-const dns = require('dns'); // Required for custom lookup
+const dns = require('dns');
 require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
 
-// ═══════════════════════════════════════════════════════════
-// SUPABASE TLS FIX (Windows Certificate Chain Issue)
-// ═══════════════════════════════════════════════════════════
-// Supabase uses valid SSL certificates, but Windows and some Render regions have issues
-// with certificate chain validation. This bypass ensures connectivity.
+// FORCE IPv4 globally for this project (Fixes Render/Supabase ENETUNREACH)
+try {
+  if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder('ipv4first');
+  }
+} catch (e) { }
+
+// SUPABASE SSL FIX
 const hasSupabaseUrl = process.env.DATABASE_URL && (
-  process.env.DATABASE_URL.includes('supabase.co') ||
-  process.env.DATABASE_URL.includes('supabase.org') ||
-  process.env.DATABASE_URL.includes('pooler.supabase.com')
+  process.env.DATABASE_URL.includes('supabase') ||
+  process.env.DATABASE_URL.includes('pooler')
 );
 
 if (hasSupabaseUrl) {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 }
 
-// ═══════════════════════════════════════════════════════════
-// CONFIGURATION
-// ═══════════════════════════════════════════════════════════
-
 const isProduction = process.env.NODE_ENV === 'production';
 
-/**
- * Determine SSL configuration based on environment
- * Supabase requires SSL, local development typically doesn't
- * 
- * Note: rejectUnauthorized: false is required for Supabase on Windows
- * due to certificate chain issues. This is safe because:
- * 1. We're still using encrypted connections
- * 2. Supabase is a trusted service
- */
 function getSSLConfig(connectionString) {
   if (!connectionString) return process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false;
 
-  const isCloudDB =
-    connectionString.includes('sslmode=require') ||
-    connectionString.includes('supabase.co') ||
-    connectionString.includes('supabase.org') ||
-    connectionString.includes('pooler.supabase.com') ||
-    connectionString.includes('render.com') ||
-    connectionString.includes('railway.app') ||
-    connectionString.includes('neon.tech');
-
-  if (isCloudDB) {
-    return {
-      rejectUnauthorized: false
-    };
-  }
-
-  // If explicitly set via env var
-  if (process.env.DB_SSL === 'true') {
+  // Always use SSL for cloud databases
+  const cloudProviders = ['supabase', 'pooler', 'render', 'railway', 'neon', 'sslmode=require'];
+  if (cloudProviders.some(p => connectionString.includes(p))) {
     return { rejectUnauthorized: false };
   }
-
-  // Default: no SSL for local development
-  return false;
+  return process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false;
 }
 
-/**
- * Build pool configuration from environment variables
- */
 function buildPoolConfig() {
   const baseConfig = {
-    // Connection pool settings (conservative for production)
-    max: parseInt(process.env.DB_POOL_MAX, 10) || 20, // Increased default for cloud scaling
-    min: 0,
+    max: 20,
+    min: 2,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 30000,                    // 30s timeout for stability
+    connectionTimeoutMillis: 60000, // 60s for stability
     keepAlive: true,
-    keepAliveInitialDelayMillis: 10000,
-    family: 4,
-    // Note: statement_timeout is NOT supported by Supabase connection pooler (port 6543)
-    // If you need query timeouts, set them per-query or use direct connection (port 5432)
+    family: 4
   };
 
-  // Prefer DATABASE_URL if available (Supabase, Railway, Heroku, etc.)
   if (process.env.DATABASE_URL) {
     return {
       ...baseConfig,
       connectionString: process.env.DATABASE_URL,
-      ssl: getSSLConfig(process.env.DATABASE_URL),
-      // Advanced DNS: Handle Render's IPv4/IPv6 resolution quirks
-      lookup: (hostname, options, callback) => {
-        if (typeof options === 'function') {
-          callback = options;
-          options = {};
-        }
-        const opts = { ...(options || {}), family: 4, all: false };
-        dns.lookup(hostname, opts, (err, address, family) => {
-          if (err && err.code === 'ENOTFOUND') {
-            // Fallback to default if IPv4-only fails
-            return dns.lookup(hostname, options, callback);
-          }
-          callback(err, address, family);
-        });
-      }
+      ssl: getSSLConfig(process.env.DATABASE_URL)
     };
-  }
-
-  // Fallback to individual credentials
-  const requiredVars = ['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
-  const missingVars = requiredVars.filter(v => !process.env[v]);
-
-  if (missingVars.length > 0 && isProduction) {
-    console.error(`❌ CRITICAL: Missing database environment variables: ${missingVars.join(', ')}`);
-    console.error('   Set DATABASE_URL or individual DB_* variables.');
-    process.exit(1);
   }
 
   return {
@@ -134,110 +67,43 @@ function buildPoolConfig() {
   };
 }
 
-// ═══════════════════════════════════════════════════════════
-// POOL INITIALIZATION
-// ═══════════════════════════════════════════════════════════
-
 const poolConfig = buildPoolConfig();
 const pool = new Pool(poolConfig);
 
-// ═══════════════════════════════════════════════════════════
-// ERROR HANDLING
-// ═══════════════════════════════════════════════════════════
-
-/**
- * Handle unexpected errors on idle clients
- * This prevents the app from crashing on transient database issues
- */
-pool.on('error', (err, client) => {
-  // Log error but don't crash - pool will handle reconnection
-  console.error('[DB] Unexpected error on idle client:', err.message);
-
-  // In production, you might want to send this to a monitoring service
-  if (isProduction && err.code === 'ECONNRESET') {
-    console.warn('[DB] Connection reset detected - pool will create new connections as needed');
-  }
+pool.on('error', (err) => {
+  console.error('[DB] Unexpected pool error:', err.message);
 });
 
-// ═══════════════════════════════════════════════════════════
-// CONNECTION VALIDATION
-// ═══════════════════════════════════════════════════════════
-
-/**
- * Test database connection on startup
- * Logs connection status but doesn't block startup
- */
 async function validateConnection(retries = 5) {
-  // Safe check for DB_URL presence (don't log the actual URL for security)
-  if (isProduction) {
-    if (!process.env.DATABASE_URL) {
-      console.warn('[DB] WARNING: DATABASE_URL is not set. Falling back to individual credentials.');
-    } else {
-      try {
-        const urlInfo = new URL(process.env.DATABASE_URL);
-        console.log(`[DB] Attempting connection to host: ${urlInfo.hostname}:${urlInfo.port || 5432} (SSL: ${poolConfig.ssl ? 'Yes' : 'No'})`);
-      } catch (e) {
-        console.warn('[DB] Could not parse DATABASE_URL for logging');
-      }
-    }
+  if (isProduction && process.env.DATABASE_URL) {
+    try {
+      const urlInfo = new URL(process.env.DATABASE_URL);
+      console.log(`[DB] Connecting to: ${urlInfo.hostname}:${urlInfo.port || 5432}`);
+    } catch (e) { }
   }
 
   for (let i = 0; i < retries; i++) {
     try {
       const client = await pool.connect();
-      const result = await client.query('SELECT NOW() as now, current_database() as db');
+      const result = await client.query('SELECT NOW()');
       client.release();
-
-      const { db } = result.rows[0];
-      console.log(`✅ Database connection established: ${db}`);
+      console.log('✅ Database connected successfully.');
       return true;
     } catch (err) {
-      const isLastAttempt = i === retries - 1;
-      const delay = (i + 1) * 3000;
-
       console.warn(`⏳ Attempt ${i + 1} failed: ${err.message}`);
-
-      if (isLastAttempt) {
-        console.error('❌ Database connection failed after maximum retries.');
-
-        if (err.message.includes('timeout')) {
-          console.error('   → TIMEOUT: Is the DB URL correct? If using Supabase, check if the project is paused.');
-        }
-
-        if (isProduction) {
-          console.error('   Exiting due to database connection failure in production mode.');
-          process.exit(1);
-        }
+      if (i === retries - 1) {
+        console.error('❌ Connection failed after 5 attempts.');
+        if (isProduction) process.exit(1);
       } else {
-        console.log(`   Retrying in ${delay / 1000}s...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise(r => setTimeout(r, 5000));
       }
     }
   }
   return false;
 }
 
-// Run validation on module load (non-blocking)
 validateConnection();
 
-// ═══════════════════════════════════════════════════════════
-// EXPORTS
-// ═══════════════════════════════════════════════════════════
-
-/**
- * Query wrapper with automatic error handling
- * This is the main interface used by the application
- * 
- * Usage: const result = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
- */
 module.exports = pool;
-
-// Also export query helper for convenience (backward compatible)
-// module.exports.query is already natively provided by the pool object
-
-
-// Export pool reference if needed for transactions
 module.exports.pool = pool;
-
-// Export connection validation function for health checks
 module.exports.validateConnection = validateConnection;
