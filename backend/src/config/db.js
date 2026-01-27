@@ -78,12 +78,12 @@ function getSSLConfig(connectionString) {
 function buildPoolConfig() {
   const baseConfig = {
     // Connection pool settings (conservative for production)
-    max: parseInt(process.env.DB_POOL_MAX, 10) || 10, // Maximum connections
-    min: 0,                                            // Allow all connections to close if idle
-    idleTimeoutMillis: 30000,                          // Close idle connections after 30s
-    connectionTimeoutMillis: 15000,                    // Increased timeout (15s) for Render/Supabase cold starts
-    keepAlive: true,                                   // Keep TCP connection healthy
-    // Force IPv4 to prevent Render/Supabase IPv6 resolution issues (ENETUNREACH)
+    max: parseInt(process.env.DB_POOL_MAX, 10) || 20, // Increased default for cloud scaling
+    min: 0,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 30000,                    // 30s timeout for stability
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10000,
     family: 4,
     // Note: statement_timeout is NOT supported by Supabase connection pooler (port 6543)
     // If you need query timeouts, set them per-query or use direct connection (port 5432)
@@ -94,19 +94,7 @@ function buildPoolConfig() {
     return {
       ...baseConfig,
       connectionString: process.env.DATABASE_URL,
-      ssl: getSSLConfig(process.env.DATABASE_URL),
-      // CUSTOM LOOKUP: Force IPv4 for Render (Nuclear Option)
-      lookup: (hostname, options, callback) => {
-        // If options is a function (backward compatibility), fix arguments
-        if (typeof options === 'function') {
-          callback = options;
-          options = {};
-        }
-        options = options || {};
-        options.family = 4; // FORCE IPv4
-        options.all = false;
-        dns.lookup(hostname, options, callback);
-      }
+      ssl: getSSLConfig(process.env.DATABASE_URL)
     };
   }
 
@@ -169,7 +157,7 @@ pool.on('error', (err, client) => {
  * Test database connection on startup
  * Logs connection status but doesn't block startup
  */
-async function validateConnection(retries = 3) {
+async function validateConnection(retries = 5) {
   for (let i = 0; i < retries; i++) {
     try {
       const client = await pool.connect();
