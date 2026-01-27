@@ -7,16 +7,19 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 // --- RECOVERY/MIGRATION: Ensure staff columns exist ---
-(async () => {
+// Delayed execution to allow DB pool to stabilize
+setTimeout(async () => {
     try {
         await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_role TEXT;`);
         await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_status TEXT DEFAULT 'Active';`);
         await db.query(`UPDATE users SET staff_role = 'Warehouse Staff' WHERE staff_role = 'Warehouse Manager';`);
         await db.query(`ALTER TABLE shipments ADD COLUMN IF NOT EXISTS assigned_staff_id INTEGER;`);
     } catch (e) {
-        console.error('[Migration] Column migration failed:', e.message);
+        if (process.env.NODE_ENV !== 'production') {
+            console.error('[Migration] Column migration failed:', e.message);
+        }
     }
-})();
+}, 5000);
 
 // ... [Existing Code] ...
 
