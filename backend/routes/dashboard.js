@@ -9,12 +9,10 @@ const jwt = require('jsonwebtoken');
 // --- RECOVERY/MIGRATION: Ensure staff columns exist ---
 (async () => {
     try {
-        console.log('[Migration] Running staff/shipment column migrations...');
         await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_role TEXT;`);
         await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_status TEXT DEFAULT 'Active';`);
         await db.query(`UPDATE users SET staff_role = 'Warehouse Staff' WHERE staff_role = 'Warehouse Manager';`);
         await db.query(`ALTER TABLE shipments ADD COLUMN IF NOT EXISTS assigned_staff_id INTEGER;`);
-        console.log('[Migration] Staff columns verified successfully.');
     } catch (e) {
         console.error('[Migration] Column migration failed:', e.message);
     }
@@ -152,7 +150,6 @@ router.post('/franchisee/assign', validateSession, requireRole('franchisee'), as
 router.get('/staff/shipments', validateSession, requireRole('staff'), async (req, res) => {
     try {
         const userId = req.session.userId;
-        console.log('[Staff Shipments] Fetching for user_id:', userId);
 
         // Include: reached at final delivery hub, out for delivery, in transit, pending
         // Exclude: delivered, cancelled, returned
@@ -163,8 +160,6 @@ router.get('/staff/shipments', validateSession, requireRole('staff'), async (req
             AND LOWER(status) NOT IN ('delivered', 'cancelled', 'returned')
             ORDER BY created_at ASC
         `, [userId]);
-
-        console.log('[Staff Shipments] Found:', result.rows.length, 'shipments');
 
         const shipments = result.rows.map(row => ({
             id: row.tracking_id,
@@ -200,8 +195,6 @@ router.post('/staff/shipments/bulk-update', validateSession, requireRole('staff'
             return res.status(400).json({ success: false, error: 'Invalid status. Use: Out for Delivery, Delivered, or Not Delivered' });
         }
 
-        console.log(`[Staff Bulk Update] User ${userId} updating ${tracking_ids.length} shipments to "${status}"`);
-
         // Update only shipments assigned to this staff member
         const placeholders = tracking_ids.map((_, i) => `$${i + 3}`).join(', ');
         const query = `
@@ -212,8 +205,6 @@ router.post('/staff/shipments/bulk-update', validateSession, requireRole('staff'
         `;
 
         const result = await db.query(query, [status, userId, ...tracking_ids]);
-
-        console.log(`[Staff Bulk Update] Updated ${result.rowCount} rows`);
 
         res.json({ success: true, updated: result.rowCount });
     } catch (err) {
