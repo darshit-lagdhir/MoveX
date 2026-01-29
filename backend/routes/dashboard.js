@@ -12,7 +12,8 @@ setTimeout(async () => {
     try {
         await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_role TEXT;`);
         await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_status TEXT DEFAULT 'Active';`);
-        await db.query(`UPDATE users SET staff_role = 'Warehouse Staff' WHERE staff_role = 'Warehouse Manager';`);
+        // Consolidate all staff roles into one 'Staff' role per user request
+        await db.query(`UPDATE users SET staff_role = 'Staff' WHERE role = 'staff';`);
         await db.query(`ALTER TABLE shipments ADD COLUMN IF NOT EXISTS assigned_staff_id INTEGER;`);
     } catch (e) {
         if (process.env.NODE_ENV !== 'production') {

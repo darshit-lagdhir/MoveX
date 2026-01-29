@@ -750,7 +750,7 @@ window.MoveXAdmin = (function () {
                             if (s.status === 'Active') {
                                 const option = document.createElement('option');
                                 option.value = s.user_id;
-                                option.textContent = `${s.full_name} (${s.staff_role})`;
+                                option.textContent = s.full_name;
                                 select.appendChild(option);
                             }
                         });
@@ -896,16 +896,7 @@ window.MoveXAdmin = (function () {
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Password *</label>
                     <input type="password" id="staff_password" placeholder="Min 6 characters" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
-                <div>
-                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Role *</label>
-                    <select id="staff_role" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
-                        <option>Driver</option>
-                        <option>Delivery Boy</option>
-                        <option>Office Staff</option>
-                        <option>Warehouse Staff</option>
-                    </select>
-                </div>
-                <!-- Email removed per user request -->
+                <!-- Role selection removed: simplified to default 'Staff' -->
             </div>
         `, [
             { label: 'Cancel', onClick: c => c() },
@@ -916,7 +907,7 @@ window.MoveXAdmin = (function () {
                         phone: document.getElementById('staff_phone').value,
                         username: document.getElementById('staff_username').value,
                         password: document.getElementById('staff_password').value,
-                        staff_role: document.getElementById('staff_role').value
+                        staff_role: 'Staff'
                     };
 
                     if (!data.full_name || !data.phone || !data.username || !data.password) {
@@ -958,15 +949,6 @@ window.MoveXAdmin = (function () {
                     <input type="tel" id="edit_staff_phone" value="${dataset.phone || ''}" placeholder="10-digit Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
                 <div>
-                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Role</label>
-                    <select id="edit_staff_role" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
-                        <option ${dataset.role === 'Driver' ? 'selected' : ''}>Driver</option>
-                        <option ${dataset.role === 'Delivery Boy' ? 'selected' : ''}>Delivery Boy</option>
-                        <option ${dataset.role === 'Office Staff' ? 'selected' : ''}>Office Staff</option>
-                        <option ${dataset.role === 'Warehouse Staff' ? 'selected' : ''}>Warehouse Staff</option>
-                    </select>
-                </div>
-                <div>
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">New Password (leave blank to keep)</label>
                     <input type="password" id="edit_staff_password" placeholder="Enter new password" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
@@ -979,7 +961,7 @@ window.MoveXAdmin = (function () {
                         user_id: dataset.id,
                         full_name: document.getElementById('edit_staff_name').value,
                         phone: document.getElementById('edit_staff_phone').value,
-                        staff_role: document.getElementById('edit_staff_role').value,
+                        staff_role: 'Staff',
                         password: document.getElementById('edit_staff_password').value || undefined
                     };
 
