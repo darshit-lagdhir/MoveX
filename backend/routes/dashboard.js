@@ -13,7 +13,10 @@ setTimeout(async () => {
         await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_role TEXT;`);
         await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_status TEXT DEFAULT 'Active';`);
         // Consolidate all staff roles into one 'Staff' role per user request
-        await db.query(`UPDATE users SET staff_role = 'Staff' WHERE role = 'staff';`);
+        const consolidate = await db.query(`UPDATE users SET staff_role = 'Staff' WHERE role = 'staff' OR staff_role IS NOT NULL;`);
+        if (consolidate.rowCount > 0) {
+            console.log(`[Migration] Unified ${consolidate.rowCount} staff roles to 'Staff'`);
+        }
         await db.query(`ALTER TABLE shipments ADD COLUMN IF NOT EXISTS assigned_staff_id INTEGER;`);
     } catch (e) {
         if (process.env.NODE_ENV !== 'production') {
@@ -955,7 +958,7 @@ router.get('/admin/staff', validateSession, requireRole('admin'), async (req, re
                 tracking_id: `MXSTF${String(s.user_id).padStart(3, '0')} `,
                 name: s.full_name,
                 username: s.username,
-                role: s.staff_role || 'Staff Member',
+                role: 'Staff',
                 org: s.org_name || 'Unassigned Hub',
                 org_id: s.org_id,
                 status: s.staff_status || 'Active',
@@ -992,8 +995,8 @@ router.post('/admin/staff/create', validateSession, requireRole('admin'), async 
 
         await db.query(`
             INSERT INTO users(full_name, username, password_hash, role, staff_role, phone, organization_id, status, staff_status)
-VALUES($1, $2, $3, 'staff', $4, $5, $6, 'active', 'Active')
-    `, [full_name, username, hash, staff_role, cleanPhone, organization_id || null]);
+VALUES($1, $2, $3, 'staff', 'Staff', $4, $5, 'active', 'Active')
+    `, [full_name, username, hash, cleanPhone, organization_id || null]);
 
         res.json({ success: true, message: 'Staff member created successfully' });
     } catch (err) {
@@ -1017,13 +1020,13 @@ router.post('/admin/staff/update', validateSession, requireRole('admin'), async 
         await db.query(`
             UPDATE users 
             SET full_name = COALESCE($1, full_name),
-    staff_role = COALESCE($2, staff_role),
-    phone = $3,
-    organization_id = $4,
-    staff_status = COALESCE($5, staff_status),
+    staff_role = 'Staff',
+    phone = $2,
+    organization_id = $3,
+    staff_status = COALESCE($4, staff_status),
     updated_at = NOW()
-            WHERE user_id = $6 AND role = 'staff'
-    `, [full_name, staff_role, cleanPhone, organization_id || null, staff_status, id]);
+            WHERE user_id = $5 AND role = 'staff'
+    `, [full_name, cleanPhone, organization_id || null, staff_status, id]);
 
         res.json({ success: true, message: 'Staff updated successfully' });
     } catch (err) {
@@ -1639,9 +1642,9 @@ router.post('/franchisee/staff/create', validateSession, requireRole('franchisee
         // Insert staff
         const result = await db.query(`
             INSERT INTO users (username, password_hash, full_name, phone, role, organization_id, staff_role, staff_status, created_at)
-            VALUES ($1, $2, $3, $4, 'staff', $5, $6, 'Active', NOW())
+            VALUES ($1, $2, $3, $4, 'staff', $5, 'Staff', 'Active', NOW())
             RETURNING user_id
-        `, [username, hashedPassword, full_name, cleanPhone, orgId, staff_role || 'Staff']);
+        `, [username, hashedPassword, full_name, cleanPhone, orgId]);
 
         res.json({ success: true, message: 'Staff created successfully', user_id: result.rows[0].user_id });
     } catch (err) {
@@ -1674,16 +1677,16 @@ router.post('/franchisee/staff/update', validateSession, requireRole('franchisee
         }
 
         // Build update query
-        let updateQuery = 'UPDATE users SET full_name = $1, phone = $2, staff_role = $3';
-        let params = [full_name, cleanPhone, staff_role];
+        let updateQuery = "UPDATE users SET full_name = $1, phone = $2, staff_role = 'Staff'";
+        let params = [full_name, cleanPhone];
 
         // If password provided, hash and update
         if (password && password.length >= 6) {
             const hashedPassword = await bcrypt.hash(password, 10);
-            updateQuery += ', password_hash = $4 WHERE user_id = $5';
+            updateQuery += ', password_hash = $3 WHERE user_id = $4';
             params.push(hashedPassword, user_id);
         } else {
-            updateQuery += ' WHERE user_id = $4';
+            updateQuery += ' WHERE user_id = $3';
             params.push(user_id);
         }
 

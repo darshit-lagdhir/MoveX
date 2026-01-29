@@ -547,7 +547,7 @@ window.MoveXAdmin = (function () {
                                     <div style="font-weight:600;">${s.full_name || s.name}</div>
                                     <div style="font-size:0.8rem; color:var(--text-tertiary);">@${s.username}</div>
                                 </td>
-                                <td style="text-transform:capitalize;">${s.staff_role || s.role || 'Staff'}</td>
+                                <td style="text-transform:capitalize;">Staff</td>
                                 <td>${s.phone || '-'}</td>
                                 <td><span class="status-badge status-${(s.status || 'active').toLowerCase()}">${s.status || 'Active'}</span></td>
                                 <td>
@@ -890,7 +890,7 @@ window.MoveXAdmin = (function () {
                 </div>
                 <div>
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Username *</label>
-                    <input type="text" id="staff_username" placeholder="e.g. john_driver" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
+                    <input type="text" id="staff_username" placeholder="e.g. john_staff" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
                 </div>
                 <div>
                     <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Password *</label>
