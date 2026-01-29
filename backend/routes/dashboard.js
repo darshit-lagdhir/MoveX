@@ -199,7 +199,9 @@ router.get('/staff/shipments', validateSession, requireRole('staff'), async (req
         // Show all shipments assigned to this staff member that are still actionable
         // Only exclude: delivered, cancelled, returned
         const result = await db.query(`
-            SELECT tracking_id, sender_name, receiver_name, origin_address, destination_address, status, created_at, weight
+            SELECT tracking_id, sender_name, sender_phone, sender_address, 
+                   receiver_name, receiver_phone, receiver_address,
+                   origin_address, destination_address, status, created_at, weight
             FROM shipments
             WHERE assigned_staff_id = $1
             AND LOWER(status) NOT IN ('delivered', 'cancelled', 'returned')
@@ -210,7 +212,11 @@ router.get('/staff/shipments', validateSession, requireRole('staff'), async (req
             id: row.tracking_id,
             tracking_id: row.tracking_id,
             sender: row.sender_name,
+            sender_phone: row.sender_phone,
+            sender_address: row.sender_address,
             receiver: row.receiver_name,
+            receiver_phone: row.receiver_phone,
+            receiver_address: row.receiver_address,
             origin: row.origin_address,
             destination: row.destination_address,
             status: row.status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),

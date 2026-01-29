@@ -62,37 +62,19 @@
         <div class="main-content">
             <header class="top-nav"
                 style="background: var(--surface-primary); border-bottom: 1px solid var(--border-default); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; height: 60px;">
-                <div class="nav-left" style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+                <div class="nav-left" style="display: flex; align-items: center; gap: 1rem;">
                     <button class="toggle-btn" id="sidebarToggle" title="Toggle Sidebar">
                         <svg fill="none" width="20" height="20" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24">
                             <path d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
                     </button>
-                    <!-- Search Bar -->
-                    <div class="search-bar" style="position: relative; max-width: 400px; width: 100%;">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24"
-                            style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary);">
-                            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                        <input type="text" id="globalSearch" placeholder="Search tasks..."
-                            style="width: 100%; padding: 0.5rem 1rem 0.5rem 2.5rem; border: 1px solid var(--border-default); border-radius: var(--radius-md); font-size: 0.875rem;"
-                            onkeyup="window.StaffCore.filterTasks(this.value)">
-                    </div>
+                    <h2 id="headerTitle" style="font-size: 1.1rem; font-weight: 700; margin: 0; display: none;">
+                        Dashboard</h2>
                 </div>
                 <div class="nav-right" style="display: flex; align-items: center; gap: 1.25rem;">
                     <div class="action-icons"
                         style="display: flex; align-items: center; gap: 1rem; color: var(--text-secondary);">
-                        <button class="icon-btn" title="Notifications"
-                            style="background:none; border:none; cursor:pointer; color:inherit;">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path
-                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
-                                </path>
-                            </svg>
-                        </button>
                     </div>
                     <div class="user-profile"
                         style="display: flex; align-items: center; gap: 0.75rem; border-left: 1px solid var(--border-default); padding-left: 1.25rem; cursor: pointer;">
@@ -168,14 +150,15 @@
                                     <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
                                     <th>Tracking ID</th>
                                     <th>Status</th>
+                                    <th>Sender</th>
                                     <th>Receiver</th>
-                                    <th>Destination</th>
+                                    <th>Contact</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody id="tasksTableBody">
                                 <tr>
-                                    <td colspan="6" style="text-align:center; padding: 2rem;">Loading tasks...</td>
+                                    <td colspan="7" style="text-align:center; padding: 2rem;">Loading tasks...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -189,22 +172,59 @@
     <div id="statusModal" class="modal-overlay"
         style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
         <div class="modal-content"
-            style="background: var(--surface-primary); padding: 2rem; border-radius: var(--radius-lg); width: 90%; max-width: 400px; box-shadow: var(--shadow-xl);">
-            <h3 style="margin-top:0; margin-bottom: 1.5rem; font-size: 1.25rem;">Update Status</h3>
-            <p id="modalTrackingId" style="color: var(--text-secondary); margin-bottom: 1.5rem; font-weight: 500;"></p>
+            style="background: var(--surface-primary); padding: 2rem; border-radius: var(--radius-lg); width: 90%; max-width: 500px; box-shadow: var(--shadow-xl); max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                <h3 style="margin:0; font-size: 1.25rem;">Shipment Details</h3>
+                <button onclick="window.StaffCore.closeModal()"
+                    style="background:none; border:none; cursor:pointer; color:var(--text-secondary);">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
 
-            <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Select New Status</label>
+            <div id="shipmentDetailContent" style="margin-bottom: 2rem; font-size: 0.875rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <div style="color: var(--text-secondary); margin-bottom: 0.25rem;">Sender</div>
+                        <div id="detSenderName" style="font-weight: 600;">-</div>
+                        <div id="detSenderPhone" style="color: var(--brand-primary); font-weight: 500;">-</div>
+                        <div id="detSenderAddress"
+                            style="color: var(--text-secondary); margin-top: 0.25rem; font-size: 0.8rem;">-</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-secondary); margin-bottom: 0.25rem;">Receiver</div>
+                        <div id="detReceiverName" style="font-weight: 600;">-</div>
+                        <div id="detReceiverPhone" style="color: var(--brand-primary); font-weight: 500;">-</div>
+                        <div id="detReceiverAddress"
+                            style="color: var(--text-secondary); margin-top: 0.25rem; font-size: 0.8rem;">-</div>
+                    </div>
+                </div>
+                <div style="border-top: 1px dashed var(--border-default); padding-top: 1rem;">
+                    <div id="modalTrackingId"
+                        style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Tracking ID: -
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <div>Weight: <span id="detWeight">0</span>kg</div>
+                        <div>Date: <span id="detDate">-</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group"
+                style="margin-bottom: 1.5rem; border-top: 1px solid var(--border-default); padding-top: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.75rem; font-weight: 600;">Update Status</label>
                 <select id="newStatusSelect" class="form-input" style="width: 100%;">
                     <option value="Out for Delivery">Out for Delivery</option>
                     <option value="Delivered">Delivered</option>
                     <option value="Not Delivered">Not Delivered</option>
+                    <option value="Reached At Final Delivery Hub">Reached At Final Delivery Hub</option>
                 </select>
             </div>
 
             <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                <button class="btn-secondary" onclick="window.StaffCore.closeModal()">Cancel</button>
-                <button class="btn-primary" onclick="window.StaffCore.submitModalUpdate()">Update Status</button>
+                <button class="btn-secondary" onclick="window.StaffCore.closeModal()">Close</button>
+                <button class="btn-primary" onclick="window.StaffCore.submitModalUpdate()">Save Status</button>
             </div>
         </div>
     </div>

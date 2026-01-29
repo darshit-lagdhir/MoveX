@@ -48,12 +48,12 @@ const StaffCore = {
                     this.updateBulkUI();
                     this.bindSelectAll();
                 } else {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">${data.error || 'Error loading tasks'}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">${data.error || 'Error loading tasks'}</td></tr>`;
                 }
             })
             .catch(err => {
                 console.error(err);
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">${err.message}</td></tr>`;
             });
     },
 
@@ -63,7 +63,7 @@ const StaffCore = {
         this.selectedTasks.clear();
 
         if (tasks.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--text-secondary);">No tasks assigned currently.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--text-secondary);">No tasks assigned currently.</td></tr>`;
             return;
         }
 
@@ -74,8 +74,15 @@ const StaffCore = {
                 <td><input type="checkbox" class="task-checkbox" value="${t.tracking_id}"></td>
                 <td style="font-weight:600; color: var(--brand-primary);">${t.tracking_id}</td>
                 <td><span class="status-badge status-${statusClass}">${t.status}</span></td>
-                <td>${t.receiver || 'N/A'}</td>
-                <td>${t.destination || 'N/A'}</td>
+                <td>
+                    <div style="font-weight:600;">${t.sender || 'N/A'}</div>
+                    <div style="font-size:0.75rem; color: var(--text-secondary);">${t.sender_address || ''}</div>
+                </td>
+                <td>
+                    <div style="font-weight:600;">${t.receiver || 'N/A'}</div>
+                    <div style="font-size:0.75rem; color: var(--text-secondary);">${t.receiver_address || ''}</div>
+                </td>
+                <td style="font-weight: 500; color: var(--brand-primary);">${t.receiver_phone || 'N/A'}</td>
                 <td>
                     <button class="btn-sm btn-secondary" onclick="window.StaffCore.openModal('${t.tracking_id}')">Update</button>
                 </td>
@@ -194,7 +201,34 @@ const StaffCore = {
 
     openModal: function (trackingId) {
         this.currentUpdateId = trackingId;
-        document.getElementById('modalTrackingId').textContent = 'Tracking ID: ' + trackingId;
+        const t = this.allTasks.find(item => item.tracking_id === trackingId);
+
+        if (t) {
+            document.getElementById('detSenderName').textContent = t.sender || 'N/A';
+            document.getElementById('detSenderPhone').textContent = t.sender_phone || 'N/A';
+            document.getElementById('detSenderAddress').textContent = t.sender_address || 'N/A';
+
+            document.getElementById('detReceiverName').textContent = t.receiver || 'N/A';
+            document.getElementById('detReceiverPhone').textContent = t.receiver_phone || 'N/A';
+            document.getElementById('detReceiverAddress').textContent = t.receiver_address || 'N/A';
+
+            document.getElementById('detWeight').textContent = t.weight || '0';
+            document.getElementById('detDate').textContent = t.date ? new Date(t.date).toLocaleDateString() : 'N/A';
+
+            document.getElementById('modalTrackingId').textContent = 'Tracking ID: ' + trackingId;
+
+            const select = document.getElementById('newStatusSelect');
+            if (select) {
+                // Pre-select current status if it exists in options
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value.toLowerCase() === t.status.toLowerCase()) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
         const modal = document.getElementById('statusModal');
         modal.style.display = 'flex';
     },
