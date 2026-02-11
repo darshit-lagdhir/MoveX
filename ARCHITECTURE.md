@@ -90,6 +90,7 @@ We use a **Hybrid** approach to handle logins across different domains:
 In `app.js`, we set special instructions for the browser:
 *   **X-Frame-Options: DENY**: Stops people from putting MoveX inside a "fake" website to steal clicks.
 *   **CSP (Content Security Policy)**: Only allows scripts from MoveX to run. It blocks "Malware" scripts from the internet.
+*   **Global No-Cache Policy**: We set strict headers (`no-store`, `no-cache`, `max-age=0`) on every request. This ensures that whenever you update the code, the changes appear instantly on all browsers without requiring a "Hard Refresh" (CTRL+SHIFT+R).
 
 ---
 
@@ -152,10 +153,11 @@ Photos of parcels are big and slow. We don't save them in our server.
 
 ## 9. Scaling (Handling More Users)
 
-MoveX is designed to scale horizontally.
-*   **Connection Pooling (Supabase Transaction Mode)**: We connect via **Port 6543**. This allows thousands of users to share a few active database connections. It also provides an **IPv4** address, which is required for Render deployments.
-*   **PM2 (Backend)**: Restarts the server instantly if it crashes.
-*   **Edge Caching (Frontend)**: Cloudflare handles all the static files (images, CSS), so your backend only focuses on API data.
+## 10. Browser Stability & Compatibility
+
+MoveX prioritizes **Native Browser Capabilities** over third-party libraries.
+*   **Removal of Flatpickr**: We removed the Flatpickr library to avoid layout conflicts and "split-second" flickering.
+*   **Native Date Pickers**: By using the browser's own date picker, we ensure that the UI is fast, stable, and works perfectly on all modern browsers (Chrome, Brave, Edge).
 
 ---
 

@@ -192,6 +192,7 @@ DB_NAME=movex_auth
 - ✅ **Request Limits:** Blocks hackers trying to guess passwords too fast.
 - ✅ **CORS:** Only allows your own website to talk to the server.
 - ✅ **Browser Protection:** Extra safety layers for the browser (CSP).
+- ✅ **Global No-Cache Policy:** Ensuring updates appear instantly without manual refreshes.
 - ✅ **In-Depth Validation:** Ensuring all data sent by users is correct.
 - ✅ **Database Safety:** Stops bad code from entering your database (SQL injection).
 - ✅ **Auto-Redirect:** Logged-in users are automatically sent to their dashboard.
