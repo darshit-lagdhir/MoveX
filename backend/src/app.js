@@ -86,6 +86,17 @@ app.use((req, res, next) => {
 });
 
 
+/* ═══════════════════════════════════════════════════════════
+   CACHE CONTROL (FORCE NO-CACHE GLOBALLY)
+   Ensures changes appear instantly without CTRL+SHIFT+R
+   ═══════════════════════════════════════════════════════════ */
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+  next();
+});
 
 /* ═══════════════════════════════════════════════════════════
    COOKIE PARSING (MUST BE BEFORE AUTH MIDDLEWARE)
@@ -138,11 +149,6 @@ const protectStaticDashboards = async (req, res, next) => {
   };
 
   if (dashboardMap[target]) {
-    // SECURITY: Prevent caching of sensitive dashboard pages
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-
     // 1. Check for session cookie (Strict Server-Side Validation)
     const sid = req.cookies?.['movex.sid'];
     const session = await sessionStore.getSession(sid);
