@@ -2085,15 +2085,6 @@ window.MoveXAdmin = (function () {
 
             // Initialize custom UI elements
             initCustomSelects();
-
-            // Re-init flatpickr for any inputs marked as date (Ignore Reports for layout stability)
-            if (window.flatpickr) {
-                window.flatpickr('input[type="date"]:not(#report-start):not(#report-end)', {
-                    dateFormat: 'Y-m-d',
-                    altInput: true,
-                    altFormat: 'F j, Y'
-                });
-            }
         },
         toast: showToast,
         modal: createModal,
