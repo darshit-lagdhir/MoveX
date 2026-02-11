@@ -149,17 +149,22 @@
             <main>
                 <div class="dashboard-container">
                     <div class="page-header">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <h1 class="page-title">Analytics & Reports</h1>
-                            <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                <input type="date" id="report-start" class="form-input"
-                                    style="padding: 0.5rem; border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--surface-primary);">
-                                <span style="color: var(--text-tertiary)">to</span>
-                                <input type="date" id="report-end" class="form-input"
-                                    style="padding: 0.5rem; border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--surface-primary);">
-                                <button id="report-filter-btn"
-                                    style="padding: 0.5rem 1rem; border: 1px solid var(--border-default); background: var(--brand-primary); color: white; border-radius: var(--radius-md); cursor: pointer;">
-                                    Filter
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 2rem;">
+                            <div>
+                                <h1 class="page-title">Analytics & Reports</h1>
+                                <p class="page-subtitle">Track operational performance and delivery insights.</p>
+                            </div>
+                            <div class="filter-toolbar" style="display: flex; align-items: center; gap: 0.75rem; background: var(--surface-primary); padding: 0.5rem; border: 1px solid var(--border-default); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0 0.5rem;">
+                                    <input type="date" id="report-start" style="border: none; background: transparent; font-weight: 500; width: 140px; height: auto; padding: 0.25rem;">
+                                    <span style="color: var(--text-tertiary); font-size: 0.8125rem; font-weight: 600; text-transform: uppercase;">to</span>
+                                    <input type="date" id="report-end" style="border: none; background: transparent; font-weight: 500; width: 140px; height: auto; padding: 0.25rem;">
+                                </div>
+                                <button id="report-filter-btn" class="btn-primary" style="height: 40px; padding: 0 1.25rem; border-radius: var(--radius-md);">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 4px;">
+                                        <path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                                    </svg>
+                                    Apply Filter
                                 </button>
                             </div>
                         </div>
