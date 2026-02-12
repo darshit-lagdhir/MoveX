@@ -228,11 +228,57 @@
     }
 
     function updateUserInfo() {
+        const navRight = document.querySelector('.nav-right');
+        if (navRight && !document.getElementById('logoutBtn')) {
+            const logoutBtn = document.createElement('button');
+            logoutBtn.id = 'logoutBtn';
+            logoutBtn.className = 'btn-logout';
+            logoutBtn.innerHTML = `
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                <span>Logout</span>
+            `;
+            logoutBtn.style.cssText = `
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.5rem 1rem;
+                background: var(--error-soft);
+                color: var(--error);
+                border: 1px solid transparent;
+                border-radius: var(--radius-md);
+                font-size: 0.875rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                margin-right: 0.5rem;
+            `;
+
+            logoutBtn.onmouseover = () => {
+                logoutBtn.style.background = 'var(--error)';
+                logoutBtn.style.color = '#fff';
+            };
+            logoutBtn.onmouseout = () => {
+                logoutBtn.style.background = 'var(--error-soft)';
+                logoutBtn.style.color = 'var(--error)';
+            };
+
+            logoutBtn.onclick = (e) => {
+                e.preventDefault();
+                if (confirm('Are you sure you want to logout?')) {
+                    if (window.MoveXLogout) window.MoveXLogout();
+                }
+            };
+
+            navRight.prepend(logoutBtn);
+        }
+
         const update = () => {
             if (window.MoveXUser) {
                 const nameEl = document.getElementById('topBarUserName');
                 if (nameEl) {
-                    nameEl.textContent = window.MoveXUser.full_name || 'User';
+                    nameEl.textContent = window.MoveXUser.full_name || window.MoveXUser.username || 'User';
                 }
             } else {
                 setTimeout(update, 500);
