@@ -374,22 +374,7 @@ const UserCore = {
             });
         }
 
-        // 2. Live Price Calculation
-        const weightInput = document.getElementById('ship_weight');
-        const amountInput = document.getElementById('ship_amount');
-
-        if (weightInput && amountInput) {
-            const calculatePrice = () => {
-                const w = parseFloat(weightInput.value) || 0;
-                const price = Math.max(50, Math.ceil(w * 50));
-                amountInput.value = price;
-            };
-
-            weightInput.addEventListener('input', calculatePrice);
-            calculatePrice(); // Initial calculation
-        }
-
-        // 3. Form Submission
+        // 2. Form Submission
         if (!form.dataset.listener) {
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -412,7 +397,7 @@ const UserCore = {
 
                     if (data.success) {
                         // Success Toast/Modal
-                        alert(`Shipment Booked Successfully!\n\nTracking ID: ${data.tracking_id}\nBooking Amount: ₹${data.price}`);
+                        alert(`Shipment Request Sent Successfully!\n\nTracking ID: ${data.tracking_id}\n\nOur team will contact you shortly for pickup and pricing details.`);
 
                         if (window.navigateTo) window.navigateTo('user-dashboard.html');
                         else window.location.href = 'user-dashboard.html';

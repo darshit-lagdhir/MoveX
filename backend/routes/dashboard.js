@@ -1567,17 +1567,30 @@ router.get('/franchisee/pickup-requests', validateSession, requireRole('franchis
 // Approve Pickup Request
 router.post('/franchisee/pickup-requests/approve', validateSession, requireRole('franchisee'), async (req, res) => {
     try {
-        const { id, remarks } = req.body;
+        const { id, remarks, weight, price } = req.body;
         const orgId = req.organization?.id;
         if (!orgId) return res.status(403).json({ success: false, error: 'No organization linked' });
 
-        // Update shipment to assign to this franchise and mark as picked up
+        // Build update fields dynamically to only update if provided
+        let updateFields = "organization_id = $1, status = 'picked up', updated_at = NOW()";
+        const params = [orgId, id];
+        let paramIdx = 3;
+
+        if (weight) {
+            updateFields += `, weight = $${paramIdx++}`;
+            params.push(weight);
+        }
+        if (price) {
+            updateFields += `, price = $${paramIdx++}`;
+            params.push(price);
+        }
+
         const result = await db.query(`
             UPDATE shipments 
-            SET organization_id = $1, status = 'picked up', updated_at = NOW()
+            SET ${updateFields}
             WHERE (tracking_id = $2 OR shipment_id::text = $2)
             RETURNING tracking_id
-        `, [orgId, id]);
+        `, params);
 
         if (result.rowCount === 0) {
             return res.status(404).json({ success: false, error: 'Request not found' });
@@ -1924,9 +1937,8 @@ router.post('/user/shipments/create', validateSession, requireRole('user'), asyn
         const origin_address = sender_city ? `${sender_city}, ${sender_pincode}` : sender_pincode;
         const destination_address = receiver_city ? `${receiver_city}, ${receiver_pincode}` : receiver_pincode;
 
-        // Price calculation (prefer provided price, fallback to calculation)
-        const price = req.body.price ? parseFloat(req.body.price) : Math.max(50, parseFloat(weight) * 50);
-
+        // Price calculation (Set to 0, franchisee will update during pickup/processing)
+        const price = req.body.price ? parseFloat(req.body.price) : 0;
         const result = await db.query(`
             INSERT INTO shipments (
                 tracking_id, status, organization_id, creator_username,

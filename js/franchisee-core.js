@@ -1017,9 +1017,23 @@ window.MoveXAdmin = (function () {
 
     function handlePickupAction(id, action) {
         createModal(`${action === 'approve' ? 'Approve' : 'Reject'} Pickup Request`, `
-            <div>
-                <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Remarks</label>
-                <textarea id="pickup_remarks" placeholder="Add notes..." style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px; min-height:100px;"></textarea>
+            <div style="display:flex; flex-direction:column; gap:1.25rem;">
+                ${action === 'approve' ? `
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div>
+                        <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Final Weight (kg)</label>
+                        <input type="number" id="pickup_weight" placeholder="1.0" step="0.1" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px;">
+                    </div>
+                    <div>
+                        <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Amount (₹)</label>
+                        <input type="number" id="pickup_amount" placeholder="0" style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px; font-weight:700;">
+                    </div>
+                </div>
+                ` : ''}
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Remarks</label>
+                    <textarea id="pickup_remarks" placeholder="Add notes..." style="width:100%; padding:0.75rem; border:1px solid var(--border-default); border-radius:8px; min-height:80px;"></textarea>
+                </div>
             </div>
         `, [
             { label: 'Cancel', onClick: c => c() },
@@ -1028,12 +1042,15 @@ window.MoveXAdmin = (function () {
                 primary: true,
                 onClick: async (close) => {
                     const remarks = document.getElementById('pickup_remarks').value;
+                    const weight = document.getElementById('pickup_weight')?.value;
+                    const price = document.getElementById('pickup_amount')?.value;
+
                     try {
                         const res = await fetch(`${API_BASE}/api/dashboard/franchisee/pickup-requests/${action}`, {
                             method: 'POST',
                             credentials: 'include',
                             headers: getAuthHeaders(),
-                            body: JSON.stringify({ id, remarks })
+                            body: JSON.stringify({ id, remarks, weight, price })
                         });
                         const data = await res.json();
                         if (data.success) {
