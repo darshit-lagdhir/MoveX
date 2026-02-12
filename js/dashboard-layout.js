@@ -47,10 +47,14 @@
         await ensureCoreLoaded();
 
         const isStaff = window.location.pathname.includes('/dashboards/staff/');
+        const isUser = window.location.pathname.includes('/dashboards/user/');
         if (isStaff && window.StaffCore) {
             console.log('Layout Manager: Triggering staff core init for', logicPath);
             if (logicPath === 'dashboard') window.StaffCore.loadStats();
             if (logicPath === 'assignments') window.StaffCore.loadTasks();
+        } else if (isUser && window.UserCore) {
+            console.log('Layout Manager: Triggering user core init for', logicPath);
+            window.UserCore.init(logicPath.toLowerCase());
         } else if (window.MoveXAdmin) {
             console.log('Layout Manager: Triggering core init for', logicPath);
             window.MoveXAdmin.init(logicPath.toLowerCase());
@@ -62,13 +66,16 @@
     async function ensureCoreLoaded() {
         const isFranchisee = window.location.pathname.includes('/dashboards/franchisee/');
         const isStaff = window.location.pathname.includes('/dashboards/staff/');
+        const isUser = window.location.pathname.includes('/dashboards/user/');
 
         let expectedCore = '/js/admin-core.js';
         if (isFranchisee) expectedCore = '/js/franchisee-core.js';
         if (isStaff) expectedCore = '/js/staff-core.js';
+        if (isUser) expectedCore = '/js/user-core.js';
 
         const isCoreLoaded = () => {
             if (isStaff) return !!window.StaffCore;
+            if (isUser) return !!window.UserCore;
             return !!window.MoveXAdmin;
         };
 
@@ -180,9 +187,12 @@
                     if (logicPath.startsWith('staff-')) logicPath = logicPath.replace('staff-', '');
 
                     const isStaff = window.location.pathname.includes('/dashboards/staff/');
+                    const isUser = window.location.pathname.includes('/dashboards/user/');
                     if (isStaff && window.StaffCore) {
                         if (logicPath === 'dashboard') window.StaffCore.loadStats();
                         if (logicPath === 'assignments') window.StaffCore.loadTasks();
+                    } else if (isUser && window.UserCore) {
+                        window.UserCore.init(logicPath.toLowerCase());
                     } else if (window.MoveXAdmin) {
                         window.MoveXAdmin.init(logicPath.toLowerCase());
                     }

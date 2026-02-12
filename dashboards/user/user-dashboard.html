@@ -4,11 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard - MoveX</title>
-
-    <!-- Production-grade session protection -->
-    <script src="../../js/dashboard-guard.js?v=3"></script>
-
+    <title>Customer Dashboard - MoveX</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,52 +12,183 @@
         rel="stylesheet">
     <link rel="stylesheet" href="../../styles/base.css?v=4">
     <link rel="stylesheet" href="../../styles/components.css?v=4">
-    <link rel="stylesheet" href="../../styles/animations.css?v=4">
-    <script src="../../js/theme.js"></script>
-
-    <style>
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .btn-logout {
-            margin-top: 2rem;
-            padding: 0.875rem 2rem;
-            background: var(--brand-primary);
-            color: var(--text-inverted);
-            border: none;
-            border-radius: var(--radius-lg);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all var(--transition-base);
-        }
-
-        .btn-logout:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-    </style>
+    <link rel="stylesheet" href="../../styles/admin.css?v=4">
+    <script src="../../js/config.js?v=1"></script>
+    <script src="../../js/dashboard-guard.js?v=3"></script>
 </head>
 
 <body>
-    <div class="dashboard-container">
-        <a href="/" class="nav-logo" style="justify-content: center; margin-bottom: 2rem;">
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header" style="height: 60px; border-bottom: 1px solid var(--border-default);">
+                <a href="/dashboards/user/user-dashboard.html" class="nav-logo">
+                    <span class="logo-text">MoveX</span>
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-group-title">Home</div>
+                <a href="user-dashboard.html" class="nav-item active">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                        </path>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
 
-            <span class="logo-text">MoveX</span>
-        </a>
-        <h1>User Dashboard</h1>
-        <p>Welcome, User</p>
-        <button onclick="logout()" class="btn-logout">Logout</button>
+                <div class="nav-group-title">Logistics</div>
+                <a href="user-shipments.html" class="nav-item">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        <path
+                            d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0">
+                        </path>
+                    </svg>
+                    <span>My Shipments</span>
+                </a>
+                <a href="user-book.html" class="nav-item">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    <span>Book Shipment</span>
+                </a>
+
+                <div class="nav-group-title">Personal</div>
+                <a href="user-profile.html" class="nav-item">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    <span>My Profile</span>
+                </a>
+            </nav>
+        </aside>
+
+        <div class="main-content">
+            <header class="top-nav"
+                style="background: var(--surface-primary); border-bottom: 1px solid var(--border-default); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; height: 60px;">
+                <div class="nav-left" style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="toggle-btn" id="sidebarToggle" title="Toggle Sidebar">
+                        <svg fill="none" width="20" height="20" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                    <h2 id="headerTitle" style="font-size: 1.1rem; font-weight: 600; margin: 0;">Dashboard</h2>
+                </div>
+                <div class="nav-right" style="display: flex; align-items: center; gap: 1.25rem;">
+                    <div class="user-profile"
+                        style="display: flex; align-items: center; gap: 0.75rem; border-left: 1px solid var(--border-default); padding-left: 1.25rem; cursor: pointer;">
+                        <div style="text-align: right;">
+                            <div id="topBarUserName" style="font-weight: 600; font-size: 0.875rem;">Loading...</div>
+                            <div id="topBarRole"
+                                style="font-size: 0.75rem; color: var(--text-secondary); text-transform: capitalize;">
+                                Customer</div>
+                        </div>
+                        <div class="avatar"
+                            style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #4F46E5 0%, #3b82f6 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); border: 2px solid var(--surface-primary);">
+                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#ffffff">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main>
+                <div class="dashboard-container">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Welcome Back!</h1>
+                            <p class="page-subtitle">Here's what's happening with your shipments today.</p>
+                        </div>
+                        <a href="user-book.html" class="btn btn-primary"
+                            style="display: flex; align-items: center; gap: 0.5rem;">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Book New Shipment
+                        </a>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon"
+                                style="background: var(--brand-primary-soft); color: var(--brand-primary);">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                </svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="kpi-user-total">0</h3>
+                                <p>Total Shipments</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: var(--warning-soft); color: var(--warning);">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="kpi-user-active">0</h3>
+                                <p>In Transit</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: var(--success-soft); color: var(--success);">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="kpi-user-delivered">0</h3>
+                                <p>Delivered</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Shipments -->
+                    <div class="card" style="margin-top: 2rem;">
+                        <div class="card-header"
+                            style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid var(--border-default);">
+                            <h3 style="margin:0; font-size: 1.1rem; font-weight: 700;">Recent Shipments</h3>
+                            <a href="user-shipments.html"
+                                style="font-size: 0.875rem; color: var(--brand-primary); font-weight: 600;">View All</a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tracking ID</th>
+                                        <th>Status</th>
+                                        <th>Receiver</th>
+                                        <th>Destination</th>
+                                        <th>Date</th>
+                                        <th>Price</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentShipmentsBody">
+                                    <tr>
+                                        <td colspan="7"
+                                            style="text-align:center; padding: 2rem; color: var(--text-secondary);">
+                                            Loading shipments...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
     </div>
-
-    <script>
-        function logout() {
-            window.MoveXLogout();
-        }
-    </script>
+    <script src="../../js/dashboard-layout.js"></script>
 </body>
 
 </html>

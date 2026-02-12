@@ -1822,6 +1822,148 @@ router.post('/staff/shipments/update-status', validateSession, requireRole('staf
     }
 });
 
+// ═══════════════════════════════════════════════════════════
+//  USER (CUSTOMER) DASHBOARD OPERATIONS
+// ═══════════════════════════════════════════════════════════
+
+// Get User Stats
+router.get('/user/stats', validateSession, requireRole('user'), async (req, res) => {
+    try {
+        const username = req.session.username;
+
+        const totalRes = await db.query('SELECT COUNT(*) FROM shipments WHERE creator_username = $1', [username]);
+        const activeRes = await db.query("SELECT COUNT(*) FROM shipments WHERE creator_username = $1 AND status NOT IN ('delivered', 'cancelled', 'returned')", [username]);
+        const deliveredRes = await db.query("SELECT COUNT(*) FROM shipments WHERE creator_username = $1 AND status = 'delivered'", [username]);
+
+        res.json({
+            success: true,
+            stats: {
+                totalShipments: parseInt(totalRes.rows[0].count),
+                activeShipments: parseInt(activeRes.rows[0].count),
+                deliveredShipments: parseInt(deliveredRes.rows[0].count)
+            }
+        });
+    } catch (err) {
+        console.error("User Stats Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch user stats' });
+    }
+});
+
+// Get User Shipments
+router.get('/user/shipments', validateSession, requireRole('user'), async (req, res) => {
+    try {
+        const username = req.session.username;
+
+        const result = await db.query(`
+            SELECT tracking_id, sender_name, receiver_name, origin_address, destination_address, 
+                   status, price, weight, created_at, estimated_delivery
+            FROM shipments 
+            WHERE creator_username = $1 
+            ORDER BY created_at DESC
+        `, [username]);
+
+        const shipments = result.rows.map(row => ({
+            id: row.tracking_id,
+            tracking_id: row.tracking_id,
+            sender: row.sender_name,
+            receiver: row.receiver_name,
+            origin: row.origin_address,
+            destination: row.destination_address,
+            status: row.status.charAt(0).toUpperCase() + row.status.slice(1).replace('_', ' '),
+            price: parseFloat(row.price),
+            weight: parseFloat(row.weight),
+            date: row.created_at,
+            estimated_delivery: row.estimated_delivery
+        }));
+
+        res.json({ success: true, shipments });
+    } catch (err) {
+        console.error("User Shipments Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to fetch user shipments' });
+    }
+});
+
+// Create Shipment (User/Customer)
+router.post('/user/shipments/create', validateSession, requireRole('user'), async (req, res) => {
+    try {
+        const {
+            sender_name, sender_phone, sender_address, sender_pincode, sender_city,
+            receiver_name, receiver_phone, receiver_address, receiver_pincode, receiver_city,
+            weight, contents
+        } = req.body;
+
+        // Basic Validation
+        if (!sender_name || !sender_phone || !sender_address || !sender_pincode ||
+            !receiver_name || !receiver_phone || !receiver_address || !receiver_pincode ||
+            !weight) {
+            return res.status(400).json({ success: false, error: 'Missing required fields' });
+        }
+
+        // Check if sender pincode is serviceable to assign to a hub
+        const senderPincodeCheck = await db.query(`
+            SELECT organization_id FROM organizations 
+            WHERE status = 'active' AND type = 'franchise' AND pincodes LIKE '%' || $1 || '%'
+            LIMIT 1
+        `, [sender_pincode]);
+
+        if (senderPincodeCheck.rows.length === 0) {
+            return res.status(400).json({ success: false, error: `Area ${sender_pincode} is not currently serviceable for pickup.` });
+        }
+
+        const targetOrgId = senderPincodeCheck.rows[0].organization_id;
+
+        // Generate Sequential Tracking ID
+        const maxIdResult = await db.query("SELECT tracking_id FROM shipments WHERE tracking_id ~ '^MX[0-9]+$' ORDER BY tracking_id DESC LIMIT 1");
+        let nextNum = 10001;
+        if (maxIdResult.rows.length > 0) {
+            const lastId = maxIdResult.rows[0].tracking_id;
+            const numPart = parseInt(lastId.replace('MX', ''), 10);
+            if (!isNaN(numPart)) nextNum = numPart + 1;
+        }
+        const tracking_id = `MX${nextNum}`;
+
+        const origin_address = sender_city ? `${sender_city}, ${sender_pincode}` : sender_pincode;
+        const destination_address = receiver_city ? `${receiver_city}, ${receiver_pincode}` : receiver_pincode;
+
+        // Price calculation (mock: 50 per kg)
+        const price = Math.max(50, parseFloat(weight) * 50);
+
+        const result = await db.query(`
+            INSERT INTO shipments (
+                tracking_id, status, organization_id, creator_username,
+                sender_name, sender_phone, sender_address, sender_pincode,
+                receiver_name, receiver_phone, receiver_address, receiver_pincode,
+                origin_address, destination_address,
+                weight, price, contents,
+                created_at, updated_at
+            ) VALUES (
+                $1, 'pending', $2, $3,
+                $4, $5, $6, $7,
+                $8, $9, $10, $11,
+                $12, $13,
+                $14, $15, $16,
+                NOW(), NOW()
+            ) RETURNING tracking_id
+        `, [
+            tracking_id, targetOrgId, req.session.username,
+            sender_name, sender_phone, sender_address, sender_pincode,
+            receiver_name, receiver_phone, receiver_address, receiver_pincode,
+            origin_address, destination_address,
+            weight, price, contents || ''
+        ]);
+
+        res.json({
+            success: true,
+            message: 'Shipment booked successfully!',
+            tracking_id: result.rows[0].tracking_id,
+            price: price
+        });
+    } catch (err) {
+        console.error("User Create Shipment Error:", err);
+        res.status(500).json({ success: false, error: 'Failed to book shipment' });
+    }
+});
+
 module.exports = router;
 
 
