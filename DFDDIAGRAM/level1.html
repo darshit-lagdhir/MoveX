@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoveX Engine | DFD Level 1 (Zero-Crossing)</title>
+    <title>MoveX Engine | DFD Level 1 (Rounded Orthogonal)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
@@ -14,7 +14,7 @@
             --primary: #2563eb;
             --primary-soft: #f8fafc;
             --border: #1e293b;
-            --grid: #f1f5f9;
+            --grid: #ffffff;
         }
 
         * {
@@ -36,13 +36,14 @@
         /* --- NAVIGATION --- */
         .system-nav {
             background: #ffffff;
-            border-bottom: 2px solid var(--grid);
+            border-bottom: 2px solid #f1f5f9;
             display: flex;
             padding: 0 25px;
             height: 55px;
             align-items: center;
             justify-content: space-between;
             flex-shrink: 0;
+            z-index: 1000;
         }
 
         .brand {
@@ -78,8 +79,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-image: radial-gradient(var(--grid) 1px, transparent 1px);
-            background-size: 30px 30px;
+            background-color: #ffffff;
             padding: 10px;
             overflow: hidden;
         }
@@ -87,7 +87,8 @@
         svg {
             width: 100%;
             height: 100%;
-            max-width: 1300px;
+            max-width: 1700px;
+            max-height: 100%;
         }
 
         /* --- SVG STYLES --- */
@@ -95,61 +96,67 @@
             fill: white;
             stroke: var(--border);
             stroke-width: 2.5;
+            rx: 4;
         }
 
         .box-process {
             fill: var(--primary-soft);
             stroke: var(--primary);
             stroke-width: 3.5;
+            rx: 8;
         }
 
         .box-store {
             fill: white;
             stroke: #64748b;
             stroke-width: 2.5;
+            rx: 2;
         }
 
-        /* Orthogonal Lines */
+        /* ROUNDED ORTHOGONAL LINES */
         .line-flow {
             fill: none;
             stroke: var(--border);
-            stroke-width: 1.8;
+            stroke-width: 2;
             marker-end: url(#arrow);
+            stroke-linejoin: round;
+            stroke-linecap: round;
         }
 
         .lbl-bg {
             fill: white;
             stroke: #cbd5e1;
-            stroke-width: 0.8;
-            rx: 3;
+            stroke-width: 1;
+            rx: 6;
+            fill-opacity: 1;
         }
 
         .lbl-txt {
             fill: #1e293b;
-            font-size: 9px;
+            font-size: 10px;
             font-weight: 800;
             text-anchor: middle;
             text-transform: uppercase;
-            letter-spacing: 0.02em;
+            letter-spacing: 0.03em;
         }
 
         .node-name {
             fill: #000000;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 800;
             text-anchor: middle;
         }
 
         .node-desc {
             fill: var(--primary);
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 900;
             text-anchor: middle;
         }
 
         .node-meta {
             fill: #64748b;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 500;
             text-anchor: middle;
         }
@@ -163,7 +170,7 @@
             text-align: center;
             color: #94a3b8;
             font-size: 0.7rem;
-            border-top: 1px solid var(--grid);
+            border-top: 1px solid #f1f5f9;
             background: #fff;
             flex-shrink: 0;
         }
@@ -173,7 +180,7 @@
 <body>
 
     <nav class="system-nav">
-        <div class="brand">MOVEX ARCHITECT [L1]</div>
+        <div class="brand">MOVEX ARCHITECT</div>
         <div class="tabs">
             <a href="index.html" class="tab-btn">Overview</a>
             <a href="level0.html" class="tab-btn">Level 0</a>
@@ -187,184 +194,199 @@
 
     <div class="viewport">
         <!-- 
-             GRID SIZE: 1300 x 850
-             Orthogonal Routing: Zero Intersections.
+             GRID SYSTEM: 1700 x 1000
+             Technique: Rounded Orthogonal Routing (Pipe-Style)
+             Radius: 15px for smooth turns.
         -->
-        <svg viewBox="0 0 1300 850" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 1700 1000" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
             <defs>
                 <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
                     <polygon points="0 0, 10 3.5, 0 7" />
                 </marker>
             </defs>
 
-            <!-- --- DATA STORES (SAFE LANES) --- -->
+            <!-- --- CENTRAL COLUMN --- -->
+            <!-- System Admin -->
+            <g transform="translate(750, 40)">
+                <rect class="box-entity" width="200" height="90" />
+                <text class="node-name" x="100" y="45">System Admin</text>
+                <text class="node-desc" x="100" y="70">GLOBAL OVERSEER</text>
+            </g>
+
             <!-- D1: Users -->
-            <g transform="translate(560, 160)">
-                <rect class="box-store" width="180" height="60" />
-                <rect x="0" y="0" width="12" height="60" fill="#64748b" />
-                <text class="node-name" x="96" y="38" style="font-size:12px;">D1: Users & Roles</text>
+            <g transform="translate(750, 190)">
+                <rect class="box-store" width="200" height="70" />
+                <rect x="0" y="0" width="12" height="70" fill="#64748b" />
+                <text class="node-name" x="100" y="44" style="font-size:13px;">D1: Users & Roles</text>
+            </g>
+
+            <!-- P5.0 Admin Engine -->
+            <g transform="translate(700, 440)">
+                <rect class="box-process" width="300" height="150" />
+                <rect x="0" y="0" width="300" height="30" fill="var(--primary)" opacity="0.1" />
+                <text class="node-name" x="150" y="75" style="font-size: 20px;">Admin Engine</text>
+                <text class="node-meta" x="150" y="105">Setup & Reports</text>
             </g>
 
             <!-- D2: Shipments -->
-            <g transform="translate(560, 620)">
-                <rect class="box-store" width="180" height="60" />
-                <rect x="0" y="0" width="12" height="60" fill="#64748b" />
-                <text class="node-name" x="96" y="38" style="font-size:12px;">D2: Shipments</text>
+            <g transform="translate(750, 750)">
+                <rect class="box-store" width="200" height="70" />
+                <rect x="0" y="0" width="12" height="70" fill="#64748b" />
+                <text class="node-name" x="100" y="44" style="font-size:13px;">D2: Shipments</text>
+            </g>
+
+            <!-- Hub Staff -->
+            <g transform="translate(750, 900)">
+                <rect class="box-entity" width="200" height="90" />
+                <text class="node-name" x="100" y="40">Hub Staff</text>
+                <text class="node-desc" x="100" y="65">LOGISTICS EXECUTION</text>
             </g>
 
 
-            <!-- --- CORE PROCESSES --- -->
-
-            <!-- P5.0 Admin (Center Top) -->
-            <g transform="translate(550, 360)">
-                <rect class="box-process" width="200" height="130" />
+            <!-- --- LEFT COLUMN --- -->
+            <!-- P1.0 Identity -->
+            <g transform="translate(380, 350)">
+                <rect class="box-process" width="200" height="120" />
                 <rect x="0" y="0" width="200" height="25" fill="var(--primary)" opacity="0.1" />
-                <text class="node-desc" x="100" y="17" style="font-size:8px;">5.0</text>
-                <text class="node-name" x="100" y="65">Admin Engine</text>
-                <text class="node-meta" x="100" y="90">Setup & Reports</text>
+                <text class="node-name" x="100" y="65">Identity Service</text>
+                <text class="node-meta" x="100" y="90">Auth Logic</text>
             </g>
 
-            <!-- P1.0 Identities (Left Top) -->
-            <g transform="translate(320, 300)">
-                <rect class="box-process" width="180" height="110" />
-                <rect x="0" y="0" width="180" height="25" fill="var(--primary)" opacity="0.1" />
-                <text class="node-desc" x="90" y="17" style="font-size:8px;">1.0</text>
-                <text class="node-name" x="90" y="60">Identity Service</text>
-                <text class="node-meta" x="90" y="80">Auth Logic</text>
+            <!-- End Customer -->
+            <g transform="translate(50, 455)">
+                <rect class="box-entity" width="200" height="120" />
+                <text class="node-name" x="100" y="60">End Customer</text>
+                <text class="node-desc" x="100" y="90">USER INTERFACE</text>
             </g>
 
-            <!-- P4.0 Dispatch (Right Top) -->
-            <g transform="translate(800, 300)">
-                <rect class="box-process" width="180" height="110" />
-                <rect x="0" y="0" width="180" height="25" fill="var(--primary)" opacity="0.1" />
-                <text class="node-desc" x="90" y="17" style="font-size:8px;">4.0</text>
-                <text class="node-name" x="90" y="60">Dispatch Engine</text>
-                <text class="node-meta" x="90" y="80">Assignments</text>
-            </g>
-
-            <!-- P2.0 Booking (Left Bottom) -->
-            <g transform="translate(320, 500)">
-                <rect class="box-process" width="180" height="110" />
-                <rect x="0" y="0" width="180" height="25" fill="var(--primary)" opacity="0.1" />
-                <text class="node-desc" x="90" y="17" style="font-size:8px;">2.0</text>
-                <text class="node-name" x="90" y="60">Booking Cycle</text>
-                <text class="node-meta" x="90" y="80">Order Creation</text>
-            </g>
-
-            <!-- P3.0 Pricing (Right Bottom) -->
-            <g transform="translate(800, 500)">
-                <rect class="box-process" width="180" height="110" />
-                <rect x="0" y="0" width="180" height="25" fill="var(--primary)" opacity="0.1" />
-                <text class="node-desc" x="90" y="17" style="font-size:8px;">3.0</text>
-                <text class="node-name" x="90" y="60">Pricing Registry</text>
-                <text class="node-meta" x="90" y="80">Manual Fees</text>
+            <!-- P2.0 Booking -->
+            <g transform="translate(380, 620)">
+                <rect class="box-process" width="200" height="120" />
+                <rect x="0" y="0" width="200" height="25" fill="var(--primary)" opacity="0.1" />
+                <text class="node-name" x="100" y="65">Booking Cycle</text>
+                <text class="node-meta" x="100" y="90">Creation</text>
             </g>
 
 
-            <!-- --- ACTORS --- -->
-
-            <!-- Admin Actor -->
-            <g transform="translate(560, 20)">
-                <rect class="box-entity" width="180" height="85" />
-                <text class="node-name" x="90" y="40">System Admin</text>
-                <text class="node-desc" x="90" y="60">GLOBAL OVERSEER</text>
+            <!-- --- RIGHT COLUMN --- -->
+            <!-- P4.0 Dispatch -->
+            <g transform="translate(1120, 350)">
+                <rect class="box-process" width="200" height="120" />
+                <rect x="0" y="0" width="200" height="25" fill="var(--primary)" opacity="0.1" />
+                <text class="node-name" x="100" y="65">Dispatch Engine</text>
+                <text class="node-meta" x="100" y="90">Assignments</text>
             </g>
 
-            <!-- Staff Actor -->
-            <g transform="translate(560, 740)">
-                <rect class="box-entity" width="180" height="85" />
-                <text class="node-name" x="90" y="40">Hub Staff</text>
-                <text class="node-desc" x="90" y="60">LOGISTICS EXECUTION</text>
+            <!-- Franchisee Hub -->
+            <g transform="translate(1450, 455)">
+                <rect class="box-entity" width="200" height="120" />
+                <text class="node-name" x="100" y="60">Franchisee Hub</text>
+                <text class="node-desc" x="100" y="90">LOCAL OPS</text>
             </g>
 
-            <!-- Customer Actor -->
-            <g transform="translate(40, 400)">
-                <rect class="box-entity" width="180" height="100" />
-                <text class="node-name" x="90" y="45">End Customer</text>
-                <text class="node-desc" x="90" y="70">USER INTERFACE</text>
-            </g>
-
-            <!-- Franchisee Actor -->
-            <g transform="translate(1080, 400)">
-                <rect class="box-entity" width="180" height="100" />
-                <text class="node-name" x="90" y="45">Franchisee Hub</text>
-                <text class="node-desc" x="90" y="70">LOCAL OPERATIONS</text>
+            <!-- P3.0 Pricing -->
+            <g transform="translate(1120, 620)">
+                <rect class="box-process" width="200" height="120" />
+                <rect x="0" y="0" width="200" height="25" fill="var(--primary)" opacity="0.1" />
+                <text class="node-name" x="100" y="65">Pricing Registry</text>
+                <text class="node-meta" x="100" y="90">Manual Fees</text>
             </g>
 
 
-            <!-- --- DATA FLOWS (ORTHOGONAL / ZERO INTERSECTION) --- -->
+            <!-- --- ROUNDED PATHS (Radius: 15) --- -->
 
             <!-- ## ADMIN ## -->
-            <!-- System Setup (Route around D1) -->
-            <path class="line-flow" d="M620,105 L620,140 L530,140 L530,360 L550,360" />
-            <rect class="lbl-bg" x="480" y="220" width="85" height="16" />
-            <text class="lbl-txt" x="522" y="231">System Setup</text>
+            <!-- Setup: Admin(Left) -> Down -> Right -> P5(Left) -->
+            <!-- Path: Start(750, 85) -> Left(680) -> Down(515) -> Right(700) -->
+            <path class="line-flow" d="M750,85 L695,85 Q680,85 680,100 L680,500 Q680,515 695,515 L700,515" />
+            <rect class="lbl-bg" x="635" y="270" width="90" height="20" />
+            <text class="lbl-txt" x="680" y="283">System Setup</text>
 
-            <!-- Business Reports (Route around D1) -->
-            <path class="line-flow" d="M750,360 L770,360 L770,140 L680,140 L680,105" />
-            <rect class="lbl-bg" x="720" y="220" width="95" height="16" />
-            <text class="lbl-txt" x="767" y="231">Business Reports</text>
-
-
-            <!-- ## CUSTOMER ## -->
-            <!-- Login Info -->
-            <path class="line-flow" d="M220,420 L270,420 L270,355 L320,355" />
-            <rect class="lbl-bg" x="235" y="347" width="70" height="16" />
-            <text class="lbl-txt" x="270" y="358">Login Info</text>
-
-            <!-- Booking Details -->
-            <path class="line-flow" d="M220,450 L270,450 L270,555 L320,555" />
-            <rect class="lbl-bg" x="230" y="470" width="80" height="16" />
-            <text class="lbl-txt" x="270" y="481">Booking Details</text>
-
-            <!-- Tracking Info -->
-            <path class="line-flow" d="M320,580 L250,580 L250,480 L220,480" />
-            <rect class="lbl-bg" x="230" y="520" width="80" height="16" />
-            <text class="lbl-txt" x="270" y="531">Tracking Info</text>
+            <!-- Reports: P5(Right) -> Right -> Up -> Admin(Right) -->
+            <!-- Path: Start(1000, 515) -> Right(1020) -> Up(85) -> Left(950) -->
+            <path class="line-flow" d="M1000,515 L1005,515 Q1020,515 1020,500 L1020,100 Q1020,85 1005,85 L950,85" />
+            <rect class="lbl-bg" x="975" y="270" width="110" height="20" />
+            <text class="lbl-txt" x="1030" y="283">Business Reports</text>
 
 
-            <!-- ## FRANCHISEE ## -->
-            <!-- Staff Assigning -->
-            <path class="line-flow" d="M1080,420 L1030,420 L1030,355 L980,355" />
-            <rect class="lbl-bg" x="990" y="347" width="85" height="16" />
-            <text class="lbl-txt" x="1032" y="358">Staff Assigning</text>
+            <!-- ## CUSTOMER LINES (Left) ## -->
+            <!-- Login: Customer(Top) -> Up -> Right -> P1(Left) -->
+            <!-- Path: Start(150, 455) -> Up(410) -> Right(380) -->
+            <path class="line-flow" d="M150,455 L150,425 Q150,410 165,410 L380,410" />
+            <rect class="lbl-bg" x="240" y="400" width="80" height="20" />
+            <text class="lbl-txt" x="280" y="413">Login Info</text>
 
-            <!-- Price & Weight -->
-            <path class="line-flow" d="M1080,450 L1030,450 L1030,555 L980,555" />
-            <rect class="lbl-bg" x="990" y="470" width="85" height="16" />
-            <text class="lbl-txt" x="1032" y="481">Price & Weight</text>
+            <!-- Booking: Customer(Bottom) -> Down -> Right -> P2(Left) -->
+            <!-- Path: Start(150, 575) -> Down(680) -> Right(380) -->
+            <path class="line-flow" d="M150,575 L150,665 Q150,680 165,680 L380,680" />
+            <rect class="lbl-bg" x="235" y="670" width="100" height="20" />
+            <text class="lbl-txt" x="285" y="683">Booking Details</text>
 
-            <!-- New Requests -->
-            <path class="line-flow" d="M980,580 L1050,580 L1050,480 L1080,480" />
-            <rect class="lbl-bg" x="1010" y="520" width="80" height="16" />
-            <text class="lbl-txt" x="1050" y="531">New Requests</text>
-
-
-            <!-- ## STAFF (ZERO CROSSING) ## -->
-            <!-- Job List: P4 -> Staff (Outer Lane Right) -->
-            <path class="line-flow" d="M980,355 L1200,355 L1200,780 L740,780" />
-            <rect class="lbl-bg" x="1160" y="560" width="60" height="16" />
-            <text class="lbl-txt" x="1190" y="571">Job List</text>
-
-            <!-- Delivery Updates: Staff -> P1 (Outer Lane Left) -->
-            <path class="line-flow" d="M560,780 L100,780 L100,355 L320,355" />
-            <rect class="lbl-bg" x="60" y="560" width="90" height="16" />
-            <text class="lbl-txt" x="105" y="571">Updates</text>
+            <!-- Tracking: P2(Bottom) -> Down -> Left -> Up -> Customer(Right-Side Entry) -->
+            <!-- Path: Start(480, 740) -> Down(780) -> Left(300) -> Up(515) -> Left(250) -->
+            <!-- Adjusted: P2(Left) -> P2(Left Edge) to avoid crossing down lines? -->
+            <!-- Better: P2(Left: 380, 680) but entered from Left. Exit P2(Bottom) is ok. -->
+            <path class="line-flow" d="M480,740 L480,755 Q480,770 465,770 L265,770 Q250,770 250,755 L250,575" />
+            <rect class="lbl-bg" x="330" y="760" width="100" height="20" />
+            <text class="lbl-txt" x="380" y="773">Tracking Info</text>
 
 
-            <!-- ## INTERNAL BRIDGE (NO CROSS) ## -->
-            <path class="line-flow" d="M410,300 L410,190 L560,190" /> <!-- P1 -> D1 -->
-            <path class="line-flow" d="M890,300 L890,190 L740,190" /> <!-- P4 -> D1 -->
-            <path class="line-flow" d="M650,490 L650,620" /> <!-- P5 -> D2 -->
+            <!-- ## FRANCHISEE LINES (Right) ## -->
+            <!-- Assigning (TOP) -->
+            <path class="line-flow" d="M1550,455 L1550,425 Q1550,410 1535,410 L1320,410" />
+            <rect class="lbl-bg" x="1400" y="400" width="100" height="20" />
+            <text class="lbl-txt" x="1450" y="413">Staff Assigning</text>
 
-            <path class="line-flow" d="M410,610 L410,650 L560,650" /> <!-- P2 -> D2 -->
-            <path class="line-flow" d="M890,610 L890,650 L740,650" /> <!-- P3 -> D2 -->
+            <!-- Price (BOTTOM) -->
+            <path class="line-flow" d="M1550,575 L1550,665 Q1550,680 1535,680 L1320,680" />
+            <rect class="lbl-bg" x="1400" y="670" width="100" height="20" />
+            <text class="lbl-txt" x="1450" y="683">Price & Weight</text>
+
+            <!-- New Requests (WRAP) -->
+            <path class="line-flow" d="M1220,740 L1220,755 Q1220,770 1235,770 L1435,770 Q1450,770 1450,755 L1450,575" />
+            <rect class="lbl-bg" x="1290" y="760" width="100" height="20" />
+            <text class="lbl-txt" x="1340" y="773">New Requests</text>
+
+
+            <!-- ## STAFF LINES (Dedicated Lanes) ## -->
+
+            <!-- Job List: Dispatch(Right) -> Up -> Over -> Staff(Right) -->
+            <!-- Start: Dispatch Right(1320, 410) NO, Exit Top(1220, 350) -->
+            <!-- Path: 1220,350 -> Up(300) -> Right(1660) -> Down(945) -> Left(950) -->
+            <path class="line-flow"
+                d="M1220,350 L1220,315 Q1220,300 1235,300 L1645,300 Q1660,300 1660,315 L1660,930 Q1660,945 1645,945 L950,945" />
+            <rect class="lbl-bg" x="1615" y="600" width="90" height="20" />
+            <text class="lbl-txt" x="1660" y="613">Job List</text>
+
+            <!-- Delivery Updates: Staff(Left) -> Left -> Up -> P1(Top) -->
+            <!-- Path: Staff Left(750, 945) -> Left(40) -> Up(300) -> Right(480) -> Down(350) -->
+            <path class="line-flow"
+                d="M750,945 L55,945 Q40,945 40,930 L40,315 Q40,300 55,300 L480,300 Q495,300 495,315 L495,350" />
+            <rect class="lbl-bg" x="50" y="600" width="110" height="20" />
+            <text class="lbl-txt" x="105" y="613">Delivery Updates</text>
+
+
+            <!-- ## INTERNAL LINKS ## -->
+            <!-- P1 -> D1 -->
+            <path class="line-flow" d="M580,410 L615,410 Q630,410 630,395 L630,225 Q630,210 645,210 L750,210" />
+            <!-- P4 -> D1 -->
+            <path class="line-flow" d="M1120,410 L1085,410 Q1070,410 1070,395 L1070,225 Q1070,210 1055,210 L950,210" />
+            <!-- P5 -> D1 (Straight Up) -->
+            <path class="line-flow" d="M850,440 L850,260" />
+
+            <!-- P5 -> D2 (Straight Down) -->
+            <path class="line-flow" d="M850,590 L850,750" />
+
+            <!-- P2 -> D2 -->
+            <path class="line-flow" d="M580,680 L615,680 Q630,680 630,695 L630,785 Q630,800 645,800 L750,800" />
+            <!-- P3 -> D2 -->
+            <path class="line-flow" d="M1120,680 L1085,680 Q1070,680 1070,695 L1070,785 Q1070,800 1055,800 L950,800" />
 
         </svg>
     </div>
 
     <footer>
-        MoveX High-Resolution Architectural Blueprint | Level 1 | Zero-Crossing Architecture
+        MoveX Certified Blueprint | Level 1 | Smooth Orthogonal Logic
     </footer>
 
 </body>
