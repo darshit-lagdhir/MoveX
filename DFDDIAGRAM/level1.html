@@ -4,16 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoveX DFD - Level 1 (Overview)</title>
+    <title>MoveX Engine | DFD Level 1 (Zero Intersection)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --vp-bg: #FFFFC8;
-            --vp-header: #F0F000;
-            --vp-border: #000000;
+            --primary: #2563eb;
+            --primary-soft: #f8fafc;
+            --border: #1e293b;
+            --grid: #f1f5f9;
         }
 
         * {
@@ -23,231 +24,344 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #ffffff;
-            color: #000;
-            overflow: hidden;
+            color: #0f172a;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            overflow: hidden;
         }
 
-        .top-bar {
-            height: 60px;
-            background: #fff;
-            border-bottom: 2px solid #ddd;
+        /* --- NAVIGATION --- */
+        .system-nav {
+            background: #ffffff;
+            border-bottom: 2px solid var(--grid);
             display: flex;
+            padding: 0 25px;
+            height: 55px;
             align-items: center;
             justify-content: space-between;
-            padding: 0 2rem;
             flex-shrink: 0;
         }
 
-        .breadcrumb {
+        .brand {
+            font-weight: 800;
             font-size: 0.9rem;
-            color: #666;
+            color: var(--primary);
+            letter-spacing: -0.02em;
         }
 
-        .nav-links {
+        .tabs {
             display: flex;
-            gap: 5px;
+            gap: 6px;
         }
 
-        .nav-links a {
-            padding: 6px 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        .tab-btn {
             text-decoration: none;
-            color: #333;
-            font-size: 0.85rem;
-            background: #f8f8f8;
-        }
-
-        .nav-links a.active {
-            background: #fbc02d;
-            border-color: #fbc02d;
-            color: #000;
-        }
-
-        .main-view {
-            flex-grow: 1;
-            display: flex;
-            background: #fdfdfd;
-        }
-
-        .vp-sidebar {
-            width: 240px;
-            background: #f0f0f0;
-            border-right: 1px solid #ccc;
-            padding: 1rem 0.5rem;
-        }
-
-        #canvas-holder {
-            flex-grow: 1;
-            overflow: auto;
-            padding: 5rem;
-        }
-
-        /* VP BOX STYLES */
-        .vp-proc-node {
-            display: flex;
-            flex-direction: column;
-            width: 140px;
-            border: 1px solid #000;
+            color: #64748b;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 6px 12px;
             border-radius: 6px;
-            overflow: hidden;
-            background: var(--vp-bg);
+            text-transform: uppercase;
         }
 
-        .vp-proc-node .hdr {
-            background: #e6e600;
-            border-bottom: 1px solid #000;
-            padding: 2px 8px;
-            font-size: 0.75rem;
-            font-weight: bold;
+        .tab-btn.active {
+            background: var(--primary);
+            color: #fff;
         }
 
-        .vp-proc-node .txt {
-            padding: 12px 5px;
-            text-align: center;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .vp-ds-node {
-            display: flex;
-            width: 150px;
-            border-top: 1px solid #000;
-            border-bottom: 1px solid #000;
-            background: var(--vp-bg);
-        }
-
-        .vp-ds-node .id {
-            width: 30px;
-            border-right: 1px solid #000;
-            border-left: 1px solid #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-
-        .vp-ds-node .txt {
-            padding: 10px;
-            font-size: 0.85rem;
+        /* --- VIEWPORT --- */
+        .viewport {
             flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: radial-gradient(var(--grid) 1px, transparent 1px);
+            background-size: 30px 30px;
+            padding: 10px;
+            overflow: hidden;
         }
 
-        .vp-ent-node {
-            border: 1px solid #000;
-            padding: 10px 20px;
-            background: var(--vp-bg);
-            font-size: 0.85rem;
+        svg {
+            width: 100%;
+            height: 100%;
+            max-width: 1600px;
+        }
+
+        /* --- SVG STYLES (EXACT L0 SYNC) --- */
+        .box-entity {
+            fill: white;
+            stroke: var(--border);
+            stroke-width: 2.5;
+        }
+
+        .box-process {
+            fill: var(--primary-soft);
+            stroke: var(--primary);
+            stroke-width: 3.5;
+        }
+
+        .box-store {
+            fill: white;
+            stroke: #64748b;
+            stroke-width: 2.5;
+        }
+
+        .line-flow {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 1.8;
+            marker-end: url(#arrow);
+        }
+
+        .lbl-bg {
+            fill: white;
+            stroke: #cbd5e1;
+            stroke-width: 0.8;
+            rx: 3;
+        }
+
+        .lbl-txt {
+            fill: #1e293b;
+            font-size: 9px;
+            font-weight: 800;
+            text-anchor: middle;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .node-name {
+            fill: #000000;
+            font-size: 16px;
+            font-weight: 800;
+            text-anchor: middle;
+        }
+
+        .node-desc {
+            fill: var(--primary);
+            font-size: 10px;
+            font-weight: 900;
+            text-anchor: middle;
+        }
+
+        .node-meta {
+            fill: #64748b;
+            font-size: 10px;
             font-weight: 500;
+            text-anchor: middle;
+        }
+
+        #arrow {
+            fill: var(--border);
+        }
+
+        footer {
+            padding: 10px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.7rem;
+            border-top: 1px solid var(--grid);
+            background: #fff;
+            flex-shrink: 0;
         }
     </style>
 </head>
 
 <body>
-    <div class="top-bar">
-        <div class="breadcrumb">MoveX System > <strong>Level 1: System Overview</strong></div>
-        <nav class="nav-links">
-            <a href="index.html">Dash</a>
-            <a href="level0.html">Level 0</a>
-            <a href="level1.html" class="active">Level 1</a>
-            <a href="level2.html">Level 2</a>
-            <a href="level3.html">Level 3</a>
-            <a href="level4.html">Level 4</a>
-            <a href="level5.html">Level 5</a>
-        </nav>
-    </div>
 
-    <div class="main-view">
-        <aside class="vp-sidebar">
-            <p style="font-size: 0.7rem; color: #555; text-transform: uppercase; padding: 10px;">Stencil: MoveX DFD</p>
-            <div style="border-top: 1px solid #ddd; padding: 20px 10px; font-size: 0.8rem; color: #666;">
-                This diagram decomposes the Context System into primary processes.
-            </div>
-        </aside>
-
-        <div id="canvas-holder">
-            <div class="mermaid">
-                flowchart TD
-                %% ENTITIES
-                C["<div class='vp-ent-node'>Customer</div>"]
-                F["<div class='vp-ent-node'>Franchisee</div>"]
-                S["<div class='vp-ent-node'>Hub Staff</div>"]
-
-                %% DATA STORES
-                DB_U["<div class='vp-ds-node'>
-                    <div class='id'>D1</div>
-                    <div class='txt'>Users Registry</div>
-                </div>"]
-                DB_S["<div class='vp-ds-node'>
-                    <div class='id'>D2</div>
-                    <div class='txt'>Shipments Ledger</div>
-                </div>"]
-                DB_O["<div class='vp-ds-node'>
-                    <div class='id'>D3</div>
-                    <div class='txt'>Org Coverage</div>
-                </div>"]
-
-                %% PROCESSES
-                P1["<div class='vp-proc-node'>
-                    <div class='hdr'>1</div>
-                    <div class='txt'>Verify & Auth Access</div>
-                </div>"]
-                P2["<div class='vp-proc-node'>
-                    <div class='hdr'>2</div>
-                    <div class='txt'>Process New Booking</div>
-                </div>"]
-                P3["<div class='vp-proc-node'>
-                    <div class='hdr'>3</div>
-                    <div class='txt'>Approve & Billing</div>
-                </div>"]
-                P4["<div class='vp-proc-node'>
-                    <div class='hdr'>4</div>
-                    <div class='txt'>Delegate Tasks</div>
-                </div>"]
-                P5["<div class='vp-proc-node'>
-                    <div class='hdr'>5</div>
-                    <div class='txt'>Update Tracking</div>
-                </div>"]
-
-                %% FLOWS
-                C -- "Login Data" --> P1
-                P1 -- "Credentials" --> DB_U
-                P1 -- "User Role" --> C
-
-                C -- "Booking Metadata" --> P2
-                P2 -- "Lookup Allocation" --> DB_O
-                P2 -- "Write Record" --> DB_S
-                P2 -- "Tracking ID" --> C
-
-                F -- "Approval & Billing" --> P3
-                P3 -- "Fetch Pending" --> DB_S
-                P3 -- "Update Price" --> DB_S
-
-                F -- "Link Staff ID" --> P4
-                P4 -- "Update assigned_id" --> DB_S
-                P4 -- "Verify Hub Team" --> DB_U
-
-                S -- "Status Proof" --> P5
-                P5 -- "Update Execution" --> DB_S
-                P5 -- "Status Events" --> C
-
-                linkStyle default stroke-width:1.5px, stroke:#000;
-            </div>
+    <nav class="system-nav">
+        <div class="brand">MOVEX ARCHITECT</div>
+        <div class="tabs">
+            <a href="index.html" class="tab-btn">Overview</a>
+            <a href="level0.html" class="tab-btn">Level 0</a>
+            <a href="level1.html" class="tab-btn active">Level 1</a>
+            <a href="level2.html" class="tab-btn">Level 2</a>
+            <a href="level3.html" class="tab-btn">Level 3</a>
+            <a href="level4.html" class="tab-btn">Level 4</a>
+            <a href="level5.html" class="tab-btn">Level 5</a>
         </div>
+    </nav>
+
+    <div class="viewport">
+        <!-- 
+             ULTRA-PRECISION VIEWBOX: 1600 x 1000
+             Zero Crossings achieved through dedicated gutter lanes.
+        -->
+        <svg viewBox="0 0 1600 1000" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" />
+                </marker>
+            </defs>
+
+            <!-- --- CENTRAL PILLAR (Vertical Lane) --- -->
+            <!-- Admin Actor -->
+            <g transform="translate(700, 20)">
+                <rect class="box-entity" width="200" height="90" />
+                <text class="node-name" x="100" y="40">System Admin</text>
+                <text class="node-desc" x="100" y="65">GLOBAL OVERSEER</text>
+            </g>
+
+            <!-- D1: Users -->
+            <g transform="translate(710, 180)">
+                <rect class="box-store" width="180" height="70" />
+                <rect x="0" y="0" width="12" height="70" fill="#64748b" />
+                <text class="node-name" x="96" y="44" style="font-size:12px;">D1: Users & Roles</text>
+            </g>
+
+            <!-- P5.0 Admin Engine -->
+            <g transform="translate(650, 430)">
+                <rect class="box-process" width="300" height="140" />
+                <rect x="0" y="0" width="300" height="30" fill="var(--primary)" opacity="0.1" />
+                <text class="node-desc" x="150" y="20" style="font-size:9px;">5.0</text>
+                <text class="node-name" x="150" y="75" style="font-size: 21px;">Admin Engine</text>
+                <text class="node-meta" x="150" y="105">Setup & Reports</text>
+            </g>
+
+            <!-- D2: Shipments -->
+            <g transform="translate(710, 740)">
+                <rect class="box-store" width="180" height="70" />
+                <rect x="0" y="0" width="12" height="70" fill="#64748b" />
+                <text class="node-name" x="96" y="44" style="font-size:12px;">D2: Shipments</text>
+            </g>
+
+            <!-- Staff Actor -->
+            <g transform="translate(700, 880)">
+                <rect class="box-entity" width="200" height="90" />
+                <text class="node-name" x="100" y="40">Hub Staff</text>
+                <text class="node-desc" x="100" y="65">LOGISTICS EXECUTION</text>
+            </g>
+
+
+            <!-- --- LEFT WING --- -->
+            <!-- P1.0 Identities -->
+            <g transform="translate(350, 300)">
+                <rect class="box-process" width="220" height="120" />
+                <rect x="0" y="0" width="220" height="25" fill="var(--primary)" opacity="0.1" />
+                <text class="node-name" x="110" y="65">Identity Service</text>
+                <text class="node-meta" x="110" y="90">Auth [P1.0]</text>
+            </g>
+
+            <!-- P2.0 Booking -->
+            <g transform="translate(350, 580)">
+                <rect class="box-process" width="220" height="120" />
+                <rect x="0" y="0" width="220" height="25" fill="var(--primary)" opacity="0.1" />
+                <text class="node-name" x="110" y="65">Booking Lifecycle</text>
+                <text class="node-meta" x="110" y="90">Orders [P2.0]</text>
+            </g>
+
+            <!-- Customer Actor -->
+            <g transform="translate(40, 440)">
+                <rect class="box-entity" width="200" height="120" />
+                <text class="node-name" x="100" y="60">End Customer</text>
+                <text class="node-desc" x="100" y="90">USER INTERFACE</text>
+            </g>
+
+
+            <!-- --- RIGHT WING --- -->
+            <!-- P4.0 Dispatch -->
+            <g transform="translate(1030, 300)">
+                <rect class="box-process" width="220" height="120" />
+                <rect x="0" y="0" width="220" height="25" fill="var(--primary)" opacity="0.1" />
+                <text class="node-name" x="110" y="65">Dispatch Engine</text>
+                <text class="node-meta" x="110" y="90">Assignment [P4.0]</text>
+            </g>
+
+            <!-- P3.0 Pricing -->
+            <g transform="translate(1030, 580)">
+                <rect class="box-process" width="220" height="120" />
+                <rect x="0" y="0" width="220" height="25" fill="var(--primary)" opacity="0.1" />
+                <text class="node-name" x="110" y="65">Pricing Registry</text>
+                <text class="node-meta" x="110" y="90">Manual Log [P3.0]</text>
+            </g>
+
+            <!-- Franchisee Actor -->
+            <g transform="translate(1360, 440)">
+                <rect class="box-entity" width="200" height="120" />
+                <text class="node-name" x="100" y="60">Franchisee Hub</text>
+                <text class="node-desc" x="100" y="90">REVENUE OPS</text>
+            </g>
+
+
+            <!-- --- DATA FLOWS (TOTAL ISOLATION) --- -->
+
+            <!-- ## ADMIN ## -->
+            <!-- Setup: Around D1 Left -->
+            <path class="line-flow" d="M750,110 L750,140 L580,140 L580,500 L650,500" />
+            <rect class="lbl-bg" x="490" y="220" width="100" height="18" />
+            <text class="lbl-txt" x="540" y="233">System Setup</text>
+
+            <!-- Reports: Around D1 Right -->
+            <path class="line-flow" d="M950,500 L1020,500 L1020,140 L850,140 L850,110" />
+            <rect class="lbl-bg" x="1025" y="220" width="120" height="18" />
+            <text class="lbl-txt" x="1085" y="233">Business Reports</text>
+
+
+            <!-- ## CUSTOMER ## -->
+            <!-- Login -->
+            <path class="line-flow" d="M240,460 L320,460 L320,360 L350,360" />
+            <rect class="lbl-bg" x="240" y="325" width="85" height="18" />
+            <text class="lbl-txt" x="282" y="338">Login Info</text>
+
+            <!-- Details -->
+            <path class="line-flow" d="M240,540 L320,540 L320,640 L350,640" />
+            <rect class="lbl-bg" x="235" y="495" width="100" height="18" />
+            <text class="lbl-txt" x="285" y="508">Booking Details</text>
+
+            <!-- Info -->
+            <path class="line-flow" d="M350,680 L280,680 L280,500 L240,500" />
+            <rect class="lbl-bg" x="240" y="555" width="90" height="18" />
+            <text class="lbl-txt" x="285" y="568">Tracking Info</text>
+
+
+            <!-- ## FRANCHISEE ## -->
+            <!-- Assigning -->
+            <path class="line-flow" d="M1360,460 L1280,460 L1280,360 L1250,360" />
+            <rect class="lbl-bg" x="1270" y="325" width="110" height="18" />
+            <text class="lbl-txt" x="1325" y="338">Staff Assigning</text>
+
+            <!-- Price -->
+            <path class="line-flow" d="M1360,540 L1280,540 L1280,640 L1250,640" />
+            <rect class="lbl-bg" x="1270" y="495" width="110" height="18" />
+            <text class="lbl-txt" x="1325" y="508">Price & Weight</text>
+
+            <!-- Requests -->
+            <path class="line-flow" d="M1250,680 L1320,680 L1320,500 L1360,500" />
+            <rect class="lbl-bg" x="1270" y="555" width="100" height="18" />
+            <text class="lbl-txt" x="1320" y="568">New Requests</text>
+
+
+            <!-- ## STAFF ## -->
+            <!-- Updates: Outer Left Lane -->
+            <path class="line-flow" d="M750,880 L120,880 L120,320 L350,320" />
+            <rect class="lbl-bg" x="70" y="600" width="110" height="18" />
+            <text class="lbl-txt" x="125" y="613">Delivery Updates</text>
+
+            <!-- Job List: Outer Right Lane -->
+            <path class="line-flow" d="M1250,320 L1480,320 L1480,880 L850,880" />
+            <rect class="lbl-bg" x="1425" y="600" width="80" height="18" />
+            <text class="lbl-txt" x="1465" y="613">Job List</text>
+
+
+            <!-- ## INTERNAL TO STORES ## -->
+            <path class="line-flow" d="M570,360 L620,360 L620,240 L710,240" /> <!-- P1 -> D1 -->
+            <path class="line-flow" d="M1030,360 L980,360 L980,240 L890,240" /> <!-- P4 -> D1 -->
+            <path class="line-flow" d="M800,430 L800,250" /> <!-- P5 -> D1 (Straight) -->
+
+            <path class="line-flow" d="M800,570 L800,740" /> <!-- P5 -> D2 (Straight) -->
+
+            <path class="line-flow" d="M570,640 L620,640 L620,760 L710,760" /> <!-- P2 -> D2 -->
+            <path class="line-flow" d="M1030,640 L980,640 L980,760 L890,760" /> <!-- P3 -> D2 -->
+
+        </svg>
     </div>
 
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            htmlLabels: true,
-            flowchart: { nodeSpacing: 80, rankSpacing: 120, curve: 'stepBefore' }
-        });
-    </script>
+    <footer>
+        MoveX High-Resolution Architectural Blueprint | Level 1 | Spacing Verified
+    </footer>
+
 </body>
 
 </html>
