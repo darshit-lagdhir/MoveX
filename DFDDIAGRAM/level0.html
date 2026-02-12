@@ -88,7 +88,6 @@
             width: 100%;
             height: 100%;
             max-width: 1100px;
-            /* Slightly wider max-width for better horizontal breathing room */
             max-height: 100%;
         }
 
@@ -174,7 +173,6 @@
     </nav>
 
     <div class="viewport">
-        <!-- Expanded ViewBox horizontally (1200px) to stop squeezing labels -->
         <svg viewBox="0 0 1200 650" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
             <defs>
                 <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
@@ -184,28 +182,28 @@
 
             <!-- --- ACTORS --- -->
 
-            <!-- Customer (Pushed Left) -->
+            <!-- Customer -->
             <g transform="translate(50, 275)">
                 <rect class="box-entity" width="180" height="100" />
                 <text class="node-name" x="90" y="45">Customer</text>
                 <text class="node-desc" x="90" y="70">BOOKING & TRACKING</text>
             </g>
 
-            <!-- Admin (Centered) -->
+            <!-- Admin -->
             <g transform="translate(510, 30)">
                 <rect class="box-entity" width="180" height="85" />
                 <text class="node-name" x="90" y="40">System Admin</text>
                 <text class="node-desc" x="90" y="60">GLOBAL OVERSEER</text>
             </g>
 
-            <!-- Franchisee (Pushed Right) -->
+            <!-- Franchisee -->
             <g transform="translate(970, 275)">
                 <rect class="box-entity" width="180" height="100" />
                 <text class="node-name" x="90" y="45">Franchisee Hub</text>
                 <text class="node-desc" x="90" y="70">LOCAL OPERATIONS</text>
             </g>
 
-            <!-- Staff (Centered) -->
+            <!-- Staff -->
             <g transform="translate(510, 535)">
                 <rect class="box-entity" width="180" height="85" />
                 <text class="node-name" x="90" y="40">Hub Staff</text>
@@ -213,7 +211,7 @@
             </g>
 
 
-            <!-- PROCESS 0 (Centered) -->
+            <!-- PROCESS 0 -->
             <g transform="translate(470, 260)">
                 <rect class="box-process" width="260" height="130" />
                 <rect x="0" y="0" width="260" height="30" fill="var(--primary)" opacity="0.1" />
@@ -224,70 +222,60 @@
             </g>
 
 
-            <!-- --- DATA FLOWS --- -->
+            <!-- --- DATA FLOWS (PLAIN ENGLISH REPLACEMENT) --- -->
 
-            <!-- ## CUSTOMER FLOWS ## -->
-            <!-- Credentials -->
+            <!-- ## CUSTOMER ## -->
             <path class="line-flow" d="M230,300 L470,300" />
             <rect class="lbl-bg" x="300" y="291" width="100" height="18" />
-            <text class="lbl-txt" x="350" y="304">Credentials</text>
+            <text class="lbl-txt" x="350" y="304">Login Info</text>
 
-            <!-- Booking Details -->
             <path class="line-flow" d="M230,325 L470,325" />
             <rect class="lbl-bg" x="295" y="316" width="110" height="18" />
             <text class="lbl-txt" x="350" y="329">Booking Details</text>
 
-            <!-- Tracking Feed -->
             <path class="line-flow" d="M470,350 L230,350" />
             <rect class="lbl-bg" x="295" y="341" width="110" height="18" />
-            <text class="lbl-txt" x="350" y="354">Tracking Feed</text>
+            <text class="lbl-txt" x="350" y="354">Tracking Info</text>
 
 
-            <!-- ## ADMIN FLOWS ## -->
-            <!-- Org Management -->
+            <!-- ## ADMIN ## -->
             <path class="line-flow" d="M570,115 L570,260" />
             <rect class="lbl-bg" x="450" y="170" width="110" height="18" />
-            <text class="lbl-txt" x="505" y="183">Org Management</text>
+            <text class="lbl-txt" x="505" y="183">System Setup</text>
 
-            <!-- System Analytics -->
             <path class="line-flow" d="M630,260 L630,115" />
             <rect class="lbl-bg" x="640" y="170" width="110" height="18" />
-            <text class="lbl-txt" x="695" y="183">System Analytics</text>
+            <text class="lbl-txt" x="695" y="183">Business Reports</text>
 
 
-            <!-- ## FRANCHISEE FLOWS ## -->
-            <!-- Manual Price/Wt -->
+            <!-- ## FRANCHISEE ## -->
             <path class="line-flow" d="M970,300 L730,300" />
             <rect class="lbl-bg" x="795" y="291" width="110" height="18" />
-            <text class="lbl-txt" x="850" y="304">Manual Price/Wt</text>
+            <text class="lbl-txt" x="850" y="304">Price & Weight</text>
 
-            <!-- Task Assignments -->
             <path class="line-flow" d="M970,325 L730,325" />
             <rect class="lbl-bg" x="795" y="316" width="110" height="18" />
-            <text class="lbl-txt" x="850" y="329">Task Assignments</text>
+            <text class="lbl-txt" x="850" y="329">Staff Assigning</text>
 
-            <!-- Pending Alerts -->
             <path class="line-flow" d="M730,350 L970,350" />
             <rect class="lbl-bg" x="795" y="341" width="110" height="18" />
-            <text class="lbl-txt" x="850" y="354">Pending Alerts</text>
+            <text class="lbl-txt" x="850" y="354">New Requests</text>
 
 
-            <!-- ## STAFF FLOWS ## -->
-            <!-- Scheduled Tasks -->
+            <!-- ## STAFF ## -->
             <path class="line-flow" d="M630,390 L630,535" />
             <rect class="lbl-bg" x="640" y="450" width="110" height="18" />
-            <text class="lbl-txt" x="695" y="463">Scheduled Tasks</text>
+            <text class="lbl-txt" x="695" y="463">Job List</text>
 
-            <!-- Status Registry -->
             <path class="line-flow" d="M570,535 L570,390" />
             <rect class="lbl-bg" x="450" y="450" width="110" height="18" />
-            <text class="lbl-txt" x="505" y="463">Status Registry</text>
+            <text class="lbl-txt" x="505" y="463">Delivery Updates</text>
 
         </svg>
     </div>
 
     <footer>
-        MoveX Context System Blueprint | Horizontal Spacing Optimized
+        MoveX Registry | Plain English Logic Verified v3.5
     </footer>
 
 </body>
