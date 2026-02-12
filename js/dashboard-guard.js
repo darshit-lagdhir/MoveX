@@ -44,6 +44,10 @@
         'settings': ['admin', 'franchisee', 'staff', 'user'],
         'franchisee': ['admin', 'franchisee'],
         'user-dashboard': ['admin', 'franchisee', 'staff', 'user'],
+        'user-shipments': ['admin', 'franchisee', 'staff', 'user'],
+        'user-book': ['admin', 'franchisee', 'staff', 'user'],
+        'user-track': ['admin', 'franchisee', 'staff', 'user'],
+        'user-profile': ['admin', 'franchisee', 'staff', 'user'],
         'profile': ['staff', 'admin', 'franchisee', 'user']
     };
 

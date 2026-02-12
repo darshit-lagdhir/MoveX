@@ -499,6 +499,10 @@ window.MoveXAdmin = (function () {
                                     <div style="font-size:0.85rem;">${r.pickup_address || ''}</div>
                                     <div style="font-size:0.75rem; color:var(--text-tertiary);">${r.pincode || ''}</div>
                                 </td>
+                                <td style="max-width:200px;">
+                                    <div style="font-size:0.85rem; font-weight: 500;">${r.receiver_name || 'Receiver'}</div>
+                                    <div style="font-size:0.75rem; color:var(--text-tertiary);">${r.destination_address || ''} (${r.receiver_pincode || ''})</div>
+                                </td>
                                 <td>${r.weight || 0} kg</td>
                                 <td><span class="status-badge status-pending">${r.status || 'Pending'}</span></td>
                                 <td>

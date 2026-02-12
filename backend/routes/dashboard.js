@@ -1549,6 +1549,9 @@ router.get('/franchisee/pickup-requests', validateSession, requireRole('franchis
             customer_phone: row.sender_phone,
             pickup_address: row.sender_address,
             pincode: row.sender_pincode,
+            receiver_name: row.receiver_name,
+            receiver_pincode: row.receiver_pincode,
+            destination_address: row.destination_address,
             weight: row.weight || 0,
             status: row.status || 'pending',
             created_at: row.created_at
@@ -1899,18 +1902,14 @@ router.post('/user/shipments/create', validateSession, requireRole('user'), asyn
             return res.status(400).json({ success: false, error: 'Missing required fields' });
         }
 
-        // Check if sender pincode is serviceable to assign to a hub
+        // Find the organization responsible for pickup (if any)
         const senderPincodeCheck = await db.query(`
             SELECT organization_id FROM organizations 
             WHERE status = 'active' AND type = 'franchise' AND pincodes LIKE '%' || $1 || '%'
             LIMIT 1
         `, [sender_pincode]);
 
-        if (senderPincodeCheck.rows.length === 0) {
-            return res.status(400).json({ success: false, error: `Area ${sender_pincode} is not currently serviceable for pickup.` });
-        }
-
-        const targetOrgId = senderPincodeCheck.rows[0].organization_id;
+        const targetOrgId = senderPincodeCheck.rows.length > 0 ? senderPincodeCheck.rows[0].organization_id : null;
 
         // Generate Sequential Tracking ID
         const maxIdResult = await db.query("SELECT tracking_id FROM shipments WHERE tracking_id ~ '^MX[0-9]+$' ORDER BY tracking_id DESC LIMIT 1");
@@ -1925,8 +1924,8 @@ router.post('/user/shipments/create', validateSession, requireRole('user'), asyn
         const origin_address = sender_city ? `${sender_city}, ${sender_pincode}` : sender_pincode;
         const destination_address = receiver_city ? `${receiver_city}, ${receiver_pincode}` : receiver_pincode;
 
-        // Price calculation (mock: 50 per kg)
-        const price = Math.max(50, parseFloat(weight) * 50);
+        // Price calculation (prefer provided price, fallback to calculation)
+        const price = req.body.price ? parseFloat(req.body.price) : Math.max(50, parseFloat(weight) * 50);
 
         const result = await db.query(`
             INSERT INTO shipments (

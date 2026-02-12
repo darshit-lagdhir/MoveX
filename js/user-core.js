@@ -360,7 +360,37 @@ const UserCore = {
     // --- BOOKING PAGE LOGIC ---
     initBookingForm: function () {
         const form = document.getElementById('bookingForm');
-        if (form && !form.dataset.listener) {
+        if (!form) return;
+
+        // 1. Pre-fill Sender Details from Profile
+        if (window.MoveXUser) {
+            const fields = {
+                'sender_name': window.MoveXUser.full_name || window.MoveXUser.username,
+                'sender_phone': window.MoveXUser.phone || ''
+            };
+            Object.keys(fields).forEach(name => {
+                const input = form.querySelector(`[name="${name}"]`);
+                if (input && !input.value) input.value = fields[name];
+            });
+        }
+
+        // 2. Live Price Calculation
+        const weightInput = document.getElementById('ship_weight');
+        const amountInput = document.getElementById('ship_amount');
+
+        if (weightInput && amountInput) {
+            const calculatePrice = () => {
+                const w = parseFloat(weightInput.value) || 0;
+                const price = Math.max(50, Math.ceil(w * 50));
+                amountInput.value = price;
+            };
+
+            weightInput.addEventListener('input', calculatePrice);
+            calculatePrice(); // Initial calculation
+        }
+
+        // 3. Form Submission
+        if (!form.dataset.listener) {
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const btn = form.querySelector('button[type="submit"]');
@@ -381,11 +411,13 @@ const UserCore = {
                     const data = await res.json();
 
                     if (data.success) {
-                        alert(`Shipment Booked Successfully!\n\nTracking ID: ${data.tracking_id}\nEstimated Price: ₹${data.price}`);
+                        // Success Toast/Modal
+                        alert(`Shipment Booked Successfully!\n\nTracking ID: ${data.tracking_id}\nBooking Amount: ₹${data.price}`);
+
                         if (window.navigateTo) window.navigateTo('user-dashboard.html');
                         else window.location.href = 'user-dashboard.html';
                     } else {
-                        alert('Error: ' + data.error);
+                        alert('Error: ' + (data.error || 'Failed to book shipment'));
                     }
                 } catch (err) {
                     console.error(err);
