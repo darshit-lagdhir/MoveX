@@ -43,6 +43,7 @@
         if (logicPath.startsWith('admin-')) logicPath = logicPath.replace('admin-', '');
         if (logicPath.startsWith('franchisee-')) logicPath = logicPath.replace('franchisee-', '');
         if (logicPath.startsWith('staff-')) logicPath = logicPath.replace('staff-', '');
+        if (logicPath.startsWith('user-')) logicPath = logicPath.replace('user-', '');
 
         await ensureCoreLoaded();
 
@@ -185,6 +186,7 @@
                     if (logicPath.startsWith('admin-')) logicPath = logicPath.replace('admin-', '');
                     if (logicPath.startsWith('franchisee-')) logicPath = logicPath.replace('franchisee-', '');
                     if (logicPath.startsWith('staff-')) logicPath = logicPath.replace('staff-', '');
+                    if (logicPath.startsWith('user-')) logicPath = logicPath.replace('user-', '');
 
                     const isStaff = window.location.pathname.includes('/dashboards/staff/');
                     const isUser = window.location.pathname.includes('/dashboards/user/');

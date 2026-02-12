@@ -197,42 +197,8 @@
             </main>
         </div>
     </div>
+    <script src="../../js/user-core.js"></script>
     <script src="../../js/dashboard-layout.js"></script>
-    <script>
-        document.getElementById('bookingForm')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            const originalText = btn.textContent;
-            btn.disabled = true;
-            btn.textContent = 'Processing...';
-
-            const formData = new FormData(e.target);
-            const payload = Object.fromEntries(formData.entries());
-
-            try {
-                const res = await fetch(`${API_URL}/api/dashboard/user/shipments/create`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                    credentials: 'include'
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    alert(`Shipment Booked Successfully!\n\nTracking ID: ${data.tracking_id}\nEstimated Price: ₹${data.price}`);
-                    window.location.href = 'user-dashboard.html';
-                } else {
-                    alert('Error: ' + data.error);
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Network error. Please try again.');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = originalText;
-            }
-        });
-    </script>
 </body>
 
 </html>
