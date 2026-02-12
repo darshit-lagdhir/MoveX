@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoveX DFD - Level 5 (Hub Assignments)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --vp-yellow: #fff9c4;
+            --vp-process-bg: #fff59d;
+            --vp-process-header: #fbc02d;
+            --vp-datastore-gray: #bdbdbd;
+            --vp-border: #000000;
+            --text-main: #000000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: var(--text-main);
+            padding: 2rem;
+        }
+
+        .layout {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 1rem;
+        }
+
+        .title-group h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-links a {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+            font-size: 0.9rem;
+            background: #f5f5f5;
+        }
+
+        .nav-links a.active {
+            background: var(--vp-process-header);
+            border-color: var(--vp-process-header);
+            color: #000;
+            font-weight: 600;
+        }
+
+        .canvas {
+            border: 1px solid #ddd;
+            padding: 4rem;
+            min-height: 800px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+            background-color: #fcfcfc;
+        }
+
+        .sidebar-legend {
+            position: fixed;
+            left: 2rem;
+            top: 10rem;
+            width: 200px;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            background: #fff;
+            font-size: 0.8rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .shape {
+            width: 30px;
+            height: 20px;
+            border: 1px solid #000;
+        }
+
+        .process-shape {
+            border-radius: 6px;
+            background: var(--vp-process-bg);
+        }
+
+        .entity-shape {
+            background: var(--vp-yellow);
+        }
+
+        .datastore-shape {
+            background: var(--vp-yellow);
+            border-left: 8px solid var(--vp-datastore-gray);
+        }
+
+        /* Mermaid Overrides */
+        .mermaid {
+            background: transparent;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout">
+        <header>
+            <div class="title-group">
+                <p style="font-size: 0.8rem; color: #666; text-transform: uppercase;">MoveX | Visual Paradigm Style</p>
+                <h1>Hub Assignments - Level 5 (Decomposition of 4.0)</h1>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html">Overview</a>
+                <a href="level0.html">Level 0</a>
+                <a href="level1.html">Level 1</a>
+                <a href="level2.html">Level 2</a>
+                <a href="level3.html">Level 3</a>
+                <a href="level4.html">Level 4</a>
+                <a href="level5.html" class="active">Level 5</a>
+            </nav>
+        </header>
+
+        <div class="canvas">
+            <div class="mermaid">
+                graph TD
+                %% Entities
+                F([Franchisee])
+                S([Staff Member])
+
+                %% Data Stores
+                D1[[D1 <br /> User Registry]]
+                D3[[D3 <br /> Shipments DB]]
+
+                %% Processes
+                P41((4.1 <br /> Staff Provision))
+                P42((4.2 <br /> Availability Check))
+                P43((4.3 <br /> Assign Logic))
+                P44((4.4 <br /> Task Push))
+
+                %% Flows
+                F -- "New Staff Profile" --> P41
+                P41 -- "Write role:staff" --> D1
+
+                F -- "Fetch Hub Team" --> P42
+                P42 -- "Filter by org_id" --> D1
+                P42 -- "Staff List" --> F
+
+                F -- "Assignment Pair" --> P43
+                P43 -- "Update assigned_id" --> D3
+
+                D3 -- "Task Manifest" --> P44
+                P44 -- "Assigned View" --> S
+
+                %% Styling
+                style P41 fill:#fff59d,stroke:#000,stroke-width:2px;
+                style P42 fill:#fff59d,stroke:#000,stroke-width:2px;
+                style P43 fill:#fff59d,stroke:#000,stroke-width:2px;
+                style P44 fill:#fff59d,stroke:#000,stroke-width:2px;
+
+                style F fill:#fff9c4,stroke:#000,stroke-width:1px;
+                style S fill:#fff9c4,stroke:#000,stroke-width:1px;
+                style D1 fill:#fff9c4,stroke:#000,stroke-width:1px;
+                style D3 fill:#fff9c4,stroke:#000,stroke-width:1px;
+
+                linkStyle default stroke:#000,stroke-width:1px;
+            </div>
+        </div>
+
+        <div class="sidebar-legend">
+            <p style="font-weight: 600; margin-bottom: 1rem;">DFD Notation</p>
+            <div class="legend-item">
+                <div class="shape entity-shape"></div> Entity
+            </div>
+            <div class="legend-item">
+                <div class="shape process-shape"></div> Process
+            </div>
+            <div class="legend-item">
+                <div class="shape datastore-shape"></div> Data Store
+            </div>
+        </div>
+
+        <footer>
+            MoveX System Documentation - Data Flow Diagram Level 5 (Process 4.0)
+        </footer>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#fff9c4',
+                edgeColor: '#000000',
+                fontFamily: 'Inter',
+                fontSize: '14px'
+            }
+        });
+    </script>
+</body>
+
+</html>

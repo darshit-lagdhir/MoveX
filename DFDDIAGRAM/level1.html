@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoveX DFD - Level 1 (Overview)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --vp-bg: #FFFFC8;
+            --vp-header: #F0F000;
+            --vp-border: #000000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: #000;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .top-bar {
+            height: 60px;
+            background: #fff;
+            border-bottom: 2px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            flex-shrink: 0;
+        }
+
+        .breadcrumb {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 5px;
+        }
+
+        .nav-links a {
+            padding: 6px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+            font-size: 0.85rem;
+            background: #f8f8f8;
+        }
+
+        .nav-links a.active {
+            background: #fbc02d;
+            border-color: #fbc02d;
+            color: #000;
+        }
+
+        .main-view {
+            flex-grow: 1;
+            display: flex;
+            background: #fdfdfd;
+        }
+
+        .vp-sidebar {
+            width: 240px;
+            background: #f0f0f0;
+            border-right: 1px solid #ccc;
+            padding: 1rem 0.5rem;
+        }
+
+        #canvas-holder {
+            flex-grow: 1;
+            overflow: auto;
+            padding: 5rem;
+        }
+
+        /* VP BOX STYLES */
+        .vp-proc-node {
+            display: flex;
+            flex-direction: column;
+            width: 140px;
+            border: 1px solid #000;
+            border-radius: 6px;
+            overflow: hidden;
+            background: var(--vp-bg);
+        }
+
+        .vp-proc-node .hdr {
+            background: #e6e600;
+            border-bottom: 1px solid #000;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .vp-proc-node .txt {
+            padding: 12px 5px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .vp-ds-node {
+            display: flex;
+            width: 150px;
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            background: var(--vp-bg);
+        }
+
+        .vp-ds-node .id {
+            width: 30px;
+            border-right: 1px solid #000;
+            border-left: 1px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .vp-ds-node .txt {
+            padding: 10px;
+            font-size: 0.85rem;
+            flex-grow: 1;
+        }
+
+        .vp-ent-node {
+            border: 1px solid #000;
+            padding: 10px 20px;
+            background: var(--vp-bg);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="top-bar">
+        <div class="breadcrumb">MoveX System > <strong>Level 1: System Overview</strong></div>
+        <nav class="nav-links">
+            <a href="index.html">Dash</a>
+            <a href="level0.html">Level 0</a>
+            <a href="level1.html" class="active">Level 1</a>
+            <a href="level2.html">Level 2</a>
+            <a href="level3.html">Level 3</a>
+            <a href="level4.html">Level 4</a>
+            <a href="level5.html">Level 5</a>
+        </nav>
+    </div>
+
+    <div class="main-view">
+        <aside class="vp-sidebar">
+            <p style="font-size: 0.7rem; color: #555; text-transform: uppercase; padding: 10px;">Stencil: MoveX DFD</p>
+            <div style="border-top: 1px solid #ddd; padding: 20px 10px; font-size: 0.8rem; color: #666;">
+                This diagram decomposes the Context System into primary processes.
+            </div>
+        </aside>
+
+        <div id="canvas-holder">
+            <div class="mermaid">
+                flowchart TD
+                %% ENTITIES
+                C["<div class='vp-ent-node'>Customer</div>"]
+                F["<div class='vp-ent-node'>Franchisee</div>"]
+                S["<div class='vp-ent-node'>Hub Staff</div>"]
+
+                %% DATA STORES
+                DB_U["<div class='vp-ds-node'>
+                    <div class='id'>D1</div>
+                    <div class='txt'>Users Registry</div>
+                </div>"]
+                DB_S["<div class='vp-ds-node'>
+                    <div class='id'>D2</div>
+                    <div class='txt'>Shipments Ledger</div>
+                </div>"]
+                DB_O["<div class='vp-ds-node'>
+                    <div class='id'>D3</div>
+                    <div class='txt'>Org Coverage</div>
+                </div>"]
+
+                %% PROCESSES
+                P1["<div class='vp-proc-node'>
+                    <div class='hdr'>1</div>
+                    <div class='txt'>Verify & Auth Access</div>
+                </div>"]
+                P2["<div class='vp-proc-node'>
+                    <div class='hdr'>2</div>
+                    <div class='txt'>Process New Booking</div>
+                </div>"]
+                P3["<div class='vp-proc-node'>
+                    <div class='hdr'>3</div>
+                    <div class='txt'>Approve & Billing</div>
+                </div>"]
+                P4["<div class='vp-proc-node'>
+                    <div class='hdr'>4</div>
+                    <div class='txt'>Delegate Tasks</div>
+                </div>"]
+                P5["<div class='vp-proc-node'>
+                    <div class='hdr'>5</div>
+                    <div class='txt'>Update Tracking</div>
+                </div>"]
+
+                %% FLOWS
+                C -- "Login Data" --> P1
+                P1 -- "Credentials" --> DB_U
+                P1 -- "User Role" --> C
+
+                C -- "Booking Metadata" --> P2
+                P2 -- "Lookup Allocation" --> DB_O
+                P2 -- "Write Record" --> DB_S
+                P2 -- "Tracking ID" --> C
+
+                F -- "Approval & Billing" --> P3
+                P3 -- "Fetch Pending" --> DB_S
+                P3 -- "Update Price" --> DB_S
+
+                F -- "Link Staff ID" --> P4
+                P4 -- "Update assigned_id" --> DB_S
+                P4 -- "Verify Hub Team" --> DB_U
+
+                S -- "Status Proof" --> P5
+                P5 -- "Update Execution" --> DB_S
+                P5 -- "Status Events" --> C
+
+                linkStyle default stroke-width:1.5px, stroke:#000;
+            </div>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            htmlLabels: true,
+            flowchart: { nodeSpacing: 80, rankSpacing: 120, curve: 'stepBefore' }
+        });
+    </script>
+</body>
+
+</html>
