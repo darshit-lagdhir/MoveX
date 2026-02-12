@@ -190,7 +190,10 @@
 
         // Fix for Loading... issue on Staff Dashboard
         if (topBarUserName) topBarUserName.textContent = user.full_name || user.username;
-        if (topBarRole) topBarRole.textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1) + ' (Hub Member)';
+        if (topBarRole) {
+            const roleLabel = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+            topBarRole.textContent = user.role === 'user' ? 'Customer' : `${roleLabel} (Hub Member)`;
+        }
 
         document.body.classList.add('authenticated');
 
