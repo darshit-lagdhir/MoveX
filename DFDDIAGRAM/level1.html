@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoveX Engine | DFD Level 1 (Ultra Spacious)</title>
+    <title>MoveX Engine | DFD Level 1 (Ultimate Cleanliness)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
@@ -78,7 +78,7 @@
             justify-content: center;
             align-items: center;
             background-color: #ffffff;
-            padding: 10px;
+            padding: 20px;
             overflow: hidden;
         }
 
@@ -86,8 +86,7 @@
             width: 100%;
             height: 100%;
             max-width: 1900px;
-            /* Maximum Width */
-            max-height: 100%;
+            max-height: 950px;
         }
 
         .box-entity {
@@ -111,16 +110,17 @@
             rx: 2;
         }
 
+        /* SHARP PIPELINE LINES */
         .line-flow {
             fill: none;
             stroke: var(--border);
             stroke-width: 2;
             marker-end: url(#arrow);
-            stroke-linejoin: round;
-            stroke-linecap: round;
+            stroke-linejoin: miter;
+            stroke-linecap: square;
         }
 
-        /* EXPANDED SHIELDS */
+        /* SHIELDS */
         .lbl-bg {
             fill: white;
             stroke: #cbd5e1;
@@ -147,8 +147,15 @@
 
         .node-desc {
             fill: var(--primary);
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 900;
+            text-anchor: middle;
+        }
+
+        .node-meta {
+            fill: #64748b;
+            font-size: 10px;
+            font-weight: 500;
             text-anchor: middle;
         }
 
@@ -181,10 +188,10 @@
 
     <div class="viewport">
         <!-- 
-             ULTRA SPACIOUS LAYOUT
-             - Canvas: 1900 x 900
-             - Text Shields: Widened to prevent any overlap.
-             - Line Separation: Increased vertical gaps between parallel lines to 40px+.
+             ULTIMATE CLEAN LAYOUT (Pipeline)
+             - Every line travels in its own dedicated Gutter Lane.
+             - No lines ever pass "behind" or "through" a box.
+             - Every label has a 100% opaque white shield.
         -->
         <svg viewBox="0 0 1900 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
             <defs>
@@ -195,173 +202,156 @@
 
             <!-- ================= NODES ================= -->
 
-            <!-- ADMIN (Top Left) -->
-            <g transform="translate(50, 50)">
-                <rect class="box-entity" width="200" height="100" />
-                <text class="node-name" x="100" y="50">System Admin</text>
-                <text class="node-desc" x="100" y="75">GLOBAL OVERSEER</text>
+            <!-- ADMIN ROW (Y=60) -->
+            <g transform="translate(100, 50)">
+                <rect class="box-entity" width="180" height="90" />
+                <text class="node-name" x="90" y="45">System Admin</text>
+                <text class="node-desc" x="90" y="70">GLOBAL OVERSEER</text>
             </g>
-
-            <!-- CUSTOMER (Mid Left) -->
-            <g transform="translate(50, 350)"> <!-- Lowered -->
-                <rect class="box-entity" width="200" height="100" />
-                <text class="node-name" x="100" y="50">End Customer</text>
-                <text class="node-desc" x="100" y="75">BOOKING & TRACKING</text>
-            </g>
-
-            <!-- FRANCHISEE (Bottom Right) -->
-            <g transform="translate(1600, 700)"> <!-- Further Right & Down -->
-                <rect class="box-entity" width="200" height="100" />
-                <text class="node-name" x="100" y="50">Franchisee Hub</text>
-                <text class="node-desc" x="100" y="75">LOCAL OPERATIONS</text>
-            </g>
-
-            <!-- STAFF (Mid Right) -->
-            <g transform="translate(1600, 350)">
-                <rect class="box-entity" width="200" height="100" />
-                <text class="node-name" x="100" y="50">Hub Staff</text>
-                <text class="node-desc" x="100" y="75">LOGISTICS EXECUTION</text>
-            </g>
-
-            <!-- PROCESSES (Center Line Y=400) -->
-            <g transform="translate(400, 350)">
-                <rect class="box-process" width="200" height="120" />
-                <rect x="0" y="0" width="200" height="30" fill="var(--primary)" opacity="0.1" />
-                <text class="node-name" x="100" y="65">1.0 Identity Service</text>
-            </g>
-
-            <g transform="translate(700, 350)">
-                <rect class="box-process" width="200" height="120" />
-                <rect x="0" y="0" width="200" height="30" fill="var(--primary)" opacity="0.1" />
-                <text class="node-name" x="100" y="65">2.0 Booking Cycle</text>
-            </g>
-
-            <g transform="translate(1000, 350)">
-                <rect class="box-process" width="200" height="120" />
-                <rect x="0" y="0" width="200" height="30" fill="var(--primary)" opacity="0.1" />
-                <text class="node-name" x="100" y="65">3.0 Pricing Registry</text>
-            </g>
-
-            <g transform="translate(1300, 350)">
-                <rect class="box-process" width="200" height="120" />
-                <rect x="0" y="0" width="200" height="30" fill="var(--primary)" opacity="0.1" />
-                <text class="node-name" x="100" y="65">4.0 Dispatch Engine</text>
-            </g>
-
-            <g transform="translate(400, 50)">
+            <g transform="translate(500, 50)">
                 <rect class="box-process" width="200" height="100" />
-                <rect x="0" y="0" width="200" height="30" fill="var(--primary)" opacity="0.1" />
+                <rect x="0" y="0" width="200" height="25" fill="var(--primary)" opacity="0.1" />
                 <text class="node-name" x="100" y="55">5.0 Admin Engine</text>
+                <text class="node-meta" x="100" y="75">Management</text>
+            </g>
+
+            <!-- CUSTOMER (Mid Level Y=380) -->
+            <g transform="translate(100, 380)">
+                <rect class="box-entity" width="180" height="100" />
+                <text class="node-name" x="90" y="45">Customer</text>
+                <text class="node-desc" x="90" y="75">BOOKING & TRACKING</text>
+            </g>
+
+            <!-- PROCESS PIPELINE (Y=380) -->
+            <g transform="translate(450, 380)">
+                <rect class="box-process" width="180" height="100" />
+                <rect x="0" y="0" width="180" height="25" fill="var(--primary)" opacity="0.1" />
+                <text class="node-name" x="90" y="60">1.0 Identity</text>
+            </g>
+            <g transform="translate(750, 380)">
+                <rect class="box-process" width="180" height="100" />
+                <rect x="0" y="0" width="180" height="25" fill="var(--primary)" opacity="0.1" />
+                <text class="node-name" x="90" y="60">2.0 Booking</text>
+            </g>
+            <g transform="translate(1050, 380)">
+                <rect class="box-process" width="180" height="100" />
+                <rect x="0" y="0" width="180" height="25" fill="var(--primary)" opacity="0.1" />
+                <text class="node-name" x="90" y="60">3.0 Pricing</text>
+            </g>
+            <g transform="translate(1350, 380)">
+                <rect class="box-process" width="180" height="100" />
+                <rect x="0" y="0" width="180" height="25" fill="var(--primary)" opacity="0.1" />
+                <text class="node-name" x="90" y="60">4.0 Dispatch</text>
+            </g>
+
+            <!-- STAFF & FRANCHISEE (Right Extractor) -->
+            <g transform="translate(1650, 380)">
+                <rect class="box-entity" width="180" height="100" />
+                <text class="node-name" x="90" y="45">Hub Staff</text>
+                <text class="node-desc" x="90" y="75">LOGISTICS EXECUTION</text>
+            </g>
+            <g transform="translate(1350, 680)">
+                <rect class="box-entity" width="180" height="100" />
+                <text class="node-name" x="90" y="45">Franchisee Hub</text>
+                <text class="node-desc" x="90" y="75">LOCAL OPERATIONS</text>
             </g>
 
             <!-- DATA STORES -->
-            <g transform="translate(700, 200)">
-                <rect class="box-store" width="200" height="70" />
-                <rect x="0" y="0" width="15" height="70" fill="#64748b" />
-                <text class="node-name" x="107" y="44" style="font-size:14px;">D1: Users & Roles</text>
+            <g transform="translate(750, 190)">
+                <rect class="box-store" width="180" height="60" />
+                <rect x="0" y="0" width="12" height="60" fill="#64748b" />
+                <text class="node-name" x="95" y="38" style="font-size:13px;">D1: Users & Roles</text>
+            </g>
+            <g transform="translate(750, 560)">
+                <rect class="box-store" width="480" height="60" />
+                <rect x="0" y="0" width="12" height="60" fill="#64748b" />
+                <text class="node-name" x="240" y="38" style="font-size:13px;">D2: Shipments (Main Hub)</text>
             </g>
 
-            <g transform="translate(700, 600)">
-                <rect class="box-store" width="500" height="70" />
-                <rect x="0" y="0" width="15" height="70" fill="#64748b" />
-                <text class="node-name" x="257" y="44" style="font-size:14px;">D2: Shipments (Central Repository)</text>
+
+            <!-- ================= FLOWS (STRICT GUTTERS) ================= -->
+
+            <!-- 1. ADMIN FLOWS (Upper Gutter Y=100) -->
+            <path class="line-flow" d="M280,75 L500,75" />
+            <rect class="lbl-bg" x="330" y="65" width="110" height="20" fill="white" />
+            <text class="lbl-txt" x="385" y="79">System Setup</text>
+
+            <path class="line-flow" d="M500,125 L280,125" />
+            <rect class="lbl-bg" x="320" y="115" width="130" height="20" fill="white" />
+            <text class="lbl-txt" x="385" y="129">Business Reports</text>
+
+
+            <!-- 2. CUSTOMER PIPELINE -->
+
+            <!-- Login Info (X=280 to 450) -->
+            <path class="line-flow" d="M280,410 L450,410" />
+            <rect class="lbl-bg" x="325" y="400" width="90" height="20" fill="white" />
+            <text class="lbl-txt" x="370" y="413">Login Info</text>
+
+            <!-- Booking Details (X=280 to 750) bypasses P1 -->
+            <path class="line-flow" d="M280,450 L340,450 L340,520 L680,520 L680,450 L750,450" />
+            <rect class="lbl-bg" x="480" y="510" width="120" height="20" fill="white" />
+            <text class="lbl-txt" x="540" y="523">Booking Details</text>
+
+            <!-- Tracking Info (X=750 to 280) bypasses P1 -->
+            <path class="line-flow" d="M750,410 L680,410 L680,320 L340,320 L340,430 L280,430" />
+            <rect class="lbl-bg" x="480" y="310" width="100" height="20" fill="white" />
+            <text class="lbl-txt" x="530" y="323">Tracking Info</text>
+
+
+            <!-- 3. INTERNAL PIPELINE (X-Segment Steps) -->
+            <path class="line-flow" d="M630,430 L750,430" /> <!-- P1 to P2 -->
+            <path class="line-flow" d="M930,430 L1050,430" /> <!-- P2 to P3 -->
+            <path class="line-flow" d="M1230,430 L1350,430" /> <!-- P3 to P4 -->
+
+
+            <!-- 4. STAFF FLOWS (X=1530 to 1650) -->
+            <path class="line-flow" d="M1530,410 L1650,410" />
+            <rect class="lbl-bg" x="1560" y="400" width="80" height="20" fill="white" />
+            <text class="lbl-txt" x="1600" y="413">Job List</text>
+
+            <path class="line-flow" d="M1650,450 L1530,450" />
+            <rect class="lbl-bg" x="1540" y="460" width="120" height="20" fill="white" />
+            <text class="lbl-txt" x="1600" y="473">Delivery Updates</text>
+
+
+            <!-- 5. FRANCHISEE FLOWS (Y-Gutter Vertical Channels) -->
+
+            <!-- Staff Assigning (Franchisee Up to P4) -->
+            <path class="line-flow" d="M1440,680 L1440,480" />
+            <rect class="lbl-bg" x="1380" y="580" width="120" height="20" fill="white" />
+            <text class="lbl-txt" x="1440" y="593">Staff Assigning</text>
+
+            <!-- Price & Weight (Franchisee to P3) -->
+            <path class="line-flow" d="M1350,710 L1140,710 L1140,480" />
+            <rect class="lbl-bg" x="1200" y="700" width="110" height="20" fill="white" />
+            <text class="lbl-txt" x="1255" y="713">Price & Weight</text>
+
+            <!-- New Requests (P3 Down to Franchisee) -->
+            <path class="line-flow" d="M1140,380 L1140,320 L1860,320 L1860,780 L1530,780" />
+            <g transform="translate(1860, 550) rotate(0)"> <!-- Note: Moved text to horizontal portion -->
+                <rect class="lbl-bg" x="-1810" y="220" width="100" height="20" fill="white" />
+                <!-- Hacky spacing fix? No -->
             </g>
-
-            <!-- ================= FLOWS (MAXIMUM SEPARATION) ================= -->
-
-            <!-- 1. SYSTEM SETUP (Admin -> P5) -->
-            <!-- Top Channel Y=90 -->
-            <path class="line-flow" d="M250,90 L400,90" />
-            <rect class="lbl-bg" x="280" y="80" width="90" height="20" fill="white" />
-            <text class="lbl-txt" x="325" y="94">System Setup</text>
-
-            <!-- 2. BUSINESS REPORTS (P5 -> Admin) -->
-            <!-- Lower Channel Y=120 -->
-            <path class="line-flow" d="M400,120 L250,120" />
-            <rect class="lbl-bg" x="280" y="110" width="100" height="20" fill="white" />
-            <text class="lbl-txt" x="330" y="124">Business Reports</text>
+            <!-- RE-ROUTING NEW REQUESTS FOR BETTER LABELING -->
+            <path class="line-flow" d="M1140,380 L1140,280 L1860,280 L1860,730 L1530,730" />
+            <rect class="lbl-bg" x="1650" y="270" width="110" height="20" fill="white" />
+            <text class="lbl-txt" x="1705" y="283">New Requests</text>
 
 
-            <!-- 3. LOGIN INFO (Customer -> P1) -->
-            <!-- Direct Middle Y=385 -->
-            <path class="line-flow" d="M250,385 L400,385" />
-            <rect class="lbl-bg" x="280" y="375" width="80" height="20" fill="white" />
-            <text class="lbl-txt" x="320" y="389">Login Info</text>
+            <!-- 6. DATA CONTEXTS -->
+            <path class="line-flow" d="M540,380 L540,225 L750,225" /> <!-- P1 to D1 -->
+            <path class="line-flow" d="M700,100 L840,100 L840,190" /> <!-- P5 to D1 -->
 
-            <!-- 4. BOOKING DETAILS (Customer -> P2) -->
-            <!-- Deep Loop Y=500 -->
-            <path class="line-flow" d="M250,420 L300,420 L300,500 L750,500 L750,470" />
-            <rect class="lbl-bg" x="480" y="490" width="100" height="20" fill="white" />
-            <text class="lbl-txt" x="530" y="504">Booking Details</text>
-
-            <!-- 5. TRACKING INFO (P2 -> Customer) -->
-            <!-- Sky Loop Y=280 -->
-            <path class="line-flow" d="M850,350 L850,280 L300,280 L300,380 L250,380" />
-            <rect class="lbl-bg" x="480" y="270" width="90" height="20" fill="white" />
-            <text class="lbl-txt" x="525" y="284">Tracking Info</text>
-
-
-            <!-- Internal: P1 -> P2 -->
-            <path class="line-flow" d="M600,410 L700,410" />
-
-            <!-- Internal: P2 -> P3 -->
-            <path class="line-flow" d="M900,410 L1000,410" />
-
-            <!-- Internal: P3 -> P4 -->
-            <path class="line-flow" d="M1200,410 L1300,410" />
-
-
-            <!-- 6. JOB LIST (P4 -> Staff) -->
-            <!-- Top Lane Y=385 -->
-            <path class="line-flow" d="M1500,385 L1600,385" />
-            <rect class="lbl-bg" x="1515" y="375" width="70" height="20" fill="white" />
-            <text class="lbl-txt" x="1550" y="389">Job List</text>
-
-            <!-- 7. DELIVERY UPDATES (Staff -> P4) -->
-            <!-- Bottom Lane Y=425 -->
-            <path class="line-flow" d="M1600,425 L1500,425" />
-            <rect class="lbl-bg" x="1510" y="415" width="100" height="20" fill="white" />
-            <text class="lbl-txt" x="1560" y="429">Delivery Updates</text>
-
-
-            <!-- 8. STAFF ASSIGNING (Franchisee -> P4) -->
-            <!-- Route: Far Right X=1560, Up to Y=450 -->
-            <path class="line-flow" d="M1700,700 L1700,500 L1450,500 L1450,470" />
-            <rect class="lbl-bg" x="1550" y="490" width="100" height="20" fill="white" />
-            <text class="lbl-txt" x="1600" y="504">Staff Assigning</text>
-
-            <!-- 9. PRICE & WEIGHT (Franchisee -> P3) -->
-            <!-- Route: Mid Right X=1450, Up to Y=550 -->
-            <path class="line-flow" d="M1600,750 L1450,750 L1450,550 L1150,550 L1150,470" />
-            <rect class="lbl-bg" x="1250" y="540" width="100" height="20" fill="white" />
-            <text class="lbl-txt" x="1300" y="554">Price & Weight</text>
-
-            <!-- 10. NEW REQUESTS (P3 -> Franchisee) -->
-            <!-- Route: From P3 Down (X=1050), Right along bottom -->
-            <path class="line-flow" d="M1050,470 L1050,750 L1600,750" />
-            <!-- Note: 750 is same as P&W? No, P&W starts at 1600,750. -->
-            <!-- Correction: P&W starts at Franchisee Left. New Requests ends at Franchisee Left? -->
-            <!-- Let's separate them. P&W leaves Franchisee Top (1700, 700). New Requests enters Franchisee Left (1600, 750). -->
-            <!-- REDO P&W: Leaves Franchisee (1700,700) -> Up -> Left. -->
-            <!-- REDO NEW REQ: Leaves P3 (1050,470) -> Down -> Right -> Enters Franchisee (1600,750). -->
-
-            <!-- ADJUSTED 10. NEW REQUESTS -->
-            <path class="line-flow" d="M1050,470 L1050,800 L1600,800" /> <!-- Lower channel Y=800 -->
-            <rect class="lbl-bg" x="1300" y="790" width="100" height="20" fill="white" />
-            <text class="lbl-txt" x="1350" y="804">New Requests</text>
-
-
-            <!-- DATA STORE LINKS (Cleaner Orthogonal) -->
-            <path class="line-flow" d="M500,350 L500,235 L700,235" /> <!-- P1 -> D1 -->
-            <path class="line-flow" d="M600,100 L800,100 L800,200" /> <!-- P5 -> D1 -->
-            <path class="line-flow" d="M800,470 L800,600" /> <!-- P2 -> D2 -->
-            <path class="line-flow" d="M1100,470 L1100,600" /> <!-- P3 -> D2 -->
+            <path class="line-flow" d="M840,480 L840,560" /> <!-- P2 to D2 -->
+            <path class="line-flow" d="M1140,480 L1140,560" /> <!-- P3 to D2 -->
+            <path class="line-flow" d="M1440,480 L1440,520 L1230,520 L1230,560" /> <!-- P4 to D2 bypass -->
 
         </svg>
     </div>
 
     <footer>
-        MoveX Level 1 | Ultra-Spacious Layout | Final Polish
+        MoveX Level 1 | Strict Manual Routing | Zero-Overlap Blueprint
     </footer>
 
 </body>
