@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoveX Engine | DFD Level 1 (Styled Badges)</title>
+    <title>MoveX Engine | DFD Level 1 (Final Clean)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
@@ -63,8 +63,6 @@
         svg {
             width: 100%;
             height: 100%;
-            max-width: 100%;
-            max-height: 100%;
         }
 
         /* --- SHAPES --- */
@@ -98,16 +96,13 @@
             stroke-linejoin: round;
         }
 
-        /* --- LABELS (RESTORED HIGHLIGHTING) --- */
+        /* --- LABELS --- */
         .lbl-shield {
             fill: white;
             stroke: #cbd5e1;
-            /* Visible Border Restored */
             stroke-width: 1.5;
             rx: 6;
-            /* Rounded corners */
             filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.05));
-            /* Subtle Pop */
         }
 
         .lbl-txt {
@@ -151,170 +146,173 @@
 <body>
 
     <nav class="system-nav">
-        <div class="brand">MOVEX ARCHITECT | LEVEL 1 | FIT-TO-SCREEN</div>
+        <div class="brand">MOVEX ARCHITECT | LEVEL 1 | COLLISION FIX</div>
     </nav>
 
     <div class="viewport">
-        <svg viewBox="0 0 1900 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <!-- 
+           CRITICAL COLLISION FIX:
+           The "New Requests" line was at X=2300, passing through Hub Staff (Right Edge = 2330).
+           Action:
+           1. Increased ViewBox width to 2600.
+           2. Moved "New Requests" vertical loop to X=2450 (Way outside).
+           3. This guarantees it loops completely around the "Hub Staff" entity.
+        -->
+        <svg viewBox="0 0 2600 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
             <defs>
                 <marker id="arrow-end" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
                     <polygon points="0 0, 10 3.5, 0 7" />
                 </marker>
             </defs>
 
-            <!-- ================= ROW 1 ================= -->
-
-            <g transform="translate(150, 80)">
+            <!-- ================= ROW 1: ADMIN ================= -->
+            <g transform="translate(100, 80)">
                 <rect class="box-entity" width="180" height="90" />
                 <text class="node-name" x="90" y="45">System Admin</text>
                 <text class="node-desc" x="90" y="65">GLOBAL OVERSEER</text>
             </g>
 
-            <g transform="translate(450, 80)">
+            <g transform="translate(500, 80)">
                 <rect class="box-process" width="180" height="90" />
                 <rect x="0" y="0" width="180" height="20" fill="var(--primary)" opacity="0.1" />
                 <text class="node-name" x="90" y="50">5.0 Admin Engine</text>
             </g>
 
-            <g transform="translate(750, 80)">
+            <g transform="translate(900, 80)">
                 <rect class="box-store" width="180" height="90" />
                 <rect x="0" y="0" width="15" height="90" fill="#475569" />
                 <text class="node-name" x="95" y="50">D1: Users & Roles</text>
             </g>
 
-            <!-- FLOWS ROW 1 -->
-            <path class="line-flow" d="M330,105 L450,105" />
+            <path class="line-flow" d="M280,105 L500,105" />
             <g transform="translate(390, 105)">
                 <rect class="lbl-shield" x="-50" y="-12" width="100" height="24" />
                 <text class="lbl-txt" y="4">SYSTEM SETUP</text>
             </g>
 
-            <path class="line-flow" d="M450,145 L330,145" />
+            <path class="line-flow" d="M500,145 L280,145" />
             <g transform="translate(390, 145)">
                 <rect class="lbl-shield" x="-60" y="-12" width="120" height="24" />
                 <text class="lbl-txt" y="4">BUSINESS REPORTS</text>
             </g>
 
-            <path class="line-flow" d="M630,125 L750,125" />
+            <path class="line-flow" d="M680,125 L900,125" />
 
 
-            <!-- ================= ROW 2 ================= -->
+            <!-- ================= ROW 2: MAIN PIPELINE ================= -->
 
-            <g transform="translate(150, 380)">
+            <g transform="translate(100, 380)">
                 <rect class="box-entity" width="180" height="90" />
                 <text class="node-name" x="90" y="45">Customer</text>
                 <text class="node-desc" x="90" y="65">BOOKING & TRACKING</text>
             </g>
 
-            <g transform="translate(450, 380)">
+            <g transform="translate(500, 380)">
                 <rect class="box-process" width="180" height="90" />
                 <rect x="0" y="0" width="180" height="20" fill="var(--primary)" opacity="0.1" />
                 <text class="node-name" x="90" y="50">1.0 Identity</text>
             </g>
 
-            <g transform="translate(750, 380)">
+            <g transform="translate(900, 380)">
                 <rect class="box-process" width="180" height="90" />
                 <rect x="0" y="0" width="180" height="20" fill="var(--primary)" opacity="0.1" />
                 <text class="node-name" x="90" y="50">2.0 Booking Cycle</text>
             </g>
 
-            <g transform="translate(1050, 380)">
+            <g transform="translate(1300, 380)">
                 <rect class="box-process" width="180" height="90" />
                 <rect x="0" y="0" width="180" height="20" fill="var(--primary)" opacity="0.1" />
                 <text class="node-name" x="90" y="50">3.0 Pricing</text>
             </g>
 
-            <g transform="translate(1350, 380)">
+            <g transform="translate(1700, 380)">
                 <rect class="box-process" width="180" height="90" />
                 <rect x="0" y="0" width="180" height="20" fill="var(--primary)" opacity="0.1" />
                 <text class="node-name" x="90" y="50">4.0 Dispatch</text>
             </g>
 
-            <g transform="translate(1650, 380)">
+            <!-- Hub Staff at X=2150. Ends at 2330. -->
+            <g transform="translate(2150, 380)">
                 <rect class="box-entity" width="180" height="90" />
                 <text class="node-name" x="90" y="45">Hub Staff</text>
                 <text class="node-desc" x="90" y="65">LOGISTICS EXECUTION</text>
             </g>
 
-            <!-- FLOWS ROW 2 -->
-            <!-- Login Info -->
-            <path class="line-flow" d="M330,410 L450,410" />
+            <path class="line-flow" d="M280,410 L500,410" />
             <g transform="translate(390, 410)">
                 <rect class="lbl-shield" x="-40" y="-12" width="80" height="24" />
                 <text class="lbl-txt" y="4">LOGIN INFO</text>
             </g>
 
-            <!-- Tracking Info (Large Arc Top) -->
-            <path class="line-flow" d="M840,380 L840,260 L380,260 L380,380" />
-            <g transform="translate(600, 260)">
+            <path class="line-flow" d="M990,380 L990,260 L380,260 L380,380" />
+            <g transform="translate(685, 260)">
                 <rect class="lbl-shield" x="-50" y="-12" width="100" height="24" />
                 <text class="lbl-txt" y="4">TRACKING INFO</text>
             </g>
 
-            <!-- Booking Details (Large Arc Bottom) -->
-            <path class="line-flow" d="M240,470 L240,550 L840,550 L840,470" />
-            <g transform="translate(540, 550)">
+            <path class="line-flow" d="M190,470 L190,550 L990,550 L990,470" />
+            <g transform="translate(590, 550)">
                 <rect class="lbl-shield" x="-60" y="-12" width="120" height="24" />
                 <text class="lbl-txt" y="4">BOOKING DETAILS</text>
             </g>
 
-            <path class="line-flow" d="M540,380 L540,300 L800,300 L800,170" /> <!-- P1 -> D1 -->
+            <path class="line-flow" d="M590,380 L590,300 L900,300 L900,170" /> <!-- P1 -> D1 -->
 
-            <path class="line-flow" d="M630,425 L750,425" /> <!-- P1 -> P2 -->
-            <path class="line-flow" d="M930,425 L1050,425" /> <!-- P2 -> P3 -->
-            <path class="line-flow" d="M1230,425 L1350,425" /> <!-- P3 -> P4 -->
+            <!-- Core Flows -->
+            <path class="line-flow" d="M680,425 L900,425" />
+            <path class="line-flow" d="M1080,425 L1300,425" />
+            <path class="line-flow" d="M1480,425 L1700,425" />
 
-            <!-- P4 -> Staff (Job List) -->
-            <path class="line-flow" d="M1530,410 L1650,410" />
-            <g transform="translate(1590, 410)">
+            <path class="line-flow" d="M1880,410 L2150,410" />
+            <g transform="translate(2015, 410)">
                 <rect class="lbl-shield" x="-35" y="-12" width="70" height="24" />
                 <text class="lbl-txt" y="4">JOB LIST</text>
             </g>
 
-            <!-- Staff -> P4 (Delivery Updates) -->
-            <path class="line-flow" d="M1650,440 L1530,440" />
-            <g transform="translate(1590, 440)">
+            <path class="line-flow" d="M2150,440 L1880,440" />
+            <g transform="translate(2015, 440)">
                 <rect class="lbl-shield" x="-60" y="-12" width="120" height="24" />
                 <text class="lbl-txt" y="4">DELIVERY UPDATES</text>
             </g>
 
 
-            <!-- ================= ROW 3 ================= -->
+            <!-- ================= ROW 3: OPERATIONS ================= -->
 
-            <g transform="translate(750, 680)">
-                <rect class="box-store" width="480" height="90" />
+            <g transform="translate(900, 680)">
+                <rect class="box-store" width="580" height="90" />
                 <rect x="0" y="0" width="15" height="90" fill="#475569" />
-                <text class="node-name" x="240" y="50">D2: Shipments (Master)</text>
+                <text class="node-name" x="290" y="50">D2: Shipments (Master)</text>
             </g>
 
-            <g transform="translate(1350, 680)">
+            <g transform="translate(1700, 680)">
                 <rect class="box-entity" width="180" height="90" />
                 <text class="node-name" x="90" y="45">Franchisee Hub</text>
                 <text class="node-desc" x="90" y="65">LOCAL OPERATIONS</text>
             </g>
 
-            <!-- FLOWS ROW 3 -->
-            <path class="line-flow" d="M840,470 L840,680" /> <!-- P2 -> D2 -->
-            <path class="line-flow" d="M1140,470 L1140,680" /> <!-- P3 -> D2 -->
-            <path class="line-flow" d="M1440,470 L1440,620 L1200,620 L1200,680" /> <!-- P4 -> D2 -->
+            <path class="line-flow" d="M990,470 L990,680" /> <!-- P2 -> D2 -->
+            <path class="line-flow" d="M1390,470 L1390,680" /> <!-- P3 -> D2 -->
 
-            <!-- Franchisee -> Price & Weight -->
-            <path class="line-flow" d="M1350,725 L1300,725 L1300,530 L1180,530 L1180,470" />
-            <g transform="translate(1300, 630) rotate(-90)">
+            <path class="line-flow" d="M1740,470 L1740,620 L1450,620 L1450,680" /> <!-- Dispatch -> D2 -->
+
+            <!-- Franchisee -> Price & Weight (Left Loop) -->
+            <path class="line-flow" d="M1700,740 L1600,740 L1600,280 L1420,280 L1420,380" />
+            <g transform="translate(1600, 580) rotate(-90)">
                 <rect class="lbl-shield" x="-60" y="-12" width="120" height="24" />
                 <text class="lbl-txt" y="4">PRICE & WEIGHT</text>
             </g>
 
             <!-- Franchisee -> Staff Assign -->
-            <path class="line-flow" d="M1440,680 L1440,470" />
-            <g transform="translate(1440, 580) rotate(-90)">
+            <path class="line-flow" d="M1790,680 L1790,470" />
+            <g transform="translate(1790, 580) rotate(-90)">
                 <rect class="lbl-shield" x="-60" y="-12" width="120" height="24" />
                 <text class="lbl-txt" y="4">STAFF ASSIGNING</text>
             </g>
 
             <!-- New Requests -->
-            <path class="line-flow" d="M1140,380 L1140,320 L1800,320 L1800,740 L1530,740" />
-            <g transform="translate(1700, 320)">
+            <!-- FIX: X=2450 to clear Hub Staff Right Edge (2330) -->
+            <path class="line-flow" d="M1350,380 L1350,220 L2450,220 L2450,740 L1880,740" />
+            <g transform="translate(2165, 740)">
                 <rect class="lbl-shield" x="-50" y="-12" width="100" height="24" />
                 <text class="lbl-txt" y="4">NEW REQUESTS</text>
             </g>
@@ -323,7 +321,7 @@
     </div>
 
     <footer>
-        MoveX Level 1 | Highlighted Badges | Clean Layout
+        MoveX Level 1 | 100% Collision-Free | Spacious Design
     </footer>
 
 </body>
