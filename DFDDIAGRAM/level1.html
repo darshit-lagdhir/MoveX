@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoveX Engine | DFD Level 1 (Perfected)</title>
+    <title>MoveX Engine | DFD Level 1 (Text Fixed)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
@@ -129,7 +129,6 @@
             stroke: #cbd5e1;
             stroke-width: 1;
             rx: 4;
-            fill-opacity: 1;
         }
 
         .lbl-txt {
@@ -196,9 +195,8 @@
     <div class="viewport">
         <!-- 
              GRID SYSTEM: 1700 x 1000
-             Technique: Sharp Orthogonal (No Curves).
-             Fixes: Rerouted 'Updates' from Identity Service (Wrong) to D2 Shipments (Correct).
-             Fixes: Rerouted 'Tracking Info' to avoid corner entry and channel collisions.
+             Fixes: Horizontal Tracking Info label on the bottom segment.
+             Fixes: Centered Booking Details label with explicit white fill.
         -->
         <svg viewBox="0 0 1700 1000" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
             <defs>
@@ -241,14 +239,11 @@
                 <text class="node-name" x="100" y="65">Identity Service</text>
                 <text class="node-meta" x="100" y="90">Auth Logic</text>
             </g>
-
-            <!-- End Customer: Kept at X=100 -->
             <g transform="translate(100, 455)">
                 <rect class="box-entity" width="200" height="120" />
                 <text class="node-name" x="100" y="60">End Customer</text>
                 <text class="node-desc" x="100" y="90">USER INTERFACE</text>
             </g>
-
             <g transform="translate(380, 620)">
                 <rect class="box-process" width="200" height="120" />
                 <rect x="0" y="0" width="200" height="25" fill="var(--primary)" opacity="0.1" />
@@ -278,54 +273,52 @@
 
             <!-- Setup -->
             <path class="line-flow" d="M750,85 L680,85 L680,515 L700,515" />
-            <rect class="lbl-bg" x="635" y="270" width="90" height="20" />
+            <rect class="lbl-bg" x="635" y="270" width="90" height="20" fill="white" />
             <text class="lbl-txt" x="680" y="283">System Setup</text>
 
             <!-- Reports -->
             <path class="line-flow" d="M1000,515 L1040,515 L1040,85 L950,85" />
-            <rect class="lbl-bg" x="990" y="270" width="100" height="20" />
+            <rect class="lbl-bg" x="990" y="270" width="100" height="20" fill="white" />
             <text class="lbl-txt" x="1040" y="283">Business Reports</text>
 
             <!-- Login Info -->
             <path class="line-flow" d="M200,455 L200,410 L380,410" />
-            <rect class="lbl-bg" x="250" y="400" width="80" height="20" />
+            <rect class="lbl-bg" x="250" y="400" width="80" height="20" fill="white" />
             <text class="lbl-txt" x="290" y="413">Login Info</text>
 
             <!-- Booking Details -->
             <path class="line-flow" d="M200,575 L200,680 L380,680" />
-            <rect class="lbl-bg" x="230" y="670" width="130" height="20" />
-            <text class="lbl-txt" x="295" y="683">Booking Details</text>
+            <rect class="lbl-bg" x="240" y="670" width="100" height="20" fill="white" />
+            <text class="lbl-txt" x="290" y="683">Booking Details</text>
 
-            <!-- Tracking Info: RE-ROUTED -> LEFT SIDE ENTRY -->
-            <!-- From Booking(Bottom) -> Down -> Left Gutter(X=60) -> Up -> Right -> Cust(Left) -->
+            <!-- Tracking Info: RE-ROUTED -> LEFT SIDE ENTRY. Label on bottom segment (Horizontal) -->
             <path class="line-flow" d="M480,740 L480,770 L60,770 L60,515 L100,515" />
-            <rect class="lbl-bg" x="20" y="650" width="80" height="20" />
-            <text class="lbl-txt" x="60" y="663" transform="rotate(-90, 60, 663)">Tracking</text>
-            <!-- Rotated label on vertical for clarity -->
+            <rect class="lbl-bg" x="210" y="760" width="120" height="20" fill="white" />
+            <text class="lbl-txt" x="270" y="773">Tracking Info</text>
 
             <!-- Staff Assigning -->
             <path class="line-flow" d="M1550,455 L1550,410 L1320,410" />
-            <rect class="lbl-bg" x="1400" y="400" width="100" height="20" />
+            <rect class="lbl-bg" x="1400" y="400" width="100" height="20" fill="white" />
             <text class="lbl-txt" x="1450" y="413">Staff Assigning</text>
 
             <!-- Price & Weight -->
             <path class="line-flow" d="M1550,575 L1550,680 L1320,680" />
-            <rect class="lbl-bg" x="1390" y="670" width="110" height="20" />
+            <rect class="lbl-bg" x="1390" y="670" width="110" height="20" fill="white" />
             <text class="lbl-txt" x="1445" y="683">Price & Weight</text>
 
             <!-- Job List -->
             <path class="line-flow" d="M1220,350 L1220,300 L1680,300 L1680,945 L950,945" />
-            <rect class="lbl-bg" x="1635" y="600" width="90" height="20" />
+            <rect class="lbl-bg" x="1635" y="600" width="90" height="20" fill="white" />
             <text class="lbl-txt" x="1680" y="613">Job List</text>
 
             <!-- New Requests -->
             <path class="line-flow" d="M1220,740 L1220,770 L1450,770 L1450,575" />
-            <rect class="lbl-bg" x="1290" y="760" width="100" height="20" />
+            <rect class="lbl-bg" x="1290" y="760" width="100" height="20" fill="white" />
             <text class="lbl-txt" x="1340" y="773">New Requests</text>
 
-            <!-- Delivery Updates: DIRECT TO D2 -->
+            <!-- Delivery Updates -->
             <path class="line-flow" d="M850,900 L850,820" />
-            <rect class="lbl-bg" x="800" y="855" width="100" height="16" />
+            <rect class="lbl-bg" x="800" y="855" width="100" height="16" fill="white" />
             <text class="lbl-txt" x="850" y="867">Status Updates</text>
 
             <!-- Internal Matches -->
@@ -340,7 +333,7 @@
     </div>
 
     <footer>
-        MoveX Certified Blueprint | Level 1 | Zero-Intersection Guarantee
+        MoveX Certified Blueprint | Level 1 | Text Clarity Fixed
     </footer>
 
 </body>
