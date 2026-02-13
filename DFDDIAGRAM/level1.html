@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoveX Engine | DFD Level 1 (Final Clean)</title>
+    <title>MoveX Engine | DFD Level 1 (Tracking Fix)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
@@ -146,17 +146,16 @@
 <body>
 
     <nav class="system-nav">
-        <div class="brand">MOVEX ARCHITECT | LEVEL 1 | COLLISION FIX</div>
+        <div class="brand">MOVEX ARCHITECT | LEVEL 1 | TRACKING LINE FIXED</div>
     </nav>
 
     <div class="viewport">
         <!-- 
-           CRITICAL COLLISION FIX:
-           The "New Requests" line was at X=2300, passing through Hub Staff (Right Edge = 2330).
-           Action:
-           1. Increased ViewBox width to 2600.
-           2. Moved "New Requests" vertical loop to X=2450 (Way outside).
-           3. This guarantees it loops completely around the "Hub Staff" entity.
+           TRACKING INFO FIX:
+           The "Tracking Info" line was ending at X=380, which is the gap between Customer and Identity.
+           FIX: Changed the end coordinate to X=190.
+           Now it goes: Booking (990) -> Up (260) -> Left (190) -> Down into Customer TOP (380).
+           This hits the Customer box perfectly in the center.
         -->
         <svg viewBox="0 0 2600 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
             <defs>
@@ -231,7 +230,6 @@
                 <text class="node-name" x="90" y="50">4.0 Dispatch</text>
             </g>
 
-            <!-- Hub Staff at X=2150. Ends at 2330. -->
             <g transform="translate(2150, 380)">
                 <rect class="box-entity" width="180" height="90" />
                 <text class="node-name" x="90" y="45">Hub Staff</text>
@@ -244,8 +242,9 @@
                 <text class="lbl-txt" y="4">LOGIN INFO</text>
             </g>
 
-            <path class="line-flow" d="M990,380 L990,260 L380,260 L380,380" />
-            <g transform="translate(685, 260)">
+            <!-- Tracking Info: CHANGED TO X=190 (Customer Center) -->
+            <path class="line-flow" d="M990,380 L990,260 L190,260 L190,380" />
+            <g transform="translate(590, 260)"> <!-- Centered Label -->
                 <rect class="lbl-shield" x="-50" y="-12" width="100" height="24" />
                 <text class="lbl-txt" y="4">TRACKING INFO</text>
             </g>
@@ -258,7 +257,6 @@
 
             <path class="line-flow" d="M590,380 L590,300 L900,300 L900,170" /> <!-- P1 -> D1 -->
 
-            <!-- Core Flows -->
             <path class="line-flow" d="M680,425 L900,425" />
             <path class="line-flow" d="M1080,425 L1300,425" />
             <path class="line-flow" d="M1480,425 L1700,425" />
@@ -293,9 +291,9 @@
             <path class="line-flow" d="M990,470 L990,680" /> <!-- P2 -> D2 -->
             <path class="line-flow" d="M1390,470 L1390,680" /> <!-- P3 -> D2 -->
 
-            <path class="line-flow" d="M1740,470 L1740,620 L1450,620 L1450,680" /> <!-- Dispatch -> D2 -->
+            <path class="line-flow" d="M1740,470 L1740,620 L1450,620 L1450,680" />
 
-            <!-- Franchisee -> Price & Weight (Left Loop) -->
+            <!-- Franchisee -> Price & Weight -->
             <path class="line-flow" d="M1700,740 L1600,740 L1600,280 L1420,280 L1420,380" />
             <g transform="translate(1600, 580) rotate(-90)">
                 <rect class="lbl-shield" x="-60" y="-12" width="120" height="24" />
@@ -310,7 +308,6 @@
             </g>
 
             <!-- New Requests -->
-            <!-- FIX: X=2450 to clear Hub Staff Right Edge (2330) -->
             <path class="line-flow" d="M1350,380 L1350,220 L2450,220 L2450,740 L1880,740" />
             <g transform="translate(2165, 740)">
                 <rect class="lbl-shield" x="-50" y="-12" width="100" height="24" />
@@ -321,7 +318,7 @@
     </div>
 
     <footer>
-        MoveX Level 1 | 100% Collision-Free | Spacious Design
+        MoveX Level 1 | Connected & Corrected
     </footer>
 
 </body>
