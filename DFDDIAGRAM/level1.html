@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoveX Engine | DFD Level 1 (Tracking Fix)</title>
+    <title>MoveX Engine | DFD Level 1 (Un-Joined)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
@@ -146,16 +146,17 @@
 <body>
 
     <nav class="system-nav">
-        <div class="brand">MOVEX ARCHITECT | LEVEL 1 | TRACKING LINE FIXED</div>
+        <div class="brand">MOVEX ARCHITECT | LEVEL 1 | UN-JOINED LINES</div>
     </nav>
 
     <div class="viewport">
         <!-- 
-           TRACKING INFO FIX:
-           The "Tracking Info" line was ending at X=380, which is the gap between Customer and Identity.
-           FIX: Changed the end coordinate to X=190.
-           Now it goes: Booking (990) -> Up (260) -> Left (190) -> Down into Customer TOP (380).
-           This hits the Customer box perfectly in the center.
+           UN-JOINED FIX:
+           The user identified that 'TRACKING INFO' and 'P1->D1' were merging into a single vertical line at X=990, creating a confusing intersection.
+           FIX: Separated the vertical paths.
+           1. 'P1 -> D1' now enters D1 at X=940 (Left-ish).
+           2. 'Tracking Info' exits Booking at X=990 (Center).
+           They now have a 50px separation and do not touch or join.
         -->
         <svg viewBox="0 0 2600 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
             <defs>
@@ -242,9 +243,9 @@
                 <text class="lbl-txt" y="4">LOGIN INFO</text>
             </g>
 
-            <!-- Tracking Info: CHANGED TO X=190 (Customer Center) -->
+            <!-- Tracking Info (X=990 Exits Booking) -->
             <path class="line-flow" d="M990,380 L990,260 L190,260 L190,380" />
-            <g transform="translate(590, 260)"> <!-- Centered Label -->
+            <g transform="translate(590, 260)">
                 <rect class="lbl-shield" x="-50" y="-12" width="100" height="24" />
                 <text class="lbl-txt" y="4">TRACKING INFO</text>
             </g>
@@ -255,7 +256,8 @@
                 <text class="lbl-txt" y="4">BOOKING DETAILS</text>
             </g>
 
-            <path class="line-flow" d="M590,380 L590,300 L900,300 L900,170" /> <!-- P1 -> D1 -->
+            <!-- P1 -> D1: SHIFTED TO X=940 (Avoid joining with Tracking Info) -->
+            <path class="line-flow" d="M590,380 L590,300 L940,300 L940,170" />
 
             <path class="line-flow" d="M680,425 L900,425" />
             <path class="line-flow" d="M1080,425 L1300,425" />
@@ -288,26 +290,23 @@
                 <text class="node-desc" x="90" y="65">LOCAL OPERATIONS</text>
             </g>
 
-            <path class="line-flow" d="M990,470 L990,680" /> <!-- P2 -> D2 -->
-            <path class="line-flow" d="M1390,470 L1390,680" /> <!-- P3 -> D2 -->
+            <path class="line-flow" d="M990,470 L990,680" />
+            <path class="line-flow" d="M1390,470 L1390,680" />
 
             <path class="line-flow" d="M1740,470 L1740,620 L1450,620 L1450,680" />
 
-            <!-- Franchisee -> Price & Weight -->
             <path class="line-flow" d="M1700,740 L1600,740 L1600,280 L1420,280 L1420,380" />
             <g transform="translate(1600, 580) rotate(-90)">
                 <rect class="lbl-shield" x="-60" y="-12" width="120" height="24" />
                 <text class="lbl-txt" y="4">PRICE & WEIGHT</text>
             </g>
 
-            <!-- Franchisee -> Staff Assign -->
             <path class="line-flow" d="M1790,680 L1790,470" />
             <g transform="translate(1790, 580) rotate(-90)">
                 <rect class="lbl-shield" x="-60" y="-12" width="120" height="24" />
                 <text class="lbl-txt" y="4">STAFF ASSIGNING</text>
             </g>
 
-            <!-- New Requests -->
             <path class="line-flow" d="M1350,380 L1350,220 L2450,220 L2450,740 L1880,740" />
             <g transform="translate(2165, 740)">
                 <rect class="lbl-shield" x="-50" y="-12" width="100" height="24" />
@@ -318,7 +317,7 @@
     </div>
 
     <footer>
-        MoveX Level 1 | Connected & Corrected
+        MoveX Level 1 | 100% Separated
     </footer>
 
 </body>
