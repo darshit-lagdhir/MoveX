@@ -4,176 +4,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoveX Context Diagram - Level 0</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    <title>MoveX DFD - Level 0 Context Diagram</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #6366f1;
+            --accent: #a21caf;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --border: #e2e8f0;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: #fff;
-            color: #000;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
+            background-color: var(--bg);
+            color: var(--text);
+            padding-bottom: 50px;
+        }
+
+        .header {
+            background: var(--surface);
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-weight: 800;
+            font-size: 20px;
+            letter-spacing: -0.3px;
+        }
+
+        .nav-links {
             display: flex;
             justify-content: center;
-            align-items: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+        }
+
+        .nav-btn.secondary {
+            background: var(--surface);
+            color: var(--text);
+            border-color: var(--border);
+            box-shadow: none;
+        }
+
+        .diagram-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--surface);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 30px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.02);
+            animation: fadeIn 0.5s ease;
         }
 
         svg {
             width: 100%;
-            height: 100%;
+            height: auto;
+            display: block;
+            max-height: 80vh;
         }
 
-        .box {
-            fill: #fff;
-            stroke: #000;
-            stroke-width: 1.5;
+        .entity {
+            fill: white;
+            stroke: var(--text);
+            stroke-width: 2.5;
         }
 
-        .circ {
-            fill: #fff;
-            stroke: #000;
-            stroke-width: 2;
+        .system-circle {
+            fill: #eff6ff;
+            stroke: var(--primary);
+            stroke-width: 4;
         }
 
-        .dv {
-            stroke: #000;
-            stroke-width: 1.5;
-        }
-
-        .fl {
+        .arrow-line {
+            stroke: #64748b;
+            stroke-width: 1.8;
             fill: none;
-            stroke: #000;
-            stroke-width: 1;
-            marker-end: url(#a);
         }
 
-        .tn {
-            font-size: 14px;
+        .text-main {
             font-weight: 800;
+            font-size: 15px;
+            fill: var(--text);
+            text-anchor: middle;
+        }
+
+        .text-meta {
+            font-weight: 600;
+            font-size: 10px;
+            fill: #64748b;
             text-anchor: middle;
             text-transform: uppercase;
         }
 
-        .tp {
-            font-size: 12px;
-            font-weight: 800;
-            text-anchor: middle;
-        }
-
-        .tt {
-            font-size: 18px;
-            font-weight: 800;
-            text-anchor: middle;
-        }
-
-        .tsub {
-            font-size: 12px;
-            font-weight: 600;
-            text-anchor: middle;
-        }
-
-        .tf {
-            font-size: 10px;
+        .text-flow {
             font-weight: 700;
+            font-size: 9px;
+            fill: #334155;
             text-anchor: middle;
-            paint-order: stroke;
-            stroke: #fff;
-            stroke-width: 3px;
+            text-transform: uppercase;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
 
 <body>
-    <svg viewBox="0 0 900 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
-        <defs>
-            <marker id="a" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-                <polygon points="0 0, 8 3, 0 6" fill="#000" />
-            </marker>
-        </defs>
+    <header class="header">
+        <h1>MoveX Logistics - Data Flow Registry</h1>
+    </header>
 
-        <!-- ======= CENTRAL PROCESS (Center=450,350  R=110) ======= -->
-        <g transform="translate(450, 350)">
-            <circle class="circ" r="110" />
-            <line class="dv" x1="-110" y1="0" x2="110" y2="0" />
-            <text class="tp" y="-60">0.0</text>
-            <text class="tt" y="-20">MoveX Central</text>
-            <text class="tsub" y="60">Logistic Backend</text>
-        </g>
+    <div class="nav-links">
+        <a class="nav-btn" href="level0.html">Level 0: Context</a>
+        <a class="nav-btn secondary" href="level1.html">Level 1: Functional Mapping</a>
+    </div>
 
-        <!-- ======= ENTITIES ======= -->
-        <!-- Admin (Top): center X=450, box at (350,30)-(550,100) -->
-        <g transform="translate(350, 30)">
-            <rect class="box" width="200" height="70" />
-            <text class="tn" x="100" y="42">SYSTEM ADMIN</text>
-        </g>
-        <!-- Customer (Left): center Y=350, box at (40,315)-(240,385) -->
-        <g transform="translate(40, 315)">
-            <rect class="box" width="200" height="70" />
-            <text class="tn" x="100" y="42">CUSTOMER</text>
-        </g>
-        <!-- Franchisee (Right): center Y=350, box at (660,315)-(860,385) -->
-        <g transform="translate(660, 315)">
-            <rect class="box" width="200" height="70" />
-            <text class="tn" x="100" y="42">FRANCHISEE HUB</text>
-        </g>
-        <!-- Staff (Bottom): center X=450, box at (350,600)-(550,670) -->
-        <g transform="translate(350, 600)">
-            <rect class="box" width="200" height="70" />
-            <text class="tn" x="100" y="42">HUB STAFF</text>
-        </g>
+    <div class="diagram-container">
+        <svg viewBox="0 0 1000 750">
+            <defs>
+                <marker id="arrhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                    <path d="M0,0 L8,4 L0,8 Z" fill="#64748b" />
+                </marker>
+            </defs>
 
-        <!-- ======= FLOWS ======= -->
-        <!-- Circle edges: Top=240, Bottom=460, Left=340, Right=560 -->
+            <!-- TOP ROW: 4 EXTERNAL ENTITIES (matching 4 user roles) -->
+            <rect x="50" y="60" width="180" height="80" class="entity" />
+            <text x="140" y="95" class="text-main">System Admin</text>
+            <text x="140" y="115" class="text-meta">Role: Admin</text>
 
-        <!-- ADMIN (Top) -->
-        <!-- System Setup: Admin -> System (downward) -->
-        <path class="fl" d="M430,100 L430,240" />
-        <text class="tf" x="395" y="175">System Setup</text>
-        <!-- Business Reports: System -> Admin (upward) -->
-        <path class="fl" d="M470,240 L470,100" />
-        <text class="tf" x="510" y="175">Business Reports</text>
+            <rect x="290" y="60" width="180" height="80" class="entity" />
+            <text x="380" y="95" class="text-main">Customer</text>
+            <text x="380" y="115" class="text-meta">Role: User</text>
 
-        <!-- CUSTOMER (Left) -->
-        <!-- Login Info: Customer -> System -->
-        <path class="fl" d="M240,335 L340,335" />
-        <text class="tf" x="290" y="328">Login Info</text>
-        <!-- Booking Details: Customer -> System -->
-        <path class="fl" d="M240,355 L340,355" />
-        <text class="tf" x="290" y="368">Booking Details</text>
-        <!-- Tracking Info: System -> Customer -->
-        <path class="fl" d="M340,375 L240,375" />
-        <text class="tf" x="290" y="393">Tracking Info</text>
+            <rect x="530" y="60" width="180" height="80" class="entity" />
+            <text x="620" y="95" class="text-main">Franchisee Hub</text>
+            <text x="620" y="115" class="text-meta">Role: Franchisee</text>
 
-        <!-- FRANCHISEE HUB (Right) -->
-        <!-- Price & Weight: Franchisee -> System -->
-        <path class="fl" d="M660,335 L560,335" />
-        <text class="tf" x="610" y="328">Price &amp; Weight</text>
-        <!-- Staff Assigning: Franchisee -> System -->
-        <path class="fl" d="M660,355 L560,355" />
-        <text class="tf" x="610" y="368">Staff Assigning</text>
-        <!-- New Requests: System -> Franchisee -->
-        <path class="fl" d="M560,375 L660,375" />
-        <text class="tf" x="610" y="393">New Requests</text>
+            <rect x="770" y="60" width="180" height="80" class="entity" />
+            <text x="860" y="95" class="text-main">Hub Staff</text>
+            <text x="860" y="115" class="text-meta">Role: Staff</text>
 
-        <!-- HUB STAFF (Bottom) -->
-        <!-- Updates: Staff -> System (upward) -->
-        <path class="fl" d="M430,600 L430,460" />
-        <text class="tf" x="395" y="535">Updates</text>
-        <!-- Job List: System -> Staff (downward) -->
-        <path class="fl" d="M470,460 L470,600" />
-        <text class="tf" x="510" y="535">Job List</text>
+            <!-- CENTRAL SYSTEM CIRCLE -->
+            <circle cx="500" cy="540" r="110" class="system-circle" />
+            <text x="500" y="515" font-weight="900" font-size="22" fill="#2563eb" text-anchor="middle">MoveX
+                Central</text>
+            <text x="500" y="545" class="text-main" style="font-size: 16px;">Logistic Backend</text>
+            <text x="500" y="565" class="text-meta" style="font-size: 11px;">(Process 0.0)</text>
 
-    </svg>
+            <!-- SYSTEM ADMIN FLOWS -->
+            <path d="M 120 140 V 475 H 415" class="arrow-line" marker-end="url(#arrhead)" />
+            <text x="105" y="300" class="text-flow" transform="rotate(-90 105 300)">System Setup / Login Info</text>
+            <path d="M 435 460 H 160 V 140" class="arrow-line" marker-end="url(#arrhead)" />
+            <text x="175" y="300" class="text-flow" transform="rotate(-90 175 300)">Business Reports / Login
+                Status</text>
+
+            <!-- CUSTOMER FLOWS -->
+            <path d="M 360 140 V 445 H 465" class="arrow-line" marker-end="url(#arrhead)" />
+            <text x="345" y="290" class="text-flow" transform="rotate(-90 345 290)">Login Info / Booking Details</text>
+            <path d="M 485 435 H 400 V 140" class="arrow-line" marker-end="url(#arrhead)" />
+            <text x="415" y="290" class="text-flow" transform="rotate(-90 415 290)">Tracking Info / Confirmation</text>
+
+            <!-- FRANCHISEE HUB FLOWS -->
+            <path d="M 600 140 V 435 H 535" class="arrow-line" marker-end="url(#arrhead)" />
+            <text x="585" y="290" class="text-flow" transform="rotate(-90 585 290)">Price &amp; Weight / Staff
+                Assigning</text>
+            <path d="M 555 445 H 640 V 140" class="arrow-line" marker-end="url(#arrhead)" />
+            <text x="655" y="290" class="text-flow" transform="rotate(-90 655 290)">New Requests / Confirmation</text>
+
+            <!-- HUB STAFF FLOWS -->
+            <path d="M 840 140 V 475 H 575" class="arrow-line" marker-end="url(#arrhead)" />
+            <text x="825" y="300" class="text-flow" transform="rotate(-90 825 300)">Updates / Delivery Status</text>
+            <path d="M 585 500 H 880 V 140" class="arrow-line" marker-end="url(#arrhead)" />
+            <text x="895" y="300" class="text-flow" transform="rotate(-90 895 300)">Job List / Assigned Routes</text>
+        </svg>
+    </div>
 </body>
 
 </html>
