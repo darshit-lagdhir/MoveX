@@ -4,19 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoveX Context | DFD Level 0</title>
+    <title>MoveX Context Diagram - Level 0</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <style>
-        :root {
-            --primary: #2563eb;
-            --primary-soft: #f8fafc;
-            --border: #1e293b;
-            --grid: #f1f5f9;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -25,255 +18,162 @@
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #ffffff;
-            color: #0f172a;
+            background: #fff;
+            color: #000;
+            width: 100vw;
             height: 100vh;
-            display: flex;
-            flex-direction: column;
             overflow: hidden;
-        }
-
-        /* --- NAVIGATION --- */
-        .system-nav {
-            background: #ffffff;
-            border-bottom: 2px solid var(--grid);
-            display: flex;
-            padding: 0 25px;
-            height: 55px;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-        }
-
-        .brand {
-            font-weight: 800;
-            font-size: 0.9rem;
-            color: var(--primary);
-            letter-spacing: -0.02em;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 6px;
-        }
-
-        .tab-btn {
-            text-decoration: none;
-            color: #64748b;
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 6px 12px;
-            border-radius: 6px;
-            text-transform: uppercase;
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: #fff;
-        }
-
-        /* --- VIEWPORT --- */
-        .viewport {
-            flex-grow: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-image: radial-gradient(var(--grid) 1px, transparent 1px);
-            background-size: 30px 30px;
-            padding: 10px;
-            overflow: hidden;
         }
 
         svg {
             width: 100%;
             height: 100%;
-            max-width: 1100px;
-            max-height: 100%;
         }
 
-        /* --- SVG STYLES --- */
-        .box-entity {
-            fill: white;
-            stroke: var(--border);
-            stroke-width: 2.5;
+        .box {
+            fill: #fff;
+            stroke: #000;
+            stroke-width: 1.5;
         }
 
-        .box-process {
-            fill: var(--primary-soft);
-            stroke: var(--primary);
-            stroke-width: 4;
+        .circ {
+            fill: #fff;
+            stroke: #000;
+            stroke-width: 2;
         }
 
-        .line-flow {
+        .dv {
+            stroke: #000;
+            stroke-width: 1.5;
+        }
+
+        .fl {
             fill: none;
-            stroke: var(--border);
-            stroke-width: 1.8;
-            marker-end: url(#arrow);
-        }
-
-        .lbl-bg {
-            fill: white;
-            stroke: #cbd5e1;
+            stroke: #000;
             stroke-width: 1;
-            rx: 4;
+            marker-end: url(#a);
         }
 
-        .lbl-txt {
-            fill: #1e293b;
-            font-size: 10px;
+        .tn {
+            font-size: 14px;
             font-weight: 800;
             text-anchor: middle;
             text-transform: uppercase;
-            letter-spacing: 0.03em;
         }
 
-        .node-name {
-            fill: #000000;
-            font-size: 17px;
+        .tp {
+            font-size: 12px;
             font-weight: 800;
             text-anchor: middle;
         }
 
-        .node-desc {
-            fill: var(--primary);
-            font-size: 11px;
-            font-weight: 900;
+        .tt {
+            font-size: 18px;
+            font-weight: 800;
             text-anchor: middle;
         }
 
-        #arrow {
-            fill: var(--border);
+        .tsub {
+            font-size: 12px;
+            font-weight: 600;
+            text-anchor: middle;
         }
 
-        footer {
-            padding: 10px;
-            text-align: center;
-            color: #94a3b8;
-            font-size: 0.7rem;
-            border-top: 1px solid var(--grid);
-            background: #fff;
-            flex-shrink: 0;
+        .tf {
+            font-size: 10px;
+            font-weight: 700;
+            text-anchor: middle;
+            paint-order: stroke;
+            stroke: #fff;
+            stroke-width: 3px;
         }
     </style>
 </head>
 
 <body>
+    <svg viewBox="0 0 900 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <defs>
+            <marker id="a" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#000" />
+            </marker>
+        </defs>
 
-    <nav class="system-nav">
-        <div class="brand">MOVEX ARCHITECT</div>
-        <div class="tabs">
-            <a href="index.html" class="tab-btn">Overview</a>
-            <a href="level0.html" class="tab-btn active">Level 0</a>
-            <a href="level1.html" class="tab-btn">Level 1</a>
-        </div>
-    </nav>
+        <!-- ======= CENTRAL PROCESS (Center=450,350  R=110) ======= -->
+        <g transform="translate(450, 350)">
+            <circle class="circ" r="110" />
+            <line class="dv" x1="-110" y1="0" x2="110" y2="0" />
+            <text class="tp" y="-60">0.0</text>
+            <text class="tt" y="-20">MoveX Central</text>
+            <text class="tsub" y="60">Logistic Backend</text>
+        </g>
 
-    <div class="viewport">
-        <svg viewBox="0 0 1200 650" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
-            <defs>
-                <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
-                    <polygon points="0 0, 10 3.5, 0 7" />
-                </marker>
-            </defs>
+        <!-- ======= ENTITIES ======= -->
+        <!-- Admin (Top): center X=450, box at (350,30)-(550,100) -->
+        <g transform="translate(350, 30)">
+            <rect class="box" width="200" height="70" />
+            <text class="tn" x="100" y="42">SYSTEM ADMIN</text>
+        </g>
+        <!-- Customer (Left): center Y=350, box at (40,315)-(240,385) -->
+        <g transform="translate(40, 315)">
+            <rect class="box" width="200" height="70" />
+            <text class="tn" x="100" y="42">CUSTOMER</text>
+        </g>
+        <!-- Franchisee (Right): center Y=350, box at (660,315)-(860,385) -->
+        <g transform="translate(660, 315)">
+            <rect class="box" width="200" height="70" />
+            <text class="tn" x="100" y="42">FRANCHISEE HUB</text>
+        </g>
+        <!-- Staff (Bottom): center X=450, box at (350,600)-(550,670) -->
+        <g transform="translate(350, 600)">
+            <rect class="box" width="200" height="70" />
+            <text class="tn" x="100" y="42">HUB STAFF</text>
+        </g>
 
-            <!-- --- ACTORS --- -->
+        <!-- ======= FLOWS ======= -->
+        <!-- Circle edges: Top=240, Bottom=460, Left=340, Right=560 -->
 
-            <!-- Customer -->
-            <g transform="translate(50, 275)">
-                <rect class="box-entity" width="180" height="100" />
-                <text class="node-name" x="90" y="45">Customer</text>
-                <text class="node-desc" x="90" y="70">BOOKING & TRACKING</text>
-            </g>
+        <!-- ADMIN (Top) -->
+        <!-- System Setup: Admin -> System (downward) -->
+        <path class="fl" d="M430,100 L430,240" />
+        <text class="tf" x="395" y="175">System Setup</text>
+        <!-- Business Reports: System -> Admin (upward) -->
+        <path class="fl" d="M470,240 L470,100" />
+        <text class="tf" x="510" y="175">Business Reports</text>
 
-            <!-- Admin -->
-            <g transform="translate(510, 30)">
-                <rect class="box-entity" width="180" height="85" />
-                <text class="node-name" x="90" y="40">System Admin</text>
-                <text class="node-desc" x="90" y="60">GLOBAL OVERSEER</text>
-            </g>
+        <!-- CUSTOMER (Left) -->
+        <!-- Login Info: Customer -> System -->
+        <path class="fl" d="M240,335 L340,335" />
+        <text class="tf" x="290" y="328">Login Info</text>
+        <!-- Booking Details: Customer -> System -->
+        <path class="fl" d="M240,355 L340,355" />
+        <text class="tf" x="290" y="368">Booking Details</text>
+        <!-- Tracking Info: System -> Customer -->
+        <path class="fl" d="M340,375 L240,375" />
+        <text class="tf" x="290" y="393">Tracking Info</text>
 
-            <!-- Franchisee -->
-            <g transform="translate(970, 275)">
-                <rect class="box-entity" width="180" height="100" />
-                <text class="node-name" x="90" y="45">Franchisee Hub</text>
-                <text class="node-desc" x="90" y="70">LOCAL OPERATIONS</text>
-            </g>
+        <!-- FRANCHISEE HUB (Right) -->
+        <!-- Price & Weight: Franchisee -> System -->
+        <path class="fl" d="M660,335 L560,335" />
+        <text class="tf" x="610" y="328">Price &amp; Weight</text>
+        <!-- Staff Assigning: Franchisee -> System -->
+        <path class="fl" d="M660,355 L560,355" />
+        <text class="tf" x="610" y="368">Staff Assigning</text>
+        <!-- New Requests: System -> Franchisee -->
+        <path class="fl" d="M560,375 L660,375" />
+        <text class="tf" x="610" y="393">New Requests</text>
 
-            <!-- Staff -->
-            <g transform="translate(510, 535)">
-                <rect class="box-entity" width="180" height="85" />
-                <text class="node-name" x="90" y="40">Hub Staff</text>
-                <text class="node-desc" x="90" y="60">LOGISTICS EXECUTION</text>
-            </g>
+        <!-- HUB STAFF (Bottom) -->
+        <!-- Updates: Staff -> System (upward) -->
+        <path class="fl" d="M430,600 L430,460" />
+        <text class="tf" x="395" y="535">Updates</text>
+        <!-- Job List: System -> Staff (downward) -->
+        <path class="fl" d="M470,460 L470,600" />
+        <text class="tf" x="510" y="535">Job List</text>
 
-
-            <!-- PROCESS 0 -->
-            <g transform="translate(470, 260)">
-                <rect class="box-process" width="260" height="130" />
-                <rect x="0" y="0" width="260" height="30" fill="var(--primary)" opacity="0.1" />
-                <text class="node-desc" x="130" y="20" style="font-size:9px;">0</text>
-                <text class="node-name" x="130" y="75" style="font-size: 21px;">MoveX Central</text>
-                <text class="node-desc" x="130" y="100"
-                    style="fill:#64748b; text-transform:none; font-size:11px;">Backend Orchestrator</text>
-            </g>
-
-
-            <!-- --- DATA FLOWS (PLAIN ENGLISH REPLACEMENT) --- -->
-
-            <!-- ## CUSTOMER ## -->
-            <path class="line-flow" d="M230,300 L470,300" />
-            <rect class="lbl-bg" x="300" y="291" width="100" height="18" />
-            <text class="lbl-txt" x="350" y="304">Login Info</text>
-
-            <path class="line-flow" d="M230,325 L470,325" />
-            <rect class="lbl-bg" x="295" y="316" width="110" height="18" />
-            <text class="lbl-txt" x="350" y="329">Booking Details</text>
-
-            <path class="line-flow" d="M470,350 L230,350" />
-            <rect class="lbl-bg" x="295" y="341" width="110" height="18" />
-            <text class="lbl-txt" x="350" y="354">Tracking Info</text>
-
-
-            <!-- ## ADMIN ## -->
-            <path class="line-flow" d="M570,115 L570,260" />
-            <rect class="lbl-bg" x="450" y="170" width="110" height="18" />
-            <text class="lbl-txt" x="505" y="183">System Setup</text>
-
-            <path class="line-flow" d="M630,260 L630,115" />
-            <rect class="lbl-bg" x="640" y="170" width="110" height="18" />
-            <text class="lbl-txt" x="695" y="183">Business Reports</text>
-
-
-            <!-- ## FRANCHISEE ## -->
-            <path class="line-flow" d="M970,300 L730,300" />
-            <rect class="lbl-bg" x="795" y="291" width="110" height="18" />
-            <text class="lbl-txt" x="850" y="304">Price & Weight</text>
-
-            <path class="line-flow" d="M970,325 L730,325" />
-            <rect class="lbl-bg" x="795" y="316" width="110" height="18" />
-            <text class="lbl-txt" x="850" y="329">Staff Assigning</text>
-
-            <path class="line-flow" d="M730,350 L970,350" />
-            <rect class="lbl-bg" x="795" y="341" width="110" height="18" />
-            <text class="lbl-txt" x="850" y="354">New Requests</text>
-
-
-            <!-- ## STAFF ## -->
-            <path class="line-flow" d="M630,390 L630,535" />
-            <rect class="lbl-bg" x="640" y="450" width="110" height="18" />
-            <text class="lbl-txt" x="695" y="463">Job List</text>
-
-            <path class="line-flow" d="M570,535 L570,390" />
-            <rect class="lbl-bg" x="450" y="450" width="110" height="18" />
-            <text class="lbl-txt" x="505" y="463">Delivery Updates</text>
-
-        </svg>
-    </div>
-
-    <footer>
-        MoveX Registry | Plain English Logic Verified v3.5
-    </footer>
-
+    </svg>
 </body>
 
 </html>
