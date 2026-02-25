@@ -160,7 +160,6 @@
     <header class="header">
         <h1>MoveX Logistics - Level 1 DFD: System Admin</h1>
     </header>
-
     <div class="nav-links">
         <a class="nav-btn" href="level0.html">Level 0</a>
         <a class="nav-btn" href="level1.html">Level 1 (All)</a>
@@ -169,7 +168,6 @@
         <a class="nav-btn" href="staff_level1.html">Staff</a>
         <a class="nav-btn" href="user_level1.html">User</a>
     </div>
-
     <div class="diagram-container">
         <svg viewBox="0 0 1200 750">
             <defs>
@@ -178,85 +176,81 @@
                 </marker>
             </defs>
 
-            <!-- LEFT: ADMIN ACTOR -->
             <rect x="50" y="55" width="180" height="630" class="entity" />
-            <text x="140" y="350" class="text-main" style="font-size: 18px;">SYSTEM</text>
-            <text x="140" y="375" class="text-main" style="font-size: 18px;">ADMIN</text>
+            <text x="140" y="350" class="text-main" style="font-size:18px;">SYSTEM</text>
+            <text x="140" y="375" class="text-main" style="font-size:18px;">ADMIN</text>
             <text x="140" y="398" class="text-meta">Role: Admin</text>
 
-            <!-- 4 PROCESSES -->
+            <!-- 1.0 Login -->
             <circle cx="500" cy="140" r="50" class="process" />
             <text x="500" y="135" class="text-meta">1.0</text>
-            <text x="500" y="150" class="text-main" style="font-size: 12px;">User Management</text>
-
+            <text x="500" y="150" class="text-main" style="font-size:12px;">Login</text>
+            <!-- 2.0 Manage Users -->
             <circle cx="500" cy="310" r="50" class="process" />
             <text x="500" y="305" class="text-meta">2.0</text>
-            <text x="500" y="320" class="text-main" style="font-size: 12px;">Shipment Oversight</text>
-
+            <text x="500" y="320" class="text-main" style="font-size:12px;">Manage Users</text>
+            <!-- 3.0 Manage Shipments -->
             <circle cx="500" cy="480" r="50" class="process" />
             <text x="500" y="475" class="text-meta">3.0</text>
-            <text x="500" y="490" class="text-main" style="font-size: 12px;">Org Control</text>
-
+            <text x="500" y="490" class="text-main" style="font-size:12px;">Manage Shipments</text>
+            <!-- 4.0 Manage Franchises -->
             <circle cx="500" cy="650" r="50" class="process" />
             <text x="500" y="645" class="text-meta">4.0</text>
-            <text x="500" y="660" class="text-main" style="font-size: 12px;">Session Monitor</text>
+            <text x="500" y="660" class="text-main" style="font-size:12px;">Manage Franchises</text>
 
-            <!-- 4 DATASTORES (No Password Resets) -->
+            <!-- Datastores -->
             <path d="M 1100 115 H 900 V 175 H 1100" class="ds-line" />
             <rect x="915" y="115" width="15" height="60" class="ds-bar" />
-            <text x="1010" y="150" class="text-main" style="font-size: 13px;">D1: Users</text>
-
+            <text x="1010" y="150" class="text-main" style="font-size:13px;">D1: Users</text>
             <path d="M 1100 285 H 900 V 345 H 1100" class="ds-line" />
             <rect x="915" y="285" width="15" height="60" class="ds-bar" />
-            <text x="1010" y="320" class="text-main" style="font-size: 13px;">D2: Shipments</text>
-
+            <text x="1010" y="320" class="text-main" style="font-size:13px;">D2: Sessions</text>
             <path d="M 1100 455 H 900 V 515 H 1100" class="ds-line" />
             <rect x="915" y="455" width="15" height="60" class="ds-bar" />
-            <text x="1010" y="490" class="text-main" style="font-size: 13px;">D3: Organizations</text>
-
+            <text x="1010" y="490" class="text-main" style="font-size:13px;">D3: Shipments</text>
             <path d="M 1100 625 H 900 V 685 H 1100" class="ds-line" />
             <rect x="915" y="625" width="15" height="60" class="ds-bar" />
-            <text x="1010" y="660" class="text-main" style="font-size: 13px;">D4: Sessions</text>
+            <text x="1010" y="660" class="text-main" style="font-size:13px;">D4: Organizations</text>
 
-            <!-- 1.0 User Management -->
+            <!-- 1.0 Login Flows -->
             <path d="M 230 130 H 445" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="125" class="text-flow">Create / Edit / Delete User Accounts</text>
+            <text x="338" y="125" class="text-flow">Username &amp; Password</text>
             <path d="M 445 150 H 230" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="165" class="text-flow">Updated User List &amp; Role Status</text>
+            <text x="338" y="165" class="text-flow">Login Success / Fail</text>
             <path d="M 555 130 H 900" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="125" class="text-flow">Insert / Update User Record</text>
+            <text x="728" y="125" class="text-flow">Check User Exists</text>
             <path d="M 900 150 H 555" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="165" class="text-flow">Full User Table Data</text>
+            <text x="728" y="165" class="text-flow">User Record</text>
 
-            <!-- 2.0 Shipment Oversight -->
+            <!-- 2.0 Manage Users Flows -->
             <path d="M 230 300 H 445" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="295" class="text-flow">Request All Shipment Reports</text>
+            <text x="338" y="295" class="text-flow">Add / Edit / Disable User</text>
             <path d="M 445 320 H 230" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="335" class="text-flow">Shipment Analytics &amp; Stats</text>
+            <text x="338" y="335" class="text-flow">User List</text>
             <path d="M 555 300 H 900" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="295" class="text-flow">Query All Shipment Records</text>
+            <text x="728" y="295" class="text-flow">Save Session Token</text>
             <path d="M 900 320 H 555" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="335" class="text-flow">Complete Shipment Dataset</text>
+            <text x="728" y="335" class="text-flow">Active Sessions</text>
 
-            <!-- 3.0 Org Control -->
+            <!-- 3.0 Manage Shipments Flows -->
             <path d="M 230 470 H 445" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="465" class="text-flow">Create / Edit Franchise Orgs</text>
+            <text x="338" y="465" class="text-flow">Create / Update Shipment</text>
             <path d="M 445 490 H 230" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="505" class="text-flow">Org Details &amp; Performance</text>
+            <text x="338" y="505" class="text-flow">Shipment List &amp; Stats</text>
             <path d="M 555 470 H 900" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="465" class="text-flow">Insert / Update Org Record</text>
+            <text x="728" y="465" class="text-flow">Save Shipment</text>
             <path d="M 900 490 H 555" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="505" class="text-flow">Org Pincodes &amp; Status Data</text>
+            <text x="728" y="505" class="text-flow">All Shipments</text>
 
-            <!-- 4.0 Session Monitor -->
+            <!-- 4.0 Manage Franchises Flows -->
             <path d="M 230 640 H 445" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="635" class="text-flow">View Active Sessions / Force Logout</text>
+            <text x="338" y="635" class="text-flow">Add / Edit / Delete Franchise</text>
             <path d="M 445 660 H 230" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="675" class="text-flow">Session Activity Report</text>
+            <text x="338" y="675" class="text-flow">Franchise List &amp; Stats</text>
             <path d="M 555 640 H 900" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="635" class="text-flow">Query / Delete Session Records</text>
+            <text x="728" y="635" class="text-flow">Save Org Record</text>
             <path d="M 900 660 H 555" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="675" class="text-flow">Active Session List &amp; Tokens</text>
+            <text x="728" y="675" class="text-flow">Org Details</text>
         </svg>
     </div>
 </body>
