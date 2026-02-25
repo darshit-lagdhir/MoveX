@@ -50,28 +50,28 @@
         .nav-links {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             margin: 30px 0;
+            flex-wrap: wrap;
         }
 
         .nav-btn {
-            padding: 10px 20px;
+            padding: 10px 18px;
             border-radius: 10px;
             border: 1px solid var(--border);
-            background: var(--primary);
-            color: white;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 13px;
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
-        }
-
-        .nav-btn.secondary {
             background: var(--surface);
             color: var(--text);
-            border-color: var(--border);
-            box-shadow: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
         }
 
         .diagram-container {
@@ -149,16 +149,16 @@
 
 <body>
     <header class="header">
-        <h1>MoveX Logistics - Data Flow Registry</h1>
+        <h1>MoveX Logistics - Level 0 Context Diagram</h1>
     </header>
 
     <div class="nav-links">
-        <a class="nav-btn" href="level0.html">Level 0</a>
-        <a class="nav-btn secondary" href="level1.html">Level 1 (All)</a>
-        <a class="nav-btn secondary" href="admin_level1.html">Admin</a>
-        <a class="nav-btn secondary" href="franchisee_level1.html">Franchisee</a>
-        <a class="nav-btn secondary" href="staff_level1.html">Staff</a>
-        <a class="nav-btn secondary" href="user_level1.html">User</a>
+        <a class="nav-btn active" href="level0.html">Level 0</a>
+        <a class="nav-btn" href="level1.html">Level 1 (All)</a>
+        <a class="nav-btn" href="admin_level1.html">Admin</a>
+        <a class="nav-btn" href="franchisee_level1.html">Franchisee</a>
+        <a class="nav-btn" href="staff_level1.html">Staff</a>
+        <a class="nav-btn" href="user_level1.html">User</a>
     </div>
 
     <div class="diagram-container">
@@ -188,36 +188,57 @@
 
             <!-- CENTRAL SYSTEM CIRCLE -->
             <circle cx="500" cy="540" r="110" class="system-circle" />
-            <text x="500" y="515" font-weight="900" font-size="22" fill="#2563eb" text-anchor="middle">MoveX
-                Central</text>
-            <text x="500" y="545" class="text-main" style="font-size: 16px;">Logistic Backend</text>
+            <text x="500" y="515" font-weight="900" font-size="22" fill="#2563eb" text-anchor="middle">MoveX</text>
+            <text x="500" y="545" class="text-main" style="font-size: 16px;">Logistics System</text>
             <text x="500" y="565" class="text-meta" style="font-size: 11px;">(Process 0.0)</text>
+
+            <!--
+                FLOW LABELS — simple English, based on actual backend routes:
+
+                ADMIN sends:    Login, Manage Users/Shipments/Franchises, Settings
+                ADMIN gets:     Dashboard Data, User Lists, Shipment Lists
+
+                CUSTOMER sends: Register, Login, Book Shipment, Track Request
+                CUSTOMER gets:  Tracking Info, Profile Data, Booking Confirmation
+
+                FRANCHISEE sends: Login, Create Shipment, Assign Staff, Manage Staff
+                FRANCHISEE gets:  Shipment List, Staff List, Pickup Requests
+
+                STAFF sends:    Login, Delivery Status Updates
+                STAFF gets:     Assigned Deliveries, Profile Info
+            -->
 
             <!-- SYSTEM ADMIN FLOWS -->
             <path d="M 120 140 V 475 H 415" class="arrow-line" marker-end="url(#arrhead)" />
-            <text x="105" y="300" class="text-flow" transform="rotate(-90 105 300)">System Setup / Login Info</text>
+            <text x="105" y="300" class="text-flow" transform="rotate(-90 105 300)">Login / Manage Users
+                / Shipments</text>
             <path d="M 435 460 H 160 V 140" class="arrow-line" marker-end="url(#arrhead)" />
-            <text x="175" y="300" class="text-flow" transform="rotate(-90 175 300)">Business Reports / Login
-                Status</text>
+            <text x="175" y="300" class="text-flow" transform="rotate(-90 175 300)">Dashboard Stats /
+                User &amp; Franchise Lists</text>
 
             <!-- CUSTOMER FLOWS -->
             <path d="M 360 140 V 445 H 465" class="arrow-line" marker-end="url(#arrhead)" />
-            <text x="345" y="290" class="text-flow" transform="rotate(-90 345 290)">Login Info / Booking Details</text>
+            <text x="345" y="290" class="text-flow" transform="rotate(-90 345 290)">Register / Login /
+                Book Shipment</text>
             <path d="M 485 435 H 400 V 140" class="arrow-line" marker-end="url(#arrhead)" />
-            <text x="415" y="290" class="text-flow" transform="rotate(-90 415 290)">Tracking Info / Confirmation</text>
+            <text x="415" y="290" class="text-flow" transform="rotate(-90 415 290)">Tracking Info /
+                Booking Confirmation</text>
 
             <!-- FRANCHISEE HUB FLOWS -->
             <path d="M 600 140 V 435 H 535" class="arrow-line" marker-end="url(#arrhead)" />
-            <text x="585" y="290" class="text-flow" transform="rotate(-90 585 290)">Price &amp; Weight / Staff
-                Assigning</text>
+            <text x="585" y="290" class="text-flow" transform="rotate(-90 585 290)">Create Shipment /
+                Assign Staff</text>
             <path d="M 555 445 H 640 V 140" class="arrow-line" marker-end="url(#arrhead)" />
-            <text x="655" y="290" class="text-flow" transform="rotate(-90 655 290)">New Requests / Confirmation</text>
+            <text x="655" y="290" class="text-flow" transform="rotate(-90 655 290)">Shipment List /
+                Pickup Requests</text>
 
             <!-- HUB STAFF FLOWS -->
             <path d="M 840 140 V 475 H 575" class="arrow-line" marker-end="url(#arrhead)" />
-            <text x="825" y="300" class="text-flow" transform="rotate(-90 825 300)">Updates / Delivery Status</text>
+            <text x="825" y="300" class="text-flow" transform="rotate(-90 825 300)">Login /
+                Delivery Status Updates</text>
             <path d="M 585 500 H 880 V 140" class="arrow-line" marker-end="url(#arrhead)" />
-            <text x="895" y="300" class="text-flow" transform="rotate(-90 895 300)">Job List / Assigned Routes</text>
+            <text x="895" y="300" class="text-flow" transform="rotate(-90 895 300)">Assigned Deliveries /
+                Profile Info</text>
         </svg>
     </div>
 </body>
