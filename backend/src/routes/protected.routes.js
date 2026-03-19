@@ -1,26 +1,24 @@
 const express = require('express');
-const { requireSession } = require('../sessionMiddleware');
-const { requireRole, Roles } = require('../rbac');
+const { requireAuth, requireRole } = require('../sessionMiddleware');
 
 const router = express.Router();
 
-// Example protected endpoints per role.
-router.get('/admin/dashboard', requireSession, requireRole(Roles.ADMIN), (req, res) => {
-  res.json({ message: 'Welcome admin', user: { username: req.session.username, role: req.session.role } });
+const Roles = { ADMIN: 'admin', FRANCHISEE: 'franchisee', STAFF: 'staff', USER: 'user' };
+
+router.get('/admin/dashboard', requireAuth, requireRole(Roles.ADMIN), (req, res) => {
+  res.json({ message: 'Welcome admin', user: { username: req.user.username, role: req.user.role } });
 });
 
-router.get('/franchise/dashboard', requireSession, requireRole(Roles.FRANCHISEE), (req, res) => {
-  res.json({ message: 'Welcome franchisee', user: { username: req.session.username, role: req.session.role } });
+router.get('/franchise/dashboard', requireAuth, requireRole(Roles.FRANCHISEE), (req, res) => {
+  res.json({ message: 'Welcome franchisee', user: { username: req.user.username, role: req.user.role } });
 });
 
-router.get('/staff/dashboard', requireSession, requireRole(Roles.STAFF), (req, res) => {
-  res.json({ message: 'Welcome staff', user: { username: req.session.username, role: req.session.role } });
+router.get('/staff/dashboard', requireAuth, requireRole(Roles.STAFF), (req, res) => {
+  res.json({ message: 'Welcome staff', user: { username: req.user.username, role: req.user.role } });
 });
 
-router.get('/user/dashboard', requireSession, requireRole(Roles.USER), (req, res) => {
-  res.json({ message: 'Welcome user', user: { username: req.session.username, role: req.session.role } });
+router.get('/user/dashboard', requireAuth, requireRole(Roles.USER), (req, res) => {
+  res.json({ message: 'Welcome user', user: { username: req.user.username, role: req.user.role } });
 });
 
 module.exports = router;
-
-

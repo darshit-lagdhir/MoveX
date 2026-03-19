@@ -23,61 +23,10 @@ window.MoveXAdmin = (function () {
 
     function getAuthHeaders() {
         const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-        const token = session.data?.token;
-        const headers = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-        return headers;
-    }
-
-    // --- UI UTILITIES ---
-
-    function animateValue(obj, start, end, duration, prefix = '', suffix = '') {
-        if (!obj) return;
-        let startTimestamp = null;
-        const step = (timestamp) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            const value = Math.floor(progress * (end - start) + start);
-            obj.innerHTML = prefix + value.toLocaleString() + suffix;
-            if (progress < 1) window.requestAnimationFrame(step);
+        return {
+            'Content-Type': 'application/json',
+            'X-User-Username': session.data?.username || ''
         };
-        window.requestAnimationFrame(step);
-    }
-
-    function showToast(message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.style.cssText = `position:fixed; bottom:2rem; right:2rem; background:${type === 'error' ? 'var(--error)' : type === 'success' ? 'var(--success)' : 'var(--brand-primary)'}; color:white; padding:1rem 1.5rem; border-radius:12px; z-index:10000; animation:slideInRight 0.3s ease; font-weight:600;`;
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3500);
-    }
-
-    function createModal(title, content, actions = []) {
-        const overlay = document.createElement('div');
-        overlay.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:9999;';
-        const modal = document.createElement('div');
-        modal.className = 'card';
-        modal.style.cssText = 'width:90%; max-width:650px; padding:0; overflow:hidden;';
-        modal.innerHTML = `
-            <div style="padding:1.5rem; background:var(--surface-secondary); border-bottom:1px solid var(--border-default); display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="margin:0;">${title}</h3>
-                <button id="modal-close-btn" style="background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
-            </div>
-            <div style="padding:2rem; max-height:70vh; overflow-y:auto;">${content}</div>
-            <div style="padding:1.5rem; background:var(--surface-secondary); border-top:1px solid var(--border-default); display:flex; justify-content:flex-end; gap:1rem;">
-                ${actions.map((a, i) => `<button data-idx="${i}" class="${a.primary ? 'btn-primary' : 'btn-secondary'}" style="padding:0.6rem 1.2rem; border-radius:8px;">${a.label}</button>`).join('')}
-            </div>
-        `;
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-
-        const close = () => overlay.remove();
-        document.getElementById('modal-close-btn').onclick = close;
-        actions.forEach((a, i) => {
-            modal.querySelector(`button[data-idx="${i}"]`).onclick = () => a.onClick(close);
-        });
-        return { close };
     }
 
     // --- SHIPMENT TABLE RENDERING ---
@@ -280,8 +229,7 @@ window.MoveXAdmin = (function () {
 
                     try {
                         const res = await fetch(`${API_BASE}/api/dashboard/franchisee/shipments/update-status`, {
-                            method: 'POST',
-                            credentials: 'include',
+                            method: 'POST', headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                             headers: getAuthHeaders(),
                             body: JSON.stringify({ tracking_id: trackingId, status: newStatus, remarks })
                         });
@@ -398,8 +346,7 @@ window.MoveXAdmin = (function () {
 
                     try {
                         const res = await fetch(`${API_BASE}/api/dashboard/franchisee/shipments/create`, {
-                            method: 'POST',
-                            credentials: 'include',
+                            method: 'POST', headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                             headers: getAuthHeaders(),
                             body: JSON.stringify(data)
                         });
@@ -425,8 +372,7 @@ window.MoveXAdmin = (function () {
         'dashboard': async function () {
             try {
                 const res = await fetch(`${API_BASE}/api/dashboard/franchisee/stats`, {
-                    credentials: 'include',
-                    headers: getAuthHeaders()
+                    headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers: getAuthHeaders()
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -447,8 +393,7 @@ window.MoveXAdmin = (function () {
 
             try {
                 const res = await fetch(`${API_BASE}/api/dashboard/franchisee/shipments`, {
-                    credentials: 'include',
-                    headers: getAuthHeaders()
+                    headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers: getAuthHeaders()
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -480,8 +425,7 @@ window.MoveXAdmin = (function () {
 
             try {
                 const res = await fetch(`${API_BASE}/api/dashboard/franchisee/pickup-requests`, {
-                    credentials: 'include',
-                    headers: getAuthHeaders()
+                    headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers: getAuthHeaders()
                 });
                 const data = await res.json();
                 if (data.success && data.requests) {
@@ -537,8 +481,7 @@ window.MoveXAdmin = (function () {
 
             try {
                 const res = await fetch(`${API_BASE}/api/dashboard/franchisee/staff`, {
-                    credentials: 'include',
-                    headers: getAuthHeaders()
+                    headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers: getAuthHeaders()
                 });
                 const data = await res.json();
                 if (data.success && tbody) {
@@ -586,8 +529,7 @@ window.MoveXAdmin = (function () {
             try {
                 // 1. Fetch Stats
                 const res = await fetch(`${API_BASE}/api/dashboard/franchisee/stats`, {
-                    credentials: 'include',
-                    headers: getAuthHeaders()
+                    headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers: getAuthHeaders()
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -597,8 +539,7 @@ window.MoveXAdmin = (function () {
 
                 // 2. Fetch Transactions (using shipments API)
                 const shipRes = await fetch(`${API_BASE}/api/dashboard/franchisee/shipments`, {
-                    credentials: 'include',
-                    headers: getAuthHeaders()
+                    headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers: getAuthHeaders()
                 });
                 const shipData = await shipRes.json();
                 if (shipData.success && tbody) {
@@ -647,8 +588,7 @@ window.MoveXAdmin = (function () {
 
                     try {
                         const res = await fetch(`${API_BASE}/api/me`, {
-                            method: 'PUT',
-                            credentials: 'include',
+                            method: 'PUT', headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                             headers: getAuthHeaders(),
                             body: JSON.stringify({ full_name, phone })
                         });
@@ -687,8 +627,7 @@ window.MoveXAdmin = (function () {
 
                     try {
                         const res = await fetch(`${API_BASE}/api/auth/change-password`, {
-                            method: 'POST',
-                            credentials: 'include',
+                            method: 'POST', headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                             headers: getAuthHeaders(),
                             body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
                         });
@@ -743,7 +682,7 @@ window.MoveXAdmin = (function () {
             // 1. Load Staff
             async function loadStaff() {
                 try {
-                    const res = await fetch(`${API_BASE}/api/dashboard/franchisee/staff`, { credentials: 'include', headers: getAuthHeaders() });
+                    const res = await fetch(`${API_BASE}/api/dashboard/franchisee/staff`, { headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers: getAuthHeaders() });
                     const data = await res.json();
                     const select = document.getElementById('staffSelect');
                     if (!select) return;
@@ -771,7 +710,7 @@ window.MoveXAdmin = (function () {
                 const tbody = document.getElementById('shipmentsTableBody');
                 if (!tbody) return;
                 try {
-                    const res = await fetch(`${API_BASE}/api/dashboard/franchisee/assignments/available`, { credentials: 'include', headers: getAuthHeaders() });
+                    const res = await fetch(`${API_BASE}/api/dashboard/franchisee/assignments/available`, { headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers: getAuthHeaders() });
                     const data = await res.json();
 
                     tbody.innerHTML = '';
@@ -854,8 +793,7 @@ window.MoveXAdmin = (function () {
 
                     try {
                         const res = await fetch(`${API_BASE}/api/dashboard/franchisee/assign`, {
-                            method: 'POST',
-                            credentials: 'include',
+                            method: 'POST', headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                             headers: getAuthHeaders(),
                             body: JSON.stringify({ staff_id: staffIds, tracking_ids: trackingIds })
                         });
@@ -920,8 +858,7 @@ window.MoveXAdmin = (function () {
 
                     try {
                         const res = await fetch(`${API_BASE}/api/dashboard/franchisee/staff/create`, {
-                            method: 'POST',
-                            credentials: 'include',
+                            method: 'POST', headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                             headers: getAuthHeaders(),
                             body: JSON.stringify(data)
                         });
@@ -971,8 +908,7 @@ window.MoveXAdmin = (function () {
 
                     try {
                         const res = await fetch(`${API_BASE}/api/dashboard/franchisee/staff/update`, {
-                            method: 'POST',
-                            credentials: 'include',
+                            method: 'POST', headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                             headers: getAuthHeaders(),
                             body: JSON.stringify(updateData)
                         });
@@ -998,8 +934,7 @@ window.MoveXAdmin = (function () {
 
         try {
             const res = await fetch(`${API_BASE}/api/dashboard/franchisee/staff/status`, {
-                method: 'POST',
-                credentials: 'include',
+                method: 'POST', headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ user_id: userId, status: newStatus })
             });
@@ -1047,8 +982,7 @@ window.MoveXAdmin = (function () {
 
                     try {
                         const res = await fetch(`${API_BASE}/api/dashboard/franchisee/pickup-requests/${action}`, {
-                            method: 'POST',
-                            credentials: 'include',
+                            method: 'POST', headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                             headers: getAuthHeaders(),
                             body: JSON.stringify({ id, remarks, weight, price })
                         });

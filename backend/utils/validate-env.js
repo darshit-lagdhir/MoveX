@@ -29,16 +29,7 @@ const ENV_SCHEMA = {
     // CRITICAL - App will exit if missing in production
     // ─────────────────────────────────────────────────────────
     critical: [
-        {
-            name: 'JWT_SECRET',
-            minLength: 32,
-            description: 'Secret for signing JWT tokens'
-        },
-        {
-            name: 'SESSION_SECRET',
-            minLength: 32,
-            description: 'Secret for signing session cookies'
-        }
+        // JWT and Sessions removed - only hashing is used for security
     ],
 
     // ─────────────────────────────────────────────────────────

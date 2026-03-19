@@ -17,10 +17,9 @@
     if (session) {
       try {
         const data = JSON.parse(session);
-        if (data && data.data && data.data.token) {
-          const token = data.data.token;
-          // Role is directly at data.data.role, NOT data.data.user.role
+        if (data && data.data && data.data.username) {
           const storedRole = data.data.role || 'user';
+          const storedUsername = data.data.username;
           const dashboards = {
             admin: '/dashboards/admin/admin-dashboard.html',
             franchisee: '/dashboards/franchisee/franchisee-dashboard.html',
@@ -28,20 +27,18 @@
             user: '/dashboards/user/user-dashboard.html'
           };
 
-          // Verify session with backend and get authoritative role
+          // Verify user still exists on backend
           fetch(`${API_BASE}/api/me`, {
             method: 'GET',
-            credentials: 'include',
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'X-User-Username': storedUsername }
           }).then(res => {
             if (res.ok) {
               return res.json();
             } else {
               sessionStorage.removeItem('movexsecuresession');
-              throw new Error('Session invalid');
+              throw new Error('Invalid');
             }
           }).then(result => {
-            // Use role from backend response (most reliable)
             const role = result.user?.role || storedRole;
             window.location.href = dashboards[role] || dashboards.user;
           }).catch(() => {
@@ -50,7 +47,6 @@
           });
         }
       } catch (e) {
-        console.warn("Invalid session format", e);
         sessionStorage.removeItem('movexsecuresession');
       }
     }
@@ -338,14 +334,12 @@
         showNotification('Login successful!', 'success');
         triggerConfetti();
 
-        // Store session for cross-origin token auth fallback
+        // Store user info in sessionStorage (no token, no JWT)
         const user = data.user || {};
-        const token = data.token || '';
         const session = {
           isLoggedIn: true,
           role: user.role,
           username: user.username,
-          token,
           loginTime: Date.now()
         };
         sessionStorage.setItem('movexsecuresession', JSON.stringify({ data: session }));

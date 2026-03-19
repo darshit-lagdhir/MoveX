@@ -18,7 +18,7 @@ const StaffCore = {
 
         if (!hPending) return; // Not on dashboard page
 
-        fetch(`${API_URL}/api/dashboard/staff/stats`, { credentials: 'include' })
+        fetch(`${API_URL}/api/dashboard/staff/stats`, { headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' } })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -35,7 +35,7 @@ const StaffCore = {
         const tbody = document.getElementById('tasksTableBody');
         if (!tbody) return;
 
-        fetch(`${API_URL}/api/dashboard/staff/shipments`, { credentials: 'include' })
+        fetch(`${API_URL}/api/dashboard/staff/shipments`, { headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' } })
             .then(res => {
                 if (!res.ok) throw new Error(`Server Error: ${res.status}`);
                 return res.json();
@@ -159,8 +159,7 @@ const StaffCore = {
 
         try {
             const res = await fetch(`${API_URL}/api/dashboard/staff/shipments/bulk-update`, {
-                method: 'POST',
-                credentials: 'include',
+                method: 'POST', headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ tracking_ids: trackingIds, status: newStatus })
             });
@@ -250,8 +249,7 @@ const StaffCore = {
         }
 
         fetch(`${API_URL}/api/dashboard/staff/shipments/update-status`, {
-            method: 'POST',
-            credentials: 'include',
+            method: 'POST', headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
             headers: {
                 'Content-Type': 'application/json'
             },

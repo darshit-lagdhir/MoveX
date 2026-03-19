@@ -368,9 +368,8 @@ window.MoveXAdmin = (function () {
             } else {
                 try {
                     const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                    const token = session.data?.token;
-                    const headers = { 'Content-Type': 'application/json' };
-                    if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
                     const res = await fetch(`${API_BASE}/api/me`, { headers });
                     const data = await res.json();
@@ -393,9 +392,8 @@ window.MoveXAdmin = (function () {
 
                     try {
                         const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                        const token = session.data?.token;
-                        const headers = { 'Content-Type': 'application/json' };
-                        if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
                         const res = await fetch(`${API_BASE}/api/me`, {
                             method: 'PUT',
@@ -450,9 +448,8 @@ window.MoveXAdmin = (function () {
 
                     try {
                         const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                        const token = session.data?.token;
-                        const headers = { 'Content-Type': 'application/json' };
-                        if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
                         const res = await fetch(`${API_BASE}/api/auth/change-password`, {
                             method: 'POST',
@@ -490,13 +487,11 @@ window.MoveXAdmin = (function () {
             const fetchUsers = async () => {
                 try {
                     const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                    const token = session.data?.token;
-                    const headers = { 'Content-Type': 'application/json' };
-                    if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
                     const res = await fetch(`${API_BASE}/api/dashboard/admin/users`, {
-                        credentials: 'include',
-                        headers: headers
+                        headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers: headers
                     });
                     const data = await res.json();
                     if (data.success) {
@@ -550,14 +545,12 @@ window.MoveXAdmin = (function () {
 
                                 try {
                                     const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                                    const token = session.data?.token;
-                                    const headers = { 'Content-Type': 'application/json' };
-                                    if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
                                     const res = await fetch(`${API_BASE}/api/dashboard/admin/users/create`, {
                                         method: 'POST',
-                                        headers: headers,
-                                        credentials: 'include',
+                                        headers: headers, headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                                         body: JSON.stringify({ full_name, username, password, role, phone })
                                     });
                                     const data = await res.json();
@@ -621,9 +614,8 @@ window.MoveXAdmin = (function () {
 
                 try {
                     const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                    const token = session.data?.token;
-                    const headers = { 'Content-Type': 'application/json' };
-                    if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
                     let url = `${API_BASE}/api/dashboard/admin/reports/stats`;
                     if (start && end) {
@@ -634,8 +626,7 @@ window.MoveXAdmin = (function () {
                     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
                     const res = await fetch(url, {
-                        credentials: 'include',
-                        headers: headers,
+                        headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers: headers,
                         signal: controller.signal
                     });
                     clearTimeout(timeoutId);
@@ -700,13 +691,11 @@ window.MoveXAdmin = (function () {
             const fetchStats = async () => {
                 try {
                     const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                    const token = session.data?.token;
-                    const headers = { 'Content-Type': 'application/json' };
-                    if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
                     const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises/stats`, {
-                        credentials: 'include',
-                        headers: headers
+                        headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers: headers
                     });
                     const data = await res.json();
                     if (data.success) {
@@ -729,13 +718,11 @@ window.MoveXAdmin = (function () {
             const fetchFranchises = async () => {
                 try {
                     const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                    const token = session.data?.token;
-                    const headers = { 'Content-Type': 'application/json' };
-                    if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
                     const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises`, {
-                        credentials: 'include',
-                        headers: headers
+                        headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers: headers
                     });
                     const data = await res.json();
                     if (data.success) {
@@ -825,14 +812,12 @@ window.MoveXAdmin = (function () {
 
                                 try {
                                     const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                                    const token = session.data?.token;
-                                    const headers = { 'Content-Type': 'application/json' };
-                                    if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
                                     const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises/create`, {
                                         method: 'POST',
-                                        headers: headers,
-                                        credentials: 'include',
+                                        headers: headers, headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                                         body: JSON.stringify({ name, full_address, non_serviceable_areas, pincodes, owner_name, owner_username, owner_password, owner_phone })
                                     });
                                     const data = await res.json();
@@ -919,13 +904,11 @@ window.MoveXAdmin = (function () {
 
             // Get token from sessionStorage for cross-origin auth
             const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-            const token = session.data?.token;
-            const headers = { 'Content-Type': 'application/json' };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
             fetch(`${API_BASE}/api/dashboard/admin/shipments?limit=1000`, {
-                credentials: 'include',
-                headers: headers
+                headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers: headers
             })
                 .then(res => res.json())
                 .then(data => {
@@ -993,13 +976,11 @@ window.MoveXAdmin = (function () {
             const fetchStaff = async () => {
                 try {
                     const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                    const token = session.data?.token;
-                    const headers = { 'Content-Type': 'application/json' };
-                    if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
                     const res = await fetch(`${API_BASE}/api/dashboard/admin/staff`, {
-                        credentials: 'include',
-                        headers: headers
+                        headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers: headers
                     });
                     const data = await res.json();
                     if (data.success) {
@@ -1056,12 +1037,11 @@ window.MoveXAdmin = (function () {
             const fetchFinance = async () => {
                 try {
                     const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                    const token = session.data?.token;
-                    const headers = { 'Content-Type': 'application/json' };
-                    if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
                     // 1. Fetch Stats
-                    const statsRes = await fetch(`${API_BASE}/api/dashboard/admin/finance/stats`, { credentials: 'include', headers });
+                    const statsRes = await fetch(`${API_BASE}/api/dashboard/admin/finance/stats`, { headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers });
                     const statsData = await statsRes.json();
 
                     if (statsData.success) {
@@ -1072,7 +1052,7 @@ window.MoveXAdmin = (function () {
                     }
 
                     // 2. Fetch Transactions
-                    const transRes = await fetch(`${API_BASE}/api/dashboard/admin/finance/transactions`, { credentials: 'include', headers });
+                    const transRes = await fetch(`${API_BASE}/api/dashboard/admin/finance/transactions`, { headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }, headers });
                     const transData = await transRes.json();
 
                     if (transData.success) {
@@ -1638,13 +1618,11 @@ window.MoveXAdmin = (function () {
 
                 try {
                     const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                    const token = session.data?.token;
-                    const headers = { 'Content-Type': 'application/json' };
-                    if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
                     const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises/status`, {
-                        method: 'POST',
-                        credentials: 'include',
+                        method: 'POST', headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                         headers: headers,
                         body: JSON.stringify({ id, status: newStatus })
                     });
@@ -1672,13 +1650,11 @@ window.MoveXAdmin = (function () {
 
                 try {
                     const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                    const token = session.data?.token;
-                    const headers = { 'Content-Type': 'application/json' };
-                    if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
                     const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises/${id}`, {
-                        method: 'DELETE',
-                        credentials: 'include',
+                        method: 'DELETE', headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                         headers: headers
                     });
                     const result = await res.json();
@@ -1747,13 +1723,11 @@ window.MoveXAdmin = (function () {
 
                             try {
                                 const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                                const token = session.data?.token;
-                                const headers = { 'Content-Type': 'application/json' };
-                                if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
                                 const res = await fetch(`${API_BASE}/api/dashboard/admin/franchises/update`, {
-                                    method: 'POST',
-                                    credentials: 'include',
+                                    method: 'POST', headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                                     headers: headers,
                                     body: JSON.stringify({
                                         id: f.organization_id,
@@ -1941,14 +1915,12 @@ window.MoveXAdmin = (function () {
 
                     try {
                         const session = JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}');
-                        const token = session.data?.token;
-                        const headers = { 'Content-Type': 'application/json' };
-                        if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (session.data?.username) headers['X-User-Username'] = session.data.username;
 
                         const res = await fetch(`${API_BASE}/api/dashboard/admin/shipments/create`, {
                             method: 'POST',
-                            headers: headers,
-                            credentials: 'include',
+                            headers: headers, headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' },
                             body: JSON.stringify(payload)
                         });
 

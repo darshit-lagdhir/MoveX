@@ -47,7 +47,7 @@ const UserCore = {
 
         if (!hTotal) return;
 
-        fetch(`${window.API_URL}/api/dashboard/user/stats`, { credentials: 'include' })
+        fetch(`${window.API_URL}/api/dashboard/user/stats`, { headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' } })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -64,7 +64,7 @@ const UserCore = {
         const tbody = document.getElementById('recentShipmentsBody');
         if (!tbody) return;
 
-        fetch(`${window.API_URL}/api/dashboard/user/shipments`, { credentials: 'include' })
+        fetch(`${window.API_URL}/api/dashboard/user/shipments`, { headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' } })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -84,7 +84,7 @@ const UserCore = {
         const tbody = document.getElementById('fullShipmentsBody');
         if (!tbody) return;
 
-        fetch(`${window.API_URL}/api/dashboard/user/shipments`, { credentials: 'include' })
+        fetch(`${window.API_URL}/api/dashboard/user/shipments`, { headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' } })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -168,7 +168,7 @@ const UserCore = {
         if (!container) return;
 
         try {
-            const res = await fetch(`${window.API_URL}/api/dashboard/user/shipments`, { credentials: 'include' });
+            const res = await fetch(`${window.API_URL}/api/dashboard/user/shipments`, { headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' } });
             const data = await res.json();
             if (data.success) {
                 const shipment = data.shipments.find(s => s.id === tid || s.tracking_id === tid);
@@ -261,7 +261,7 @@ const UserCore = {
     // --- PROFILE PAGE LOGIC ---
     loadProfileData: async function () {
         try {
-            const res = await fetch(`${window.API_URL}/api/me`, { credentials: 'include' });
+            const res = await fetch(`${window.API_URL}/api/me`, { headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' } });
             const data = await res.json();
             if (data.success) {
                 const fullNameInput = document.getElementById('profile_full_name');
@@ -297,8 +297,7 @@ const UserCore = {
                     const res = await fetch(`${window.API_URL}/api/me`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                        credentials: 'include'
+                        body: JSON.stringify(payload), headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }
                     });
                     const data = await res.json();
                     if (data.success) {
@@ -334,8 +333,7 @@ const UserCore = {
                     const res = await fetch(`${window.API_URL}/api/auth/change-password`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass }),
-                        credentials: 'include'
+                        body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass }), headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }
                     });
                     const data = await res.json();
                     if (data.success) {
@@ -390,8 +388,7 @@ const UserCore = {
                     const res = await fetch(`${window.API_URL}/api/dashboard/user/shipments/create`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                        credentials: 'include'
+                        body: JSON.stringify(payload), headers: { 'X-User-Username': JSON.parse(sessionStorage.getItem('movexsecuresession') || '{}').data?.username || '' }
                     });
                     const data = await res.json();
 

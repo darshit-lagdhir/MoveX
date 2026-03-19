@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../src/config/db');
-const { validateSession, requireRole, clearSessionCookie } = require('../src/sessionMiddleware');
-const sessionStore = require('../src/session'); // Needed for logout
+const { validateSession, requireRole } = require('../src/sessionMiddleware');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 
 // --- RECOVERY/MIGRATION: Ensure staff columns exist ---
 // Delayed execution to allow DB pool to stabilize
