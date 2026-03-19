@@ -30,7 +30,10 @@ const app = express();
 // ═══════════════════════════════════════════════════════════
 // CORS & MIDDLEWARE
 // ═══════════════════════════════════════════════════════════
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ 
+  origin: '*', // Allow all origins since we don't use cookies anymore
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Username']
+}));
 app.use(express.json({ limit: '10kb' }));
 
 // Security Headers
@@ -66,10 +69,6 @@ app.use('/api/shipments', shipmentRoutes);
 app.get('/api/logout-redirect', (req, res) => {
   res.redirect('/?logout=true');
 });
-
-// Health Check
-const healthRoutes = require('../routes/health');
-app.use('/api/health', healthRoutes);
 
 // ═══════════════════════════════════════════════════════════
 // ERROR HANDLERS
