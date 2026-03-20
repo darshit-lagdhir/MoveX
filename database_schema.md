@@ -28,7 +28,6 @@
 | `destination_address` | `text` | NULL |
 | `status` | `character varying(50)` | DEFAULT 'pending' |
 | `current_location` | `character varying(100)` | NULL |
-| `estimated_delivery` | `timestamp with time zone` | NULL |
 | `price` | `numeric(10, 2)` | DEFAULT 0.00 |
 | `created_at` | `timestamp with time zone` | DEFAULT now() |
 | `updated_at` | `timestamp with time zone` | DEFAULT now() |
@@ -61,8 +60,6 @@
 | `organization_id` | `bigint` | FOREIGN KEY (organizations) |
 | `full_name` | `character varying(100)` | NULL |
 | `phone` | `character varying(50)` | CHECK (10 digits) |
-| `staff_role` | `text` | NULL |
-| `staff_status` | `text` | DEFAULT 'Active' |
 
 ---
 

@@ -351,10 +351,8 @@
             <div class="a" id="a-usr-role" style="left: 57%; top: 33%;">role</div>
             <div class="a" id="a-usr-status" style="left: 48%; top: 36%;">status</div>
             <div class="a" id="a-usr-security" style="left: 38%; top: 36%;">security_answers</div>
-            <div class="a" id="a-usr-staffrole" style="left: 30%; top: 32%;">staff_role</div>
             <div class="a" id="a-usr-created" style="left: 30%; top: 28%;">created_at</div>
             <div class="a" id="a-usr-updated" style="left: 32%; top: 40%;">updated_at</div>
-            <div class="a" id="a-usr-staffstatus" style="left: 32%; top: 35%;">staff_status</div>
             <div class="a" id="a-usr-login" style="left: 32%; top: 18%;">last_login_at</div>
             <div class="a fk" id="a-usr-orgid" style="left: 35%; top: 12%;"><span>organization_id</span></div>
 
@@ -416,7 +414,6 @@
             <div class="a" id="a-ship-recvphone" style="left: 78%; top: 86%;">receiver_phone</div>
             <div class="a" id="a-ship-recvaddr" style="left: 72%; top: 92%;">receiver_address</div>
             <div class="a" id="a-ship-recvpin" style="left: 62%; top: 92%;">receiver_pincode</div>
-            <div class="a" id="a-ship-estdel" style="left: 52%; top: 94%;">estimated_delivery</div>
             <div class="a fk" id="a-ship-staffid" style="left: 45%; top: 96%;"><span>assigned_staff_id</span></div>
 
 
@@ -483,8 +480,8 @@
 
             // Users attrs
             ['a-usr-username', 'a-usr-id', 'a-usr-fullname', 'a-usr-phone', 'a-usr-password',
-                'a-usr-role', 'a-usr-status', 'a-usr-security', 'a-usr-staffrole', 'a-usr-created',
-                'a-usr-login', 'a-usr-orgid', 'a-usr-updated', 'a-usr-staffstatus']
+                'a-usr-role', 'a-usr-status', 'a-usr-security', 'a-usr-created',
+                'a-usr-login', 'a-usr-orgid', 'a-usr-updated']
                 .forEach(a => line(a, 'e-users'));
 
 
@@ -498,7 +495,7 @@
                 'a-ship-dest', 'a-ship-created', 'a-ship-updated', 'a-ship-currloc', 'a-ship-sendername',
                 'a-ship-senderphone', 'a-ship-senderaddr', 'a-ship-senderpin',
                 'a-ship-recvname', 'a-ship-recvphone', 'a-ship-recvaddr',
-                'a-ship-recvpin', 'a-ship-estdel', 'a-ship-creator', 'a-ship-orgid', 'a-ship-staffid']
+                'a-ship-recvpin', 'a-ship-creator', 'a-ship-orgid', 'a-ship-staffid']
                 .forEach(a => line(a, 'e-shipments'));
 
 
