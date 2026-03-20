@@ -335,7 +335,6 @@
             <div class="a" id="a-org-status" style="left: 21%; top: 20%;">status</div>
             <div class="a" id="a-org-pincodes" style="left: 20%; top: 28%;">pincodes</div>
             <div class="a" id="a-org-address" style="left: 13%; top: 35%;">full_address</div>
-            <div class="a" id="a-org-perf" style="left: 3%; top: 34%;">performance</div>
             <div class="a" id="a-org-created" style="left: 1%; top: 26%;">created_at</div>
             <div class="a" id="a-org-updated" style="left: 1%; top: 30%;">updated_at</div>
             <div class="a" id="a-org-nonserv" style="left: 18%; top: 34%;">non_serviceable_areas</div>
@@ -368,24 +367,7 @@
             <div class="c" style="left: 33%; top: 23%;">1</div>
 
 
-            <!-- ═══════════ SESSIONS (Weak Entity) ═══════════ -->
-            <div class="e weak" id="e-sessions" style="left: 80%; top: 24%;">Sessions</div>
 
-            <div class="a pk" id="a-sess-id" style="left: 76%; top: 11%;"><span>session_id</span></div>
-            <div class="a" id="a-sess-token" style="left: 83%; top: 9%;">token</div>
-            <div class="a" id="a-sess-role" style="left: 90%; top: 13%;">role</div>
-            <div class="a" id="a-sess-expires" style="left: 93%; top: 21%;">expires_at</div>
-            <div class="a" id="a-sess-created" style="left: 92%; top: 29%;">created_at</div>
-            <div class="a" id="a-sess-last" style="left: 86%; top: 35%;">last_accessed_at</div>
-            <div class="a fk" id="a-sess-username" style="left: 77%; top: 35%;"><span>username</span></div>
-
-
-            <!-- ═══════════ CREATES (Users → Sessions) ═══════════ -->
-            <div class="r id" id="r-creates-sess" style="left: 64%; top: 21%;">
-                <div class="r-box"><span class="r-text">Creates</span></div>
-            </div>
-            <div class="c" style="left: 60%; top: 23%;">1</div>
-            <div class="c" style="left: 71%; top: 23%;">N</div>
 
 
             <!-- ═══════════ PASSWORD_RESETS (Weak Entity) ═══════════ -->
@@ -435,6 +417,7 @@
             <div class="a" id="a-ship-recvaddr" style="left: 72%; top: 92%;">receiver_address</div>
             <div class="a" id="a-ship-recvpin" style="left: 62%; top: 92%;">receiver_pincode</div>
             <div class="a" id="a-ship-estdel" style="left: 52%; top: 94%;">estimated_delivery</div>
+            <div class="a fk" id="a-ship-staffid" style="left: 45%; top: 96%;"><span>assigned_staff_id</span></div>
 
 
             <!-- ═══════════ CREATES (Users → Shipments) ═══════════ -->
@@ -458,7 +441,7 @@
 
             <!-- Footer -->
             <div class="footer">
-                <strong>PRIMARY KEYS:</strong> username (users), organization_id (organizations), session_id (sessions),
+                <strong>PRIMARY KEYS:</strong> username (users), organization_id (organizations),
                 reset_id (password_resets), tracking_id (shipments) &nbsp;|&nbsp;
                 <strong>FOREIGN KEYS:</strong> organization_id → organizations, username → users, creator_username →
                 users
@@ -495,7 +478,7 @@
 
             // Organization attrs
             ['a-org-id', 'a-org-name', 'a-org-type', 'a-org-status', 'a-org-pincodes',
-                'a-org-address', 'a-org-perf', 'a-org-created', 'a-org-updated', 'a-org-nonserv']
+                'a-org-address', 'a-org-created', 'a-org-updated', 'a-org-nonserv']
                 .forEach(a => line(a, 'e-org'));
 
             // Users attrs
@@ -504,10 +487,7 @@
                 'a-usr-login', 'a-usr-orgid', 'a-usr-updated', 'a-usr-staffstatus']
                 .forEach(a => line(a, 'e-users'));
 
-            // Sessions attrs
-            ['a-sess-id', 'a-sess-token', 'a-sess-role', 'a-sess-expires', 'a-sess-created',
-                'a-sess-last', 'a-sess-username']
-                .forEach(a => line(a, 'e-sessions'));
+
 
             // Password attrs
             ['a-pass-id', 'a-pass-token', 'a-pass-expires', 'a-pass-used', 'a-pass-created', 'a-pass-username']
@@ -518,7 +498,7 @@
                 'a-ship-dest', 'a-ship-created', 'a-ship-updated', 'a-ship-currloc', 'a-ship-sendername',
                 'a-ship-senderphone', 'a-ship-senderaddr', 'a-ship-senderpin',
                 'a-ship-recvname', 'a-ship-recvphone', 'a-ship-recvaddr',
-                'a-ship-recvpin', 'a-ship-estdel', 'a-ship-creator', 'a-ship-orgid']
+                'a-ship-recvpin', 'a-ship-estdel', 'a-ship-creator', 'a-ship-orgid', 'a-ship-staffid']
                 .forEach(a => line(a, 'e-shipments'));
 
 
@@ -529,9 +509,7 @@
             line('e-org', 'r-belongs', true, '#1565C0');
             line('r-belongs', 'e-users', true, '#1565C0');
 
-            // Users ←── Creates ──→ Sessions (Identifying)
-            line('e-users', 'r-creates-sess', true, '#AD1457');
-            line('r-creates-sess', 'e-sessions', true, '#AD1457');
+
 
             // Users ←── Requests ──→ Password_Resets (Identifying)
             line('e-users', 'r-requests', true, '#AD1457');
