@@ -4,21 +4,16 @@ const db = require('../src/config/db');
 const { validateSession, requireRole } = require('../src/sessionMiddleware');
 const bcrypt = require('bcrypt');
 
-// --- RECOVERY/MIGRATION: Ensure staff columns exist ---
-// Delayed execution to allow DB pool to stabilize
+// Consolidate any outdated role metadata
 setTimeout(async () => {
     try {
-        await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_role TEXT;`);
-        await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_status TEXT DEFAULT 'Active';`);
-        // Consolidate all staff roles into one 'Staff' role per user request
-        const consolidate = await db.query(`UPDATE users SET staff_role = 'Staff' WHERE role = 'staff' OR staff_role IS NOT NULL;`);
+        const consolidate = await db.query(`UPDATE users SET role = 'staff' WHERE role = 'staff';`);
         if (consolidate.rowCount > 0) {
-            console.log(`[Migration] Unified ${consolidate.rowCount} staff roles to 'Staff'`);
+            console.log(`[Migration] Verified ${consolidate.rowCount} staff roles.`);
         }
-        await db.query(`ALTER TABLE shipments ADD COLUMN IF NOT EXISTS assigned_staff_id INTEGER;`);
     } catch (e) {
         if (process.env.NODE_ENV !== 'production') {
-            console.error('[Migration] Column migration failed:', e.message);
+            console.error('[Migration] Migration check failed:', e.message);
         }
     }
 }, 5000);
@@ -318,7 +313,7 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
     sender_name, sender_phone, sender_address, sender_pincode,
     receiver_name, receiver_phone, receiver_address, receiver_pincode,
     origin_address, destination_address,
-    price, weight, created_at, updated_at, estimated_delivery
+    price, weight, created_at, updated_at
             FROM shipments 
             ORDER BY created_at DESC 
         `;
@@ -352,8 +347,7 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
             full_destination: row.destination_address,
             weight: parseFloat(row.weight || 1.0),
             created_at: row.created_at,
-            updated_at: row.updated_at || row.created_at,
-            estimated_delivery: row.estimated_delivery
+            updated_at: row.updated_at || row.created_at
         }));
 
         res.json({ success: true, shipments });
@@ -446,8 +440,8 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
                 sender_name, sender_phone, sender_address, sender_pincode,
                 receiver_name, receiver_phone, receiver_address, receiver_pincode,
                 origin_address, destination_address,
-                price, weight, contents, status, created_at, estimated_delivery
-            ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'pending', NOW(), $15)
+                price, weight, contents, status, created_at
+            ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'pending', NOW())
             RETURNING shipment_id, tracking_id
         `;
 
@@ -456,7 +450,7 @@ router.post('/admin/shipments/create', validateSession, requireRole('admin'), as
             sender_name, sender_phone, sender_address, sender_pincode,
             receiver_name, receiver_phone, receiver_address, receiver_pincode,
             origin_address, destination_address,
-            parseFloat(price), parseFloat(weight || 1.0), contents || '', deliveryDate
+            parseFloat(price), parseFloat(weight || 1.0), contents || ''
         ];
 
         const result = await db.query(queryText, values);
@@ -599,11 +593,6 @@ router.post('/admin/users/status', validateSession, requireRole('admin'), async 
 
         await db.query('UPDATE users SET status = $1 WHERE username = $2', [status, username]);
 
-        // If disabling, kill their sessions
-        if (status === 'disabled') {
-            await sessionStore.destroySessionsForUser(username);
-        }
-
         res.json({ success: true, message: `User ${status} ` });
     } catch (err) {
         console.error("Update User Status Error:", err);
@@ -621,9 +610,6 @@ router.post('/admin/users/reset-password', validateSession, requireRole('admin')
 
         const hash = await bcrypt.hash(password, 12);
         await db.query('UPDATE users SET password_hash = $1 WHERE username = $2', [hash, username]);
-
-        // Kill sessions so they must re-login with new password
-        await sessionStore.destroySessionsForUser(username);
 
         res.json({ success: true, message: 'Password reset successfully' });
     } catch (err) {
@@ -824,13 +810,13 @@ router.post('/admin/franchises/update', validateSession, requireRole('admin'), a
             }
 
             if (updates.length > 0) {
-                values.push(id); // $i is current index, but we pushed i++ above. 
-                // Wait, if updates.length is 3, i is 4. values[3] is id. So it's $4. Correct.
+                values.push(id);
+                // Correct index is values.length
                 await client.query(`
                     UPDATE users 
                     SET ${updates.join(', ')}, updated_at = NOW() 
-                    WHERE organization_id = $${i} AND role = 'franchisee'
-    `, values);
+                    WHERE organization_id = $${values.length} AND role = 'franchisee'
+                `, values);
             }
         }
 
@@ -845,43 +831,10 @@ router.post('/admin/franchises/update', validateSession, requireRole('admin'), a
     }
 });
 
+// Logout - destroy current session only (Header based)
 router.post('/logout', async (req, res) => {
-    // 1. Destroy JWT Cookie (if any)
-    res.clearCookie('movex_session', { path: '/' });
-
-    try {
-        // 2. Destroy Server Session via Cookie (Primary method)
-        const sid = req.cookies?.['movex.sid'];
-        if (sid) {
-            console.log(`[Logout] Destroying session: ${sid} `);
-            await sessionStore.destroySession(sid);
-        } else {
-            // 3. FALLBACK: Destroy sessions by User ID if Bearer token is provided
-            // This is critical for Production environments (Koyeb/Cloudflare)
-            const authHeader = req.headers.authorization;
-            if (authHeader && authHeader.startsWith('Bearer ')) {
-                const token = authHeader.substring(7);
-                try {
-                    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-                    const userId = decoded.userId || decoded.id;
-                    if (userId) {
-                        console.log(`[Logout] Fallback: Destroying sessions for User ID: ${userId} `);
-                        await sessionStore.destroySessionsForUser(userId);
-                    }
-                } catch (jwtErr) {
-                    console.log('[Logout] Fallback JWT verification failed or expired');
-                }
-            } else {
-                console.log('[Logout] No session cookie or Bearer token found to destroy');
-            }
-        }
-    } catch (err) {
-        console.error("[Logout] Error during session destruction:", err);
-    }
-
-    // 4. Always clear the cookie with matching options
-    clearSessionCookie(res);
-
+    // With header-based auth, we just acknowledge the logout.
+    // The frontend will clear sessionStorage.
     res.json({ success: true, message: 'Logged out successfully' });
 });
 
@@ -941,7 +894,7 @@ o.pincodes LIKE '%,' || $2 || ',%'
 router.get('/admin/staff', validateSession, requireRole('admin'), async (req, res) => {
     try {
         const result = await db.query(`
-            SELECT u.user_id, u.full_name, u.username, u.staff_role, u.staff_status, u.phone, u.status as user_status,
+            SELECT u.user_id, u.full_name, u.username, u.phone, u.status as user_status,
     o.name as org_name, o.organization_id as org_id
             FROM users u
             LEFT JOIN organizations o ON u.organization_id = o.organization_id
@@ -959,7 +912,7 @@ router.get('/admin/staff', validateSession, requireRole('admin'), async (req, re
                 role: 'Staff',
                 org: s.org_name || 'Unassigned Hub',
                 org_id: s.org_id,
-                status: s.staff_status || 'Active',
+                status: 'Active',
                 user_status: s.user_status,
                 contact: s.phone || 'No Contact'
             }))
@@ -973,9 +926,9 @@ router.get('/admin/staff', validateSession, requireRole('admin'), async (req, re
 // Create Staff
 router.post('/admin/staff/create', validateSession, requireRole('admin'), async (req, res) => {
     try {
-        const { full_name, username, password, staff_role, phone, organization_id } = req.body;
+        const { full_name, username, password, phone, organization_id } = req.body;
 
-        if (!full_name || !username || !password || !staff_role) {
+        if (!full_name || !username || !password) {
             return res.status(400).json({ success: false, error: 'Mandatory fields missing' });
         }
 
@@ -992,9 +945,9 @@ router.post('/admin/staff/create', validateSession, requireRole('admin'), async 
         const hash = await bcrypt.hash(password, 12);
 
         await db.query(`
-            INSERT INTO users(full_name, username, password_hash, role, staff_role, phone, organization_id, status, staff_status)
-VALUES($1, $2, $3, 'staff', 'Staff', $4, $5, 'active', 'Active')
-    `, [full_name, username, hash, cleanPhone, organization_id || null]);
+            INSERT INTO users(full_name, username, password_hash, role, phone, organization_id, status)
+            VALUES($1, $2, $3, 'staff', $4, $5, 'active')
+        `, [full_name, username, hash, cleanPhone, organization_id || null]);
 
         res.json({ success: true, message: 'Staff member created successfully' });
     } catch (err) {
@@ -1006,8 +959,7 @@ VALUES($1, $2, $3, 'staff', 'Staff', $4, $5, 'active', 'Active')
 // Update Staff
 router.post('/admin/staff/update', validateSession, requireRole('admin'), async (req, res) => {
     try {
-        const { id, full_name, staff_role, phone, organization_id, staff_status } = req.body;
-
+        const { id, full_name, phone, organization_id } = req.body;
         if (!id) return res.status(400).json({ success: false, error: 'Staff ID is required' });
 
         const cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : null;
@@ -1018,13 +970,11 @@ router.post('/admin/staff/update', validateSession, requireRole('admin'), async 
         await db.query(`
             UPDATE users 
             SET full_name = COALESCE($1, full_name),
-    staff_role = 'Staff',
-    phone = $2,
-    organization_id = $3,
-    staff_status = COALESCE($4, staff_status),
-    updated_at = NOW()
-            WHERE user_id = $5 AND role = 'staff'
-    `, [full_name, cleanPhone, organization_id || null, staff_status, id]);
+                phone = $2,
+                organization_id = $3,
+                updated_at = NOW()
+            WHERE user_id = $4 AND role = 'staff'
+        `, [full_name, cleanPhone, organization_id || null, id]);
 
         res.json({ success: true, message: 'Staff updated successfully' });
     } catch (err) {
@@ -1051,17 +1001,7 @@ router.post('/admin/staff/status', validateSession, requireRole('admin'), async 
 
 // Logout - destroy current session only
 router.post('/logout', validateSession, async (req, res) => {
-    try {
-        const sid = req.cookies?.['movex.sid'];
-        if (sid) {
-            await sessionStore.destroySession(sid);
-        }
-        clearSessionCookie(res);
-        res.json({ success: true, message: 'Logged out successfully' });
-    } catch (err) {
-        console.error("Logout Error:", err);
-        res.status(500).json({ success: false, error: 'Logout failed' });
-    }
+    res.json({ success: true, message: 'Logged out successfully' });
 });
 
 // --- FINANCE & REVENUE ---
@@ -1269,7 +1209,7 @@ router.get('/franchisee/shipments', validateSession, requireRole('franchisee'), 
                 receiver_name, receiver_phone, receiver_address, receiver_pincode,
                 origin_address, destination_address,
                 price, weight,
-                created_at, updated_at, estimated_delivery,
+                created_at, updated_at,
                 organization_id
             FROM shipments 
             WHERE organization_id = $1 
@@ -1305,8 +1245,7 @@ router.get('/franchisee/shipments', validateSession, requireRole('franchisee'), 
             // Dates
             created_at: row.created_at,
             date: row.created_at,
-            updated_at: row.updated_at,
-            estimated_delivery: row.estimated_delivery
+            updated_at: row.updated_at
         }));
 
         res.json({ success: true, shipments });
@@ -1386,9 +1325,8 @@ router.get('/franchisee/staff', validateSession, requireRole('franchisee'), asyn
             name: row.full_name,
             username: row.username,
             phone: row.phone,
-            staff_role: row.staff_role || 'Staff',
-            role: row.staff_role || 'Staff',
-            status: row.staff_status || 'Active'
+            role: 'Staff',
+            status: 'Active'
         }));
 
         res.json({ success: true, staff });
@@ -1866,13 +1804,13 @@ router.get('/user/stats', validateSession, requireRole('user'), async (req, res)
 // Get User Shipments
 router.get('/user/shipments', validateSession, requireRole('user'), async (req, res) => {
     try {
-        const username = req.session.username;
+        const username = req.user.username; // Use verified username from middleware
 
         const result = await db.query(`
             SELECT tracking_id, sender_name, receiver_name, origin_address, destination_address, 
-                   status, price, weight, created_at, estimated_delivery
+                   status, price, weight, created_at
             FROM shipments 
-            WHERE creator_username = $1 
+            WHERE sender_phone = (SELECT phone FROM users WHERE username = $1)
             ORDER BY created_at DESC
         `, [username]);
 
@@ -1884,10 +1822,9 @@ router.get('/user/shipments', validateSession, requireRole('user'), async (req, 
             origin: row.origin_address,
             destination: row.destination_address,
             status: row.status.charAt(0).toUpperCase() + row.status.slice(1).replace('_', ' '),
-            price: parseFloat(row.price),
-            weight: parseFloat(row.weight),
-            date: row.created_at,
-            estimated_delivery: row.estimated_delivery
+            price: parseFloat(row.price || 0),
+            weight: parseFloat(row.weight || 0),
+            date: row.created_at
         }));
 
         res.json({ success: true, shipments });
