@@ -169,7 +169,7 @@
         <a class="nav-btn active" href="user_level1.html">User</a>
     </div>
     <div class="diagram-container">
-        <svg viewBox="0 0 1200 1060">
+        <svg viewBox="0 0 1200 950">
             <defs>
                 <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
                     <path d="M0,0 L6,3 L0,6 Z" fill="#64748b" />
@@ -177,140 +177,116 @@
             </defs>
 
             <!-- LEFT: USER ACTOR -->
-            <rect x="50" y="55" width="180" height="950" class="entity" />
-            <text x="140" y="510" class="text-main" style="font-size:18px;">CUSTOMER</text>
-            <text x="140" y="535" class="text-main" style="font-size:18px;">(USER)</text>
-            <text x="140" y="558" class="text-meta">Role: User</text>
+            <rect x="50" y="55" width="180" height="850" class="entity" />
+            <text x="140" y="470" class="text-main" style="font-size:18px;">CUSTOMER</text>
+            <text x="140" y="495" class="text-main" style="font-size:18px;">(USER)</text>
+            <text x="140" y="518" class="text-meta">Role: User</text>
 
             <!--
-                PROCESSES from actual user pages:
-                1.0 Register          → /api/auth/register (public, no login needed)
-                2.0 Login             → /api/auth/login
-                3.0 Book Shipment     → user-book.html → /api/dashboard/user/shipments/create
-                4.0 Track Shipment    → user-track.html → /api/dashboard/user/shipments (view list + details)
-                5.0 Profile           → user-profile.html → /api/me (GET/PUT) + /api/auth/change-password
-                6.0 Reset Password    → forgot-password flow → /api/auth/reset-password-security + /api/auth/reset-password
-
                 DATASTORES user actually touches:
                 D1: Users              → register, login, profile update
                 D2: Shipments          → book shipment, track shipment
                 D3: Password Resets    → forgot password (ONLY user role uses this)
             -->
 
-            <!-- 1.0 Register -->
-            <circle cx="500" cy="120" r="50" class="process" />
-            <text x="500" y="115" class="text-meta">1.0</text>
-            <text x="500" y="130" class="text-main" style="font-size:12px;">Register</text>
+            <!-- 1.0 Authentication (Merged Register/Login) -->
+            <circle cx="500" cy="150" r="50" class="process" />
+            <text x="500" y="145" class="text-meta">1.0</text>
+            <text x="500" y="160" class="text-main" style="font-size:11px;">Authentication</text>
 
-            <!-- 2.0 Login -->
-            <circle cx="500" cy="280" r="50" class="process" />
-            <text x="500" y="275" class="text-meta">2.0</text>
-            <text x="500" y="290" class="text-main" style="font-size:12px;">Login</text>
+            <!-- 2.0 Book Shipment -->
+            <circle cx="500" cy="320" r="50" class="process" />
+            <text x="500" y="315" class="text-meta">2.0</text>
+            <text x="500" y="330" class="text-main" style="font-size:12px;">Book Shipment</text>
 
-            <!-- 3.0 Book Shipment -->
-            <circle cx="500" cy="440" r="50" class="process" />
-            <text x="500" y="435" class="text-meta">3.0</text>
-            <text x="500" y="450" class="text-main" style="font-size:12px;">Book Shipment</text>
+            <!-- 3.0 Track Shipment -->
+            <circle cx="500" cy="490" r="50" class="process" />
+            <text x="500" y="485" class="text-meta">3.0</text>
+            <text x="500" y="500" class="text-main" style="font-size:12px;">Track Shipment</text>
 
-            <!-- 4.0 Track Shipment -->
-            <circle cx="500" cy="600" r="50" class="process" />
-            <text x="500" y="595" class="text-meta">4.0</text>
-            <text x="500" y="610" class="text-main" style="font-size:12px;">Track Shipment</text>
+            <!-- 4.0 Manage Profile -->
+            <circle cx="500" cy="660" r="50" class="process" />
+            <text x="500" y="655" class="text-meta">4.0</text>
+            <text x="500" y="670" class="text-main" style="font-size:12px;">Manage Profile</text>
 
-            <!-- 5.0 Profile -->
-            <circle cx="500" cy="760" r="50" class="process" />
-            <text x="500" y="755" class="text-meta">5.0</text>
-            <text x="500" y="770" class="text-main" style="font-size:12px;">Profile</text>
-
-            <!-- 6.0 Reset Password -->
-            <circle cx="500" cy="920" r="50" class="process" />
-            <text x="500" y="915" class="text-meta">6.0</text>
-            <text x="500" y="930" class="text-main" style="font-size:12px;">Reset Password</text>
+            <!-- 5.0 Reset Password -->
+            <circle cx="500" cy="830" r="50" class="process" />
+            <text x="500" y="825" class="text-meta">5.0</text>
+            <text x="500" y="840" class="text-main" style="font-size:12px;">Reset Password</text>
 
             <!-- DATASTORES (3 the user touches) -->
-            <path d="M 1100 95 H 900 V 155 H 1100" class="ds-line" />
-            <rect x="915" y="95" width="15" height="60" class="ds-bar" />
-            <text x="1010" y="130" class="text-main" style="font-size:13px;">D1: Users</text>
+            <path d="M 1100 120 H 900 V 180 H 1100" class="ds-line" />
+            <rect x="915" y="120" width="15" height="60" class="ds-bar" />
+            <text x="1010" y="155" class="text-main" style="font-size:13px;">D1: Users</text>
 
-            <path d="M 1100 255 H 900 V 315 H 1100" class="ds-line" />
-            <rect x="915" y="255" width="15" height="60" class="ds-bar" />
-            <text x="1010" y="290" class="text-main" style="font-size:13px;">D1: Users</text>
+            <path d="M 1100 290 H 900 V 350 H 1100" class="ds-line" />
+            <rect x="915" y="290" width="15" height="60" class="ds-bar" />
+            <text x="1010" y="325" class="text-main" style="font-size:13px;">D2: Shipments</text>
 
-            <path d="M 1100 415 H 900 V 475 H 1100" class="ds-line" />
-            <rect x="915" y="415" width="15" height="60" class="ds-bar" />
-            <text x="1010" y="450" class="text-main" style="font-size:13px;">D2: Shipments</text>
+            <path d="M 1100 460 H 900 V 520 H 1100" class="ds-line" />
+            <rect x="915" y="460" width="15" height="60" class="ds-bar" />
+            <text x="1010" y="495" class="text-main" style="font-size:13px;">D2: Shipments</text>
 
-            <path d="M 1100 575 H 900 V 635 H 1100" class="ds-line" />
-            <rect x="915" y="575" width="15" height="60" class="ds-bar" />
-            <text x="1010" y="610" class="text-main" style="font-size:13px;">D2: Shipments</text>
+            <path d="M 1100 630 H 900 V 690 H 1100" class="ds-line" />
+            <rect x="915" y="630" width="15" height="60" class="ds-bar" />
+            <text x="1010" y="665" class="text-main" style="font-size:13px;">D1: Users</text>
 
-            <path d="M 1100 735 H 900 V 795 H 1100" class="ds-line" />
-            <rect x="915" y="735" width="15" height="60" class="ds-bar" />
-            <text x="1010" y="770" class="text-main" style="font-size:13px;">D1: Users</text>
+            <path d="M 1100 800 H 900 V 860 H 1100" class="ds-line" />
+            <rect x="915" y="800" width="15" height="60" class="ds-bar" />
+            <text x="1010" y="835" class="text-main" style="font-size:13px;">D3: Password Resets</text>
 
-            <path d="M 1100 895 H 900 V 955 H 1100" class="ds-line" />
-            <rect x="915" y="895" width="15" height="60" class="ds-bar" />
-            <text x="1010" y="930" class="text-main" style="font-size:13px;">D3: Password Resets</text>
+            <!-- FLOWS -->
 
-            <!-- 1.0 Register -->
-            <path d="M 230 110 H 445" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="105" class="text-flow">Name, Username, Password</text>
-            <path d="M 445 130 H 230" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="145" class="text-flow">Account Created</text>
-            <path d="M 555 110 H 900" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="105" class="text-flow">Insert New User</text>
-            <path d="M 900 130 H 555" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="145" class="text-flow">User ID</text>
+            <!-- 1.0 Authentication -->
+            <path d="M 230 140 H 445" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="135" class="text-flow">Login/Register Details</text>
+            <path d="M 445 160 H 230" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="175" class="text-flow">Dashboard Access</text>
+            <path d="M 555 140 H 900" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="135" class="text-flow">Check Creds / Insert</text>
+            <path d="M 900 160 H 555" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="175" class="text-flow">User Status &amp; Detail</text>
 
-            <!-- 2.0 Login -->
-            <path d="M 230 270 H 445" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="265" class="text-flow">Username &amp; Password</text>
-            <path d="M 445 290 H 230" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="305" class="text-flow">Dashboard Access</text>
-            <path d="M 555 270 H 900" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="265" class="text-flow">Check Username &amp; Hash</text>
-            <path d="M 900 290 H 555" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="305" class="text-flow">User Role &amp; Status</text>
+            <!-- 2.0 Book Shipment -->
+            <path d="M 230 310 H 445" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="305" class="text-flow">Sender &amp; Receiver Details</text>
+            <path d="M 445 330 H 230" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="345" class="text-flow">Tracking ID</text>
+            <path d="M 555 310 H 900" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="305" class="text-flow">Insert Shipment</text>
+            <path d="M 900 330 H 555" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="345" class="text-flow">Saved Record</text>
 
-            <!-- 3.0 Book Shipment -->
-            <path d="M 230 430 H 445" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="425" class="text-flow">Sender &amp; Receiver Details</text>
-            <path d="M 445 450 H 230" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="465" class="text-flow">Tracking ID</text>
-            <path d="M 555 430 H 900" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="425" class="text-flow">Insert Shipment</text>
-            <path d="M 900 450 H 555" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="465" class="text-flow">Saved Record</text>
+            <!-- 3.0 Track Shipment -->
+            <path d="M 230 480 H 445" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="475" class="text-flow">Enter Tracking ID</text>
+            <path d="M 445 500 H 230" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="515" class="text-flow">Status &amp; Location</text>
+            <path d="M 555 480 H 900" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="475" class="text-flow">Find By Tracking ID</text>
+            <path d="M 900 500 H 555" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="515" class="text-flow">Shipment Record</text>
 
-            <!-- 4.0 Track Shipment -->
-            <path d="M 230 590 H 445" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="585" class="text-flow">Enter Tracking ID</text>
-            <path d="M 445 610 H 230" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="625" class="text-flow">Status &amp; Location</text>
-            <path d="M 555 590 H 900" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="585" class="text-flow">Find By Tracking ID</text>
-            <path d="M 900 610 H 555" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="625" class="text-flow">Shipment Record</text>
+            <!-- 4.0 Manage Profile -->
+            <path d="M 230 650 H 445" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="645" class="text-flow">Update Name / Phone / PW</text>
+            <path d="M 445 670 H 230" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="685" class="text-flow">Profile Info</text>
+            <path d="M 555 650 H 900" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="645" class="text-flow">Update Own Record</text>
+            <path d="M 900 670 H 555" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="685" class="text-flow">Name, Phone, Hash</text>
 
-            <!-- 5.0 Profile -->
-            <path d="M 230 750 H 445" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="745" class="text-flow">Update Name / Phone / PW</text>
-            <path d="M 445 770 H 230" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="785" class="text-flow">Profile Info</text>
-            <path d="M 555 750 H 900" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="745" class="text-flow">Update Own Record</text>
-            <path d="M 900 770 H 555" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="785" class="text-flow">Name, Phone, Hash</text>
+            <!-- 5.0 Reset Password -->
+            <path d="M 230 820 H 445" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="815" class="text-flow">Security Answers</text>
+            <path d="M 445 840 H 230" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="855" class="text-flow">Password Changed</text>
+            <path d="M 555 820 H 900" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="815" class="text-flow">Verify &amp; Save Token Hash</text>
+            <path d="M 900 840 H 555" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="855" class="text-flow">Token Hash Valid / Used</text>
 
-            <!-- 6.0 Reset Password (ONLY USER ROLE) -->
-            <path d="M 230 910 H 445" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="905" class="text-flow">Security Answers</text>
-            <path d="M 445 930 H 230" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="945" class="text-flow">Password Changed</text>
-            <path d="M 555 910 H 900" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="905" class="text-flow">Verify &amp; Save Token Hash</text>
-            <path d="M 900 930 H 555" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="945" class="text-flow">Token Hash Valid / Used</text>
         </svg>
     </div>
 </body>
