@@ -5,524 +5,353 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoveX - ER Diagram</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <style>
-        :root {
-            --entity-fill: #BBDEFB;
-            --entity-stroke: #1565C0;
-            --attr-fill: #FFF8E1;
-            --attr-stroke: #EF6C00;
-            --pk-fill: #FFECB3;
-            --pk-stroke: #FF8F00;
-            --fk-fill: #E8F5E9;
-            --fk-stroke: #43A047;
-            --rel-fill: #C8E6C9;
-            --rel-stroke: #2E7D32;
-            --weak-fill: #F8BBD9;
-            --weak-stroke: #AD1457;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            user-select: none;
         }
 
-        html,
         body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
             font-family: 'Outfit', sans-serif;
-            background: #FAFAFA;
-        }
-
-        .container {
+            background: #fff;
             width: 100vw;
             height: 100vh;
-            display: flex;
-            flex-direction: column;
             overflow: hidden;
         }
 
-        /* Title */
-        .title {
-            text-align: center;
-            padding: 5px;
-            background: white;
-            border-bottom: 2px solid #E0E0E0;
-            flex-shrink: 0;
-        }
-
-        .title h1 {
-            font-size: 16px;
-            color: #1565C0;
-        }
-
-        .title p {
-            font-size: 9px;
-            color: #666;
-        }
-
-        /* Legend */
-        .legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 14px;
-            justify-content: center;
-            padding: 5px 10px;
-            background: white;
-            border-bottom: 2px solid #E0E0E0;
-            font-size: 9px;
-            flex-shrink: 0;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .l-rect {
-            width: 20px;
-            height: 12px;
-            background: var(--entity-fill);
-            border: 1.5px solid var(--entity-stroke);
-        }
-
-        .l-weak {
-            width: 20px;
-            height: 12px;
-            background: var(--weak-fill);
-            border: 2px double var(--weak-stroke);
-        }
-
-        .l-oval {
-            width: 20px;
-            height: 12px;
-            background: var(--attr-fill);
-            border: 1px solid var(--attr-stroke);
-            border-radius: 50%;
-        }
-
-        .l-pk {
-            width: 20px;
-            height: 12px;
-            background: var(--pk-fill);
-            border: 1.5px solid var(--pk-stroke);
-            border-radius: 50%;
-        }
-
-        .l-fk {
-            width: 20px;
-            height: 12px;
-            background: var(--fk-fill);
-            border: 1.5px solid var(--fk-stroke);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 6px;
-        }
-
-        .l-fk::after {
-            content: "---";
-            text-decoration: underline dashed;
-            color: var(--fk-stroke);
-        }
-
-        .l-diamond {
-            width: 14px;
-            height: 14px;
-            background: var(--rel-fill);
-            border: 1.5px solid var(--rel-stroke);
-            transform: rotate(45deg);
-        }
-
-        .l-id-diamond {
-            width: 14px;
-            height: 14px;
-            background: var(--weak-fill);
-            border: 2px double var(--weak-stroke);
-            transform: rotate(45deg);
-        }
-
-        /* Canvas */
-        .canvas {
-            flex: 1;
+        #wrapper {
+            width: 100vw;
+            height: 100vh;
             position: relative;
-            background: white;
             overflow: hidden;
         }
 
-        .lines {
+        .canvas {
+            position: absolute;
+            width: 2400px;
+            height: 1400px;
+            transform-origin: top left;
+        }
+
+        svg#lines {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 1;
+            z-index: 5;
         }
 
-        /* Entity */
-        .e {
+        /* ENTITY BOX */
+        .E {
             position: absolute;
-            background: var(--entity-fill);
-            border: 2px solid var(--entity-stroke);
-            padding: 6px 12px;
-            font-weight: 700;
-            font-size: 10px;
+            transform: translate(-50%, -50%);
+            padding: 14px 32px;
+            border: 3px solid #1565C0;
+            background: #BBDEFB;
+            font-size: 17px;
+            font-weight: 900;
             color: #0D47A1;
-            z-index: 10;
             text-transform: uppercase;
+            z-index: 50;
+            border-radius: 5px;
             white-space: nowrap;
         }
 
-        .e.weak {
-            background: var(--weak-fill);
-            border: 3px double var(--weak-stroke);
+        .E.WK {
+            border: 5px double #AD1457;
+            background: #F8BBD9;
             color: #880E4F;
         }
 
-        /* Attribute */
-        .a {
+        /* ATTRIBUTE PILL */
+        .A {
             position: absolute;
-            background: var(--attr-fill);
-            border: 1px solid var(--attr-stroke);
-            border-radius: 50%;
-            padding: 3px 7px;
-            font-size: 7px;
-            font-weight: 500;
+            transform: translate(-50%, -50%);
+            padding: 9px 22px;
+            border: 2px solid #EF6C00;
+            background: #FFF8E1;
+            border-radius: 30px;
+            font-size: 17px;
+            font-weight: 700;
             color: #E65100;
-            z-index: 5;
+            z-index: 40;
             white-space: nowrap;
         }
 
-        .a.pk {
-            background: var(--pk-fill);
-            border: 1.5px solid var(--pk-stroke);
-            font-weight: 700;
+        .A.PK {
+            border: 2.5px solid #FF8F00;
+            background: #FFECB3;
+            font-weight: 900;
         }
 
-        .a.pk span {
+        .A.PK span {
             text-decoration: underline;
+            text-underline-offset: 3px;
         }
 
-        .a.fk {
-            background: var(--fk-fill);
-            border: 1px solid var(--fk-stroke);
+        .A.FK {
+            border: 2.5px solid #43A047;
+            background: #E8F5E9;
             color: #2E7D32;
-            font-weight: 600;
+            font-weight: 800;
         }
 
-        .a.fk span {
+        .A.FK span {
             text-decoration: underline dashed;
+            text-underline-offset: 3px;
         }
 
-        /* Relationship */
-        .r {
+        /* RELATIONSHIP DIAMOND */
+        .R {
             position: absolute;
-            z-index: 8;
+            width: 100px;
+            height: 100px;
+            transform: translate(-50%, -50%);
+            z-index: 45;
         }
 
-        .r-box {
-            width: 44px;
-            height: 44px;
-            background: var(--rel-fill);
-            border: 2px solid var(--rel-stroke);
+        .R-box {
+            width: 100%;
+            height: 100%;
             transform: rotate(45deg);
+            background: #C8E6C9;
+            border: 3px solid #2E7D32;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .r.id .r-box {
-            background: var(--weak-fill);
-            border: 3px double var(--weak-stroke);
+        .R.ID .R-box {
+            background: #F8BBD9;
+            border: 5px double #AD1457;
         }
 
-        .r-text {
+        .R-text {
             transform: rotate(-45deg);
-            font-size: 7px;
-            font-weight: 700;
+            font-size: 11px;
+            font-weight: 950;
             color: #1B5E20;
             text-transform: uppercase;
         }
 
-        .r.id .r-text {
+        .R.ID .R-text {
             color: #880E4F;
         }
 
-        /* Cardinality */
-        .c {
+        /* CARDINALITY LABEL */
+        .C {
             position: absolute;
-            font-size: 10px;
-            font-weight: 800;
+            transform: translate(-50%, -50%);
+            font-size: 22px;
+            font-weight: 950;
             color: #C62828;
-            z-index: 15;
-        }
-
-        /* Footer Note */
-        .footer {
-            position: absolute;
-            bottom: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 7px;
-            color: #888;
-            text-align: center;
-        }
-
-        @media print {
-
-            .e,
-            .a,
-            .r-box {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
+            z-index: 60;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <!-- Title -->
-        <div class="title">
-            <h1>MoveX - Entity Relationship Diagram</h1>
-            <p>Chen Notation | PostgreSQL | Logistics Management System</p>
-        </div>
-
-        <!-- Legend -->
-        <div class="legend">
-            <div class="legend-item">
-                <div class="l-rect"></div><span>Entity (Rectangle)</span>
-            </div>
-            <div class="legend-item">
-                <div class="l-weak"></div><span>Weak Entity</span>
-            </div>
-            <div class="legend-item">
-                <div class="l-oval"></div><span>Attribute (Ellipse)</span>
-            </div>
-            <div class="legend-item">
-                <div class="l-pk"></div><span><u>Primary Key</u></span>
-            </div>
-            <div class="legend-item">
-                <div class="l-fk"></div><span>Foreign Key (Dashed Underline)</span>
-            </div>
-            <div class="legend-item">
-                <div class="l-diamond"></div><span>Relationship</span>
-            </div>
-            <div class="legend-item">
-                <div class="l-id-diamond"></div><span>Identifying Rel.</span>
-            </div>
-            <div class="legend-item">
-                <span style="font-weight:800;color:#C62828;">1, N</span><span>&nbsp;Cardinality</span>
-            </div>
-        </div>
-
-        <!-- Canvas -->
+    <div id="wrapper">
         <div class="canvas" id="canvas">
-            <svg class="lines" id="lines"></svg>
-
-            <!-- ═══════════ ORGANIZATIONS ═══════════ -->
-            <div class="e" id="e-org" style="left: 8%; top: 24%;">Organizations</div>
-
-            <div class="a pk" id="a-org-id" style="left: 3%; top: 12%;"><span>organization_id</span></div>
-            <div class="a" id="a-org-name" style="left: 10%; top: 9%;">name</div>
-            <div class="a" id="a-org-type" style="left: 18%; top: 12%;">type</div>
-            <div class="a" id="a-org-status" style="left: 21%; top: 20%;">status</div>
-            <div class="a" id="a-org-pincodes" style="left: 20%; top: 28%;">pincodes</div>
-            <div class="a" id="a-org-address" style="left: 13%; top: 35%;">full_address</div>
-            <div class="a" id="a-org-created" style="left: 1%; top: 26%;">created_at</div>
-            <div class="a" id="a-org-updated" style="left: 1%; top: 30%;">updated_at</div>
-            <div class="a" id="a-org-nonserv" style="left: 18%; top: 34%;">non_serviceable_areas</div>
-
-
-            <!-- ═══════════ USERS ═══════════ -->
-            <div class="e" id="e-users" style="left: 44%; top: 24%;">Users</div>
-
-            <div class="a pk" id="a-usr-username" style="left: 40%; top: 9%;"><span>username</span></div>
-            <div class="a" id="a-usr-id" style="left: 49%; top: 9%;">user_id</div>
-            <div class="a" id="a-usr-fullname" style="left: 55%; top: 12%;">full_name</div>
-            <div class="a" id="a-usr-phone" style="left: 59%; top: 18%;">phone</div>
-            <div class="a" id="a-usr-password" style="left: 59%; top: 26%;">password_hash</div>
-            <div class="a" id="a-usr-role" style="left: 57%; top: 33%;">role</div>
-            <div class="a" id="a-usr-status" style="left: 48%; top: 36%;">status</div>
-            <div class="a" id="a-usr-security" style="left: 38%; top: 36%;">security_answers</div>
-            <div class="a" id="a-usr-created" style="left: 30%; top: 28%;">created_at</div>
-            <div class="a" id="a-usr-updated" style="left: 32%; top: 40%;">updated_at</div>
-            <div class="a" id="a-usr-login" style="left: 32%; top: 18%;">last_login_at</div>
-            <div class="a fk" id="a-usr-orgid" style="left: 35%; top: 12%;"><span>organization_id</span></div>
-
-
-            <!-- ═══════════ BELONGS_TO (Users → Organizations) ═══════════ -->
-            <div class="r" id="r-belongs" style="left: 26%; top: 21%;">
-                <div class="r-box"><span class="r-text">Belongs</span></div>
-            </div>
-            <div class="c" style="left: 22%; top: 23%;">N</div>
-            <div class="c" style="left: 33%; top: 23%;">1</div>
-
-
-
-
-
-            <!-- ═══════════ PASSWORD_RESETS (Weak Entity) ═══════════ -->
-            <div class="e weak" id="e-password" style="left: 80%; top: 58%;">Password_Resets</div>
-
-            <div class="a pk" id="a-pass-id" style="left: 76%; top: 50%;"><span>reset_id</span></div>
-            <div class="a" id="a-pass-token" style="left: 84%; top: 48%;">token_hash</div>
-            <div class="a" id="a-pass-expires" style="left: 93%; top: 53%;">expires_at</div>
-            <div class="a" id="a-pass-used" style="left: 94%; top: 62%;">used</div>
-            <div class="a" id="a-pass-created" style="left: 91%; top: 69%;">created_at</div>
-            <div class="a fk" id="a-pass-username" style="left: 82%; top: 71%;"><span>username</span></div>
-
-
-            <!-- ═══════════ REQUESTS (Users → Password_Resets) ═══════════ -->
-            <div class="r id" id="r-requests" style="left: 64%; top: 44%;">
-                <div class="r-box"><span class="r-text">Requests</span></div>
-            </div>
-            <div class="c" style="left: 60%; top: 43%;">1</div>
-            <div class="c" style="left: 72%; top: 53%;">N</div>
-
-
-            <!-- ═══════════ SHIPMENTS ═══════════ -->
-            <div class="e" id="e-shipments" style="left: 38%; top: 75%; padding: 7px 16px; font-size: 11px;">Shipments
-            </div>
-
-            <!-- Left side attrs - moved away from HANDLES line -->
-            <div class="a pk" id="a-ship-tracking" style="left: 38%; top: 60%;"><span>tracking_id</span></div>
-            <div class="a" id="a-ship-id" style="left: 25%; top: 68%;">shipment_id</div>
-            <div class="a fk" id="a-ship-orgid" style="left: 30%; top: 58%;"><span>organization_id</span></div>
-            <div class="a" id="a-ship-origin" style="left: 20%; top: 72%;">origin_address</div>
-            <div class="a" id="a-ship-weight" style="left: 18%; top: 78%;">weight</div>
-            <div class="a" id="a-ship-price" style="left: 18%; top: 85%;">price</div>
-            <div class="a" id="a-ship-status" style="left: 30%; top: 92%;">status</div>
-            <div class="a" id="a-ship-dest" style="left: 40%; top: 94%;">destination_address</div>
-            <div class="a" id="a-ship-created" style="left: 18%; top: 90%;">created_at</div>
-            <div class="a" id="a-ship-updated" style="left: 24%; top: 92%;">updated_at</div>
-            <div class="a" id="a-ship-currloc" style="left: 34%; top: 92%;">current_location</div>
-
-            <!-- Right side attrs - moved away from CREATES line -->
-            <div class="a fk" id="a-ship-creator" style="left: 54%; top: 60%;"><span>creator_username</span></div>
-            <div class="a" id="a-ship-sendername" style="left: 60%; top: 66%;">sender_name</div>
-            <div class="a" id="a-ship-senderphone" style="left: 66%; top: 60%;">sender_phone</div>
-            <div class="a" id="a-ship-senderaddr" style="left: 72%; top: 66%;">sender_address</div>
-            <div class="a" id="a-ship-senderpin" style="left: 74%; top: 75%;">sender_pincode</div>
-            <div class="a" id="a-ship-recvname" style="left: 74%; top: 81%;">receiver_name</div>
-            <div class="a" id="a-ship-recvphone" style="left: 78%; top: 86%;">receiver_phone</div>
-            <div class="a" id="a-ship-recvaddr" style="left: 72%; top: 92%;">receiver_address</div>
-            <div class="a" id="a-ship-recvpin" style="left: 62%; top: 92%;">receiver_pincode</div>
-            <div class="a fk" id="a-ship-staffid" style="left: 45%; top: 96%;"><span>assigned_staff_id</span></div>
-
-
-            <!-- ═══════════ CREATES (Users → Shipments) ═══════════ -->
-            <div class="r" id="r-creates-ship" style="left: 48%; top: 50%;">
-                <div class="r-box"><span class="r-text">Creates</span></div>
-            </div>
-            <div class="c" style="left: 47%; top: 44%;">1</div>
-            <div class="c" style="left: 48%; top: 60%;">N</div>
-
-
-            <!-- ═══════════ HANDLES (Organizations → Shipments) ═══════════ -->
-            <div class="r" id="r-handles" style="left: 12%; top: 50%;">
-                <div class="r-box"><span class="r-text">Handles</span></div>
-            </div>
-            <div class="c" style="left: 14%; top: 44%;">1</div>
-            <div class="c" style="left: 18%; top: 58%;">N</div>
-
-
-
-
-
-            <!-- Footer -->
-            <div class="footer">
-                <strong>PRIMARY KEYS:</strong> username (users), organization_id (organizations),
-                reset_id (password_resets), tracking_id (shipments) &nbsp;|&nbsp;
-                <strong>FOREIGN KEYS:</strong> organization_id → organizations, username → users, creator_username →
-                users
-            </div>
-
+            <svg id="lines" viewBox="0 0 2400 1400"></svg>
+            <div id="nodes"></div>
         </div>
     </div>
-
     <script>
-        function drawLines() {
+        // ============================================================
+        // MASTER COORDINATE MAP — every node has a unique [x, y]
+        // Canvas: 2400 x 1400. Entities form an inverted triangle
+        // with PASSWORD_RESETS isolated far-right.
+        // ============================================================
+
+        const W = 2400, H = 1400;
+
+        // ---------- ENTITY CENTERS ----------
+        const ORG = [420, 320];
+        const USR = [1680, 320];
+        const SHP = [1050, 1100];
+        const PWR = [2150, 880];
+
+        // ---------- RELATIONSHIP CENTERS ----------
+        const BEL = [1050, 320];   // between ORG & USR (horizontal)
+        const HAN = [700, 710];    // between ORG & SHP (diagonal left)
+        const CRE = [1400, 710];   // between USR & SHP (diagonal right)
+        const REQ = [1920, 600];   // between USR & PWR (diagonal right)
+
+        // ============================================================
+        // ATTRIBUTES — manually placed with 100+ px clearance
+        // ============================================================
+
+        const data = [
+            // ---- ORGANIZATIONS attributes (fan top-left & bottom-left) ----
+            { parent: ORG, t: 'organization_id', type: 'PK', pos: [140, 100] },
+            { parent: ORG, t: 'name', type: '', pos: [380, 80] },
+            { parent: ORG, t: 'type', type: '', pos: [620, 80] },
+            { parent: ORG, t: 'status', type: '', pos: [80, 280] },
+            { parent: ORG, t: 'pincodes', type: '', pos: [750, 180] },
+            { parent: ORG, t: 'full_address', type: '', pos: [100, 480] },
+            { parent: ORG, t: 'created_at', type: '', pos: [120, 600] },
+            { parent: ORG, t: 'updated_at', type: '', pos: [350, 580] },
+            { parent: ORG, t: 'non_serviceable_areas', type: '', pos: [180, 720] },
+
+            // ---- USERS attributes (fan top & far-right column) ----
+            { parent: USR, t: 'username', type: 'PK', pos: [1460, 80] },
+            { parent: USR, t: 'user_id', type: '', pos: [1680, 80] },
+            { parent: USR, t: 'full_name', type: '', pos: [1880, 80] },
+            { parent: USR, t: 'organization_id', type: 'FK', pos: [1400, 160] },
+            { parent: USR, t: 'last_login_at', type: '', pos: [1240, 220] },
+            { parent: USR, t: 'phone', type: '', pos: [2000, 140] },
+            { parent: USR, t: 'password_hash', type: '', pos: [2100, 240] },
+            { parent: USR, t: 'role', type: '', pos: [2150, 340] },
+            { parent: USR, t: 'updated_at', type: '', pos: [1920, 480] },
+            { parent: USR, t: 'created_at', type: '', pos: [1680, 560] },
+            { parent: USR, t: 'status', type: '', pos: [2150, 420] },
+            { parent: USR, t: 'security_answers', type: '', pos: [2280, 530] },
+
+            // ---- SHIPMENTS attributes (wide arc across the bottom) ----
+            { parent: SHP, t: 'shipment_id', type: '', pos: [500, 870] },
+            { parent: SHP, t: 'tracking_id', type: 'PK', pos: [680, 850] },
+            { parent: SHP, t: 'organization_id', type: 'FK', pos: [850, 680] },
+            { parent: SHP, t: 'creator_username', type: 'FK', pos: [1200, 680] },
+            { parent: SHP, t: 'origin_address', type: '', pos: [250, 970] },
+            { parent: SHP, t: 'weight', type: '', pos: [140, 1100] },
+            { parent: SHP, t: 'price', type: '', pos: [180, 1240] },
+            { parent: SHP, t: 'status', type: '', pos: [360, 1320] },
+            { parent: SHP, t: 'destination_address', type: '', pos: [580, 1350] },
+            { parent: SHP, t: 'created_at', type: '', pos: [800, 1350] },
+            { parent: SHP, t: 'updated_at', type: '', pos: [1180, 1350] },
+            { parent: SHP, t: 'current_location', type: '', pos: [1350, 1350] },
+            { parent: SHP, t: 'receiver_address', type: '', pos: [1600, 1250] },
+            { parent: SHP, t: 'receiver_phone', type: '', pos: [1720, 1150] },
+            { parent: SHP, t: 'receiver_name', type: '', pos: [1680, 1050] },
+            { parent: SHP, t: 'sender_pincode', type: '', pos: [1750, 950] },
+            { parent: SHP, t: 'sender_address', type: '', pos: [1650, 860] },
+            { parent: SHP, t: 'sender_phone', type: '', pos: [1600, 800] },
+            { parent: SHP, t: 'sender_name', type: '', pos: [1580, 700] },
+            { parent: SHP, t: 'receiver_pincode', type: 'FK', pos: [1000, 1350] },
+            { parent: SHP, t: 'assigned_staff_id', type: 'FK', pos: [1550, 1350] },
+
+            // ---- PASSWORD_RESETS attributes (isolated cluster far-right) ----
+            { parent: PWR, t: 'reset_id', type: 'PK', pos: [1840, 850] },
+            { parent: PWR, t: 'token_hash', type: '', pos: [2250, 780] },
+            { parent: PWR, t: 'expires_at', type: '', pos: [2350, 850] },
+            { parent: PWR, t: 'used', type: '', pos: [2380, 950] },
+            { parent: PWR, t: 'created_at', type: '', pos: [2350, 1050] },
+            { parent: PWR, t: 'username', type: 'FK', pos: [2050, 1120] },
+        ];
+
+        // ============================================================
+        // RELATIONSHIPS & CARDINALITIES
+        // ============================================================
+        const rels = [
+            { from: ORG, to: BEL, color: '#1565C0' },
+            { from: BEL, to: USR, color: '#1565C0' },
+            { from: ORG, to: HAN, color: '#2E7D32' },
+            { from: HAN, to: SHP, color: '#2E7D32' },
+            { from: USR, to: CRE, color: '#2E7D32' },
+            { from: CRE, to: SHP, color: '#2E7D32' },
+            { from: USR, to: REQ, color: '#AD1457' },
+            { from: REQ, to: PWR, color: '#AD1457' },
+        ];
+
+        const cards = [
+            { label: '1', pos: [560, 290] }, { label: 'N', pos: [1480, 290] },
+            { label: '1', pos: [540, 420] }, { label: 'N', pos: [800, 850] },
+            { label: '1', pos: [1560, 420] }, { label: 'N', pos: [1300, 850] },
+            { label: '1', pos: [1790, 420] }, { label: 'N', pos: [2050, 720] },
+        ];
+
+        const entityDefs = [
+            { id: 'ORG', label: 'ORGANIZATIONS', pos: ORG, wk: false },
+            { id: 'USR', label: 'USERS', pos: USR, wk: false },
+            { id: 'SHP', label: 'SHIPMENTS', pos: SHP, wk: false },
+            { id: 'PWR', label: 'PASSWORD_RESETS', pos: PWR, wk: true },
+        ];
+
+        const relDefs = [
+            { label: 'BELONGS', pos: BEL, id: false },
+            { label: 'HANDLES', pos: HAN, id: false },
+            { label: 'CREATES', pos: CRE, id: false },
+            { label: 'REQUESTS', pos: REQ, id: true },
+        ];
+
+        // ============================================================
+        // RENDER
+        // ============================================================
+        function render() {
             const svg = document.getElementById('lines');
+            const nodes = document.getElementById('nodes');
             svg.innerHTML = '';
-            const canvas = document.getElementById('canvas').getBoundingClientRect();
+            nodes.innerHTML = '';
 
-            function center(id) {
-                const el = document.getElementById(id);
-                if (!el) return null;
-                const r = el.getBoundingClientRect();
-                return { x: r.left + r.width / 2 - canvas.left, y: r.top + r.height / 2 - canvas.top };
-            }
-
-            function line(from, to, thick = false, color = '#90A4AE') {
-                const p1 = center(from), p2 = center(to);
-                if (!p1 || !p2) return;
+            function line(a, b, color, w) {
                 const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                l.setAttribute('x1', p1.x);
-                l.setAttribute('y1', p1.y);
-                l.setAttribute('x2', p2.x);
-                l.setAttribute('y2', p2.y);
-                l.setAttribute('stroke', color);
-                l.setAttribute('stroke-width', thick ? '2' : '1');
+                l.setAttribute('x1', a[0]); l.setAttribute('y1', a[1]);
+                l.setAttribute('x2', b[0]); l.setAttribute('y2', b[1]);
+                l.setAttribute('stroke', color); l.setAttribute('stroke-width', w);
                 svg.appendChild(l);
             }
 
-            // Organization attrs
-            ['a-org-id', 'a-org-name', 'a-org-type', 'a-org-status', 'a-org-pincodes',
-                'a-org-address', 'a-org-created', 'a-org-updated', 'a-org-nonserv']
-                .forEach(a => line(a, 'e-org'));
+            // Draw attribute lines first (behind everything)
+            data.forEach(d => line(d.parent, d.pos, '#CFD8DC', 1.5));
 
-            // Users attrs
-            ['a-usr-username', 'a-usr-id', 'a-usr-fullname', 'a-usr-phone', 'a-usr-password',
-                'a-usr-role', 'a-usr-status', 'a-usr-security', 'a-usr-created',
-                'a-usr-login', 'a-usr-orgid', 'a-usr-updated']
-                .forEach(a => line(a, 'e-users'));
+            // Draw relationship lines
+            rels.forEach(r => line(r.from, r.to, r.color, 5));
 
+            // Draw entities
+            entityDefs.forEach(e => {
+                const el = document.createElement('div');
+                el.className = 'E' + (e.wk ? ' WK' : '');
+                el.style.left = e.pos[0] + 'px'; el.style.top = e.pos[1] + 'px';
+                el.textContent = e.label;
+                nodes.appendChild(el);
+            });
 
+            // Draw relationship diamonds
+            relDefs.forEach(r => {
+                const el = document.createElement('div');
+                el.className = 'R' + (r.id ? ' ID' : '');
+                el.style.left = r.pos[0] + 'px'; el.style.top = r.pos[1] + 'px';
+                el.innerHTML = `<div class="R-box"><span class="R-text">${r.label}</span></div>`;
+                nodes.appendChild(el);
+            });
 
-            // Password attrs
-            ['a-pass-id', 'a-pass-token', 'a-pass-expires', 'a-pass-used', 'a-pass-created', 'a-pass-username']
-                .forEach(a => line(a, 'e-password'));
+            // Draw attributes
+            data.forEach(d => {
+                const el = document.createElement('div');
+                el.className = 'A' + (d.type ? ' ' + d.type : '');
+                el.style.left = d.pos[0] + 'px'; el.style.top = d.pos[1] + 'px';
+                el.innerHTML = d.type ? `<span>${d.t}</span>` : d.t;
+                nodes.appendChild(el);
+            });
 
-            // Shipments attrs
-            ['a-ship-id', 'a-ship-tracking', 'a-ship-origin', 'a-ship-weight', 'a-ship-price', 'a-ship-status',
-                'a-ship-dest', 'a-ship-created', 'a-ship-updated', 'a-ship-currloc', 'a-ship-sendername',
-                'a-ship-senderphone', 'a-ship-senderaddr', 'a-ship-senderpin',
-                'a-ship-recvname', 'a-ship-recvphone', 'a-ship-recvaddr',
-                'a-ship-recvpin', 'a-ship-creator', 'a-ship-orgid', 'a-ship-staffid']
-                .forEach(a => line(a, 'e-shipments'));
-
-
-
-            // ========== ENTITY RELATIONSHIPS ==========
-
-            // Organizations ←── Belongs ──→ Users
-            line('e-org', 'r-belongs', true, '#1565C0');
-            line('r-belongs', 'e-users', true, '#1565C0');
-
-
-
-            // Users ←── Requests ──→ Password_Resets (Identifying)
-            line('e-users', 'r-requests', true, '#AD1457');
-            line('r-requests', 'e-password', true, '#AD1457');
-
-            // Users ←── Creates ──→ Shipments
-            line('e-users', 'r-creates-ship', true, '#1565C0');
-            line('r-creates-ship', 'e-shipments', true, '#1565C0');
-
-            // Organizations ←── Handles ──→ Shipments
-            line('e-org', 'r-handles', true, '#1565C0');
-            line('r-handles', 'e-shipments', true, '#1565C0');
+            // Draw cardinality labels
+            cards.forEach(c => {
+                const el = document.createElement('div');
+                el.className = 'C';
+                el.style.left = c.pos[0] + 'px'; el.style.top = c.pos[1] + 'px';
+                el.textContent = c.label;
+                nodes.appendChild(el);
+            });
         }
 
-        window.addEventListener('load', drawLines);
-        window.addEventListener('resize', drawLines);
+        function fit() {
+            const wrap = document.getElementById('wrapper');
+            const canv = document.getElementById('canvas');
+            const r = Math.min(wrap.clientWidth / W, wrap.clientHeight / H);
+            canv.style.transform = `scale(${r})`;
+            canv.style.left = `${(wrap.clientWidth - W * r) / 2}px`;
+            canv.style.top = `${(wrap.clientHeight - H * r) / 2}px`;
+        }
+
+        window.onload = () => { fit(); render(); };
+        window.onresize = fit;
     </script>
 </body>
 
