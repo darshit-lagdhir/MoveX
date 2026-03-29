@@ -15,8 +15,13 @@ async function initDashboard() {
     try {
         const data = await window.MoveX.getStats('staff');
         if (data.success) {
-            document.getElementById('kpi-pending-hub').textContent = data.stats.pendingTasks;
-            document.getElementById('kpi-delivered-today').textContent = data.stats.deliveredToday;
+            const pendingE = document.getElementById('kpi-pending-hub');
+            const outE = document.getElementById('kpi-out-delivery');
+            const deliveredE = document.getElementById('kpi-delivered-today');
+            
+            if (pendingE) pendingE.textContent = data.stats.pendingTasks;
+            if (outE) outE.textContent = data.stats.outForDelivery;
+            if (deliveredE) deliveredE.textContent = data.stats.deliveredToday;
         }
     } catch (err) {
         console.error(err);

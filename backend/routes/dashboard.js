@@ -17,16 +17,16 @@ router.get('/auth/whoami', validateSession, whoami);
 router.get('/staff/stats', validateSession, requireRole('staff'), async (req, res) => {
     try {
         const userId = req.user.user_id;
-
-        // Simple counters
-        const pending = await db.query("SELECT COUNT(*) FROM shipments WHERE assigned_staff_id = $1 AND status != 'delivered'", [userId]);
-        const deliveredToday = await db.query("SELECT COUNT(*) FROM shipments WHERE assigned_staff_id = $1 AND status = 'delivered' AND updated_at >= CURRENT_DATE", [userId]);
+        const pending = await db.query("SELECT COUNT(*) FROM shipments WHERE assigned_staff_id = $1 AND status = 'pending'", [userId]);
+        const out = await db.query("SELECT COUNT(*) FROM shipments WHERE assigned_staff_id = $1 AND status = 'out_for_delivery'", [userId]);
+        const delivered = await db.query("SELECT COUNT(*) FROM shipments WHERE assigned_staff_id = $1 AND status = 'delivered' AND updated_at >= CURRENT_DATE", [userId]);
 
         res.json({
             success: true,
             stats: {
                 pendingTasks: parseInt(pending.rows[0].count),
-                deliveredToday: parseInt(deliveredToday.rows[0].count)
+                outForDelivery: parseInt(out.rows[0].count),
+                deliveredToday: parseInt(delivered.rows[0].count)
             }
         });
     } catch (err) {
@@ -80,12 +80,14 @@ router.get('/franchisee/stats', validateSession, requireRole('franchisee'), asyn
         const orgId = req.user.organization_id;
         const result = await db.query("SELECT COUNT(*) FROM shipments WHERE organization_id = $1", [orgId]);
         const revenue = await db.query("SELECT SUM(price) FROM shipments WHERE organization_id = $1", [orgId]);
+        const pending = await db.query("SELECT COUNT(*) FROM shipments WHERE organization_id = $1 AND status = 'pending'", [orgId]);
 
         res.json({
             success: true,
             stats: {
                 totalShipments: parseInt(result.rows[0].count),
-                totalRevenue: parseFloat(revenue.rows[0].sum || 0)
+                totalRevenue: parseFloat(revenue.rows[0].sum || 0),
+                pendingPickups: parseInt(pending.rows[0].count)
             }
         });
     } catch (err) {
@@ -182,8 +184,19 @@ router.post('/franchisee/assign', validateSession, requireRole('franchisee'), as
 
 router.get('/user/stats', validateSession, requireRole('user'), async (req, res) => {
     try {
-        const result = await db.query("SELECT COUNT(*) FROM shipments WHERE creator_username = $1", [req.user.username]);
-        res.json({ success: true, stats: { totalShipments: parseInt(result.rows[0].count) } });
+        const username = req.user.username;
+        const total = await db.query("SELECT COUNT(*) FROM shipments WHERE creator_username = $1", [username]);
+        const active = await db.query("SELECT COUNT(*) FROM shipments WHERE creator_username = $1 AND status != 'delivered' AND status != 'cancelled'", [username]);
+        const delivered = await db.query("SELECT COUNT(*) FROM shipments WHERE creator_username = $1 AND status = 'delivered'", [username]);
+
+        res.json({ 
+            success: true, 
+            stats: { 
+                totalShipments: parseInt(total.rows[0].count),
+                activeShipments: parseInt(active.rows[0].count),
+                deliveredShipments: parseInt(delivered.rows[0].count)
+            } 
+        });
     } catch (err) {
         res.status(500).json({ success: false, error: 'Database error' });
     }
@@ -262,6 +275,8 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
                 status: row.status,
                 sender: row.sender_name,
                 receiver: row.receiver_name,
+                origin: row.origin_address || 'N/A',
+                destination: row.destination_address || 'N/A',
                 price: row.price,
                 date: row.created_at
             });
@@ -269,6 +284,35 @@ router.get('/admin/shipments', validateSession, requireRole('admin'), async (req
         res.json({ success: true, shipments: list });
     } catch (err) {
         res.status(500).json({ success: false, error: 'Database error' });
+    }
+});
+
+router.get('/admin/users', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        const result = await db.query("SELECT user_id, username, full_name, role, status FROM users ORDER BY created_at DESC");
+        res.json({ success: true, users: result.rows });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Database error' });
+    }
+});
+
+router.get('/admin/franchises', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        const result = await db.query("SELECT organization_id, name, pincodes, status FROM organizations ORDER BY created_at DESC");
+        res.json({ success: true, franchises: result.rows });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Database error' });
+    }
+});
+
+router.post('/admin/users/reset-password', validateSession, requireRole('admin'), async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const hash = await bcrypt.hash(password, 10);
+        await db.query("UPDATE users SET password_hash = $1 WHERE username = $2", [hash, username]);
+        res.json({ success: true, message: 'Password updated' });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Reset failed' });
     }
 });
 

@@ -14,8 +14,10 @@ async function initDashboard() {
     try {
         const data = await window.MoveX.getStats('franchisee');
         if (data.success) {
-            document.getElementById('kpi-franchise-total').textContent = data.stats.totalShipments;
-            document.getElementById('kpi-franchise-revenue').textContent = '₹' + data.stats.totalRevenue.toLocaleString();
+            const totalE = document.getElementById('kpi-total-shipments');
+            const pendingE = document.getElementById('kpi-pending-pickups');
+            if (totalE) totalE.textContent = data.stats.totalShipments;
+            if (pendingE) pendingE.textContent = data.stats.pendingPickups;
         }
     } catch (err) { console.error(err); }
 }

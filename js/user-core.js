@@ -14,7 +14,14 @@ async function initDashboard() {
     try {
         const data = await window.MoveX.getStats('user');
         if (data.success) {
-            document.getElementById('kpi-user-total').textContent = data.stats.totalShipments;
+            const totalE = document.getElementById('kpi-user-total');
+            const activeE = document.getElementById('kpi-user-active');
+            const deliveredE = document.getElementById('kpi-user-delivered');
+
+            if (totalE) totalE.textContent = data.stats.totalShipments;
+            if (activeE) activeE.textContent = data.stats.activeShipments;
+            if (deliveredE) deliveredE.textContent = data.stats.deliveredShipments;
+            
             loadRecentShipments();
         }
     } catch (err) { console.error(err); }
@@ -47,6 +54,11 @@ function renderTable(shipments, tbodyId) {
     if (!tbody) return;
     tbody.innerHTML = '';
     
+    if (shipments.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem;">No shipments found.</td></tr>';
+        return;
+    }
+
     for (let s of shipments) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -55,7 +67,7 @@ function renderTable(shipments, tbodyId) {
             <td>${s.receiver}</td>
             <td>${s.destination}</td>
             <td>${new Date(s.date).toLocaleDateString()}</td>
-            <td>₹${s.price}</td>
+            <td>₹${s.price || '0'}</td>
             <td><button class="btn-secondary" onclick="alert('Tracking ID: ${s.tracking_id}\\nStatus: ${s.status}')">View</button></td>
         `;
         tbody.appendChild(tr);
@@ -72,21 +84,11 @@ function initBookingForm() {
         const payload = Object.fromEntries(formData.entries());
 
         try {
-            const res = await fetch('http://localhost:4000/api/dashboard/user/shipments/create', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-User-Username': sessionStorage.getItem('username')
-                },
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json();
+            const data = await window.MoveX.createShipment(payload);
             if (data.success) {
                 alert(`Shipment Booked! Tracking ID: ${data.tracking_id}`);
                 window.location.href = 'user-dashboard.html';
-            } else {
-                alert('Error: ' + data.error);
             }
-        } catch (err) { alert('Network Error'); }
+        } catch (err) { console.error(err); }
     });
 }

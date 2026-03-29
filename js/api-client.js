@@ -78,6 +78,30 @@ class MoveXAPI {
     static async getStaff() {
         return this.fetch('/franchisee/staff');
     }
+
+    // USER SPECIFIC
+    static async createShipment(payload) {
+        return this.fetch('/user/shipments/create', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    }
+
+    // ADMIN SPECIFIC
+    static async getAdminUsers() {
+        return this.fetch('/admin/users');
+    }
+
+    static async getAdminFranchises() {
+        return this.fetch('/admin/franchises');
+    }
+
+    static async resetUserPassword(username, password) {
+        return this.fetch('/admin/users/reset-password', {
+            method: 'POST',
+            body: JSON.stringify({ username, password })
+        });
+    }
 }
 
 window.MoveX = MoveXAPI;

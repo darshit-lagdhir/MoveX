@@ -7,18 +7,24 @@ const { Pool } = require('pg');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
 
+// FORCE BYPASS for Supabase/Self-signed SSL errors during exams
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 /**
  * Configure SSL for Supabase/Cloud Databases
  */
 function getSSLConfig(connectionString) {
-  if (!connectionString) return process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false;
-
-  // Most cloud providers (Supabase, Render, Neon) require SSL with rejectUnauthorized: false for Node.js
-  const cloudProviders = ['supabase', 'pooler', 'render', 'railway', 'neon', 'sslmode=require'];
-  if (cloudProviders.some(p => connectionString.includes(p))) {
+  if (process.env.DB_SSL === 'true') {
     return { rejectUnauthorized: false };
   }
-  return process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false;
+
+  if (!connectionString) return false;
+
+  const cloudProviders = ['supabase', 'pooler', 'render', 'railway', 'neon', 'sslmode=require', 'aiven'];
+  if (cloudProviders.some(p => connectionString.toLowerCase().includes(p))) {
+    return { rejectUnauthorized: false };
+  }
+  return false;
 }
 
 /**
@@ -26,13 +32,13 @@ function getSSLConfig(connectionString) {
  */
 function buildPoolConfig() {
   const baseConfig = {
-    max: 5,  // Safe limit for standard database tiers
+    max: 5,
     min: 0,
     idleTimeoutMillis: 3000,
     connectionTimeoutMillis: 15000,
     allowExitOnIdle: true,
     keepAlive: true,
-    family: 4 // Keep IPv4 preference for local compatibility
+    family: 4
   };
 
   if (process.env.DATABASE_URL) {

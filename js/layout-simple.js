@@ -14,7 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 2. User Info & Logout
-    const username = sessionStorage.getItem('username') || 'User';
+    let username = 'User';
+    const sessionStr = sessionStorage.getItem('movexsecuresession');
+    if (sessionStr) {
+        try {
+            const sessionData = JSON.parse(sessionStr);
+            username = sessionData.data?.username || 'User';
+        } catch (e) {}
+    }
+    
     const topBarName = document.getElementById('topBarUserName');
     if (topBarName) topBarName.textContent = username;
 
