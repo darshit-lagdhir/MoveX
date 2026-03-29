@@ -12,10 +12,8 @@ require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/auth.routes');
-const protectedRoutes = require('./routes/protected.routes');
 const dashboardRoutes = require('../routes/dashboard');
 const profileRoutes = require('../routes/profile');
-const shipmentRoutes = require('./routes/shipment.routes');
 
 const app = express();
 
@@ -52,10 +50,8 @@ app.use(express.static(path.join(__dirname, '../../'), { extensions: ['html'] })
 // API ROUTES
 // ═══════════════════════════════════════════════════════════
 app.use('/api/auth', authRoutes);
-app.use('/api/protected', protectedRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api', profileRoutes);
-app.use('/api/shipments', shipmentRoutes);
 
 // Simple Logout Redirect
 app.get('/api/logout-redirect', (req, res) => {
