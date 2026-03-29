@@ -8,7 +8,7 @@
     'use strict';
 
     // Set global API_URL for core scripts (Staff, Admin, Franchisee)
-    const API_URL = window.MoveXConfig ? window.MoveXConfig.API_URL : 'https://movex-ffqu.onrender.com';
+    const API_URL = window.MoveXConfig ? window.MoveXConfig.API_URL : 'http://localhost:4000';
     window.API_URL = API_URL;
 
     // Failsafe: Always reveal UI after 1.5s

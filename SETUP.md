@@ -4,7 +4,7 @@
 > **Version:** 1.2.0  
 > **Status:** Ready for Real Customers
 
-This document is a full guide for running MoveX online. It covers setting up the database, security settings, ways to put it online, and how to keep it running.
+This document is a full guide for running MoveX on your local machine. It covers setting up the database, security settings, and how to keep it running.
 
 ---
 
@@ -17,7 +17,7 @@ This document is a full guide for running MoveX online. It covers setting up the
 5. [Database Structure Overview](#section-5-database-structure-overview)
 6. [How we save photos](#section-6-how-we-save-photos)
 7. [Security Steps we took](#section-7-security-steps-we-took)
-8. [Putting it Online (Deployment)](#section-8-putting-it-online-deployment)
+8. [Running Locally](#section-8-running-locally)
 9. [Common Mistakes to Stay Away From](#section-9-common-mistakes-to-stay-away-from)
 10. [How to make changes safely](#section-10-how-to-make-changes-safely)
 11. [Appendix A: Useful Commands](#appendix-a-useful-commands)
@@ -40,8 +40,9 @@ For MoveX, being "Ready for Real Customers" means the app can:
 ### ✅ Setup Rules
 - All secrets are kept in the settings file, not in the code.
 - No passwords or keys are written directly in the code.
-- Secure locks (SSL) are used for database connections.
-- Secure login settings are turned on for the real website.
+- All secrets are kept in the settings file, not in the code.
+- No passwords or keys are written directly in the code.
+- Secure locks (SSL) are used for database connections if needed.
 
 ### ✅ Daily Work Setup
 - Clear logs to help fix bugs (without showing private data).
@@ -49,7 +50,7 @@ For MoveX, being "Ready for Real Customers" means the app can:
 - ✅ **Secure Cookies** for logins (HttpOnly).
 - ✅ **Saved Logins** (even if the server restarts).
 - ✅ **Request Limits** on login pages.
-- ✅ **CORS** whitelist (only allows your domain).
+- ✅ **CORS** whitelist (allows localhost).
 - ✅ **CSP** Browser security layers.
 - ✅ **In-Depth Validation** on every page.
 - ✅ **Database Protection** (parameterized queries).
@@ -274,7 +275,7 @@ Copy `.env.example` to `.env` and fill these in:
 
 ```env
 # APP SETTINGS
-NODE_ENV=production                    # 'development' or 'production'
+NODE_ENV=development                   # Environment mode
 PORT=4000                              # Server port
 
 # DATABASE SETTINGS
@@ -422,44 +423,16 @@ shipment-photos/                    # Main storage bucket
 
 ---
 
-## Section 8: Putting it Online (Deployment)
+## Section 8: Running Locally
 
-### Architecture
-- **Frontend**: Cloudflare Pages / Workers (Static Site)
-- **Backend**: Render (Node.js Web Service)
-- **Database**: Supabase (PostgreSQL)
+1. Open your terminal in the root folder.
+2. Run `npm install` in both the root and `backend` folders.
+3. Start the backend: `cd backend && npm start`.
+4. Open `index.html` in your browser (or use a local live server).
 
-### Step 1: Backend Deployment (Render)
-1. Create a **New Web Service** on Render.
-2. Connect your GitHub Repo.
-3. **Settings**:
-   - **Root Directory**: `backend`
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
-4. **Environment Variables**:
-   - `NODE_ENV`: `production`
-   - `DATABASE_URL`: **IMPORTANT**: Use the **Transaction Pooler URL** from Supabase.
-     - Go to Supabase -> Settings -> Database -> Connection String -> **Session/Transaction Mode**.
-     - It typically looks like: `postgres://...aws-0-[region].pooler.supabase.com:6543/...`
-     - **Reason**: Render often cannot reach Supabase IPv6 addresses. The Pooler supports IPv4.
-   - `JWT_SECRET`, `SESSION_SECRET`: Generage strong random keys.
-   - `FRONTEND_URL`: Your Cloudflare URL (e.g., `https://movex.pages.dev`).
-
-### Step 2: Frontend Deployment (Cloudflare)
-1. Go to Cloudflare Dashboard -> **Workers & Pages**.
-2. Click **Create Application** -> **Pages** -> **Connect to Git**.
-3. Select your Repo.
-4. **Build Settings**:
-   - **Framework Preset**: None (Static HTML/JS)
-   - **Build Command**: (Leave empty)
-   - **Output Directory**: `.` (Root) or just leave default.
-5. Deploy.
-
-### Step 3: Connect Frontend to Backend
-1. Once Backend is live, copy its URL (e.g., `https://movex-ffqu.onrender.com`).
-2. Update your source code: **Edit `js/config.js`**.
-3. Change `API_URL` to your new Backend URL.
-4. Commit and Push. Cloudflare will auto-redeploy.
+### Connect Frontend to Backend
+1. Ensure `js/config.js` is set to `http://localhost:4000`.
+2. The frontend will now communicate with your local server.
 
 ---
 
@@ -504,7 +477,7 @@ The app saves logs. Use **pm2-logrotate** to keep them from taking up too much s
 1. **Understand**: What am I changing? What could break?
 2. **Try it out**: Test the change on your own computer.
 3. **Check**: Does the admin still work? Does the login still work?
-4. **Go Live**: Put it on the real website.
+4. **Go Live**: The code is ready for local use.
 5. **Watch**: Look at the logs for any new errors.
 
 ---

@@ -8,7 +8,7 @@ window.MoveXAdmin = (function () {
     'use strict';
 
     // Use Central Config
-    const API_BASE = window.MoveXConfig ? window.MoveXConfig.API_URL : 'https://movex-ffqu.onrender.com';
+    const API_BASE = window.MoveXConfig ? window.MoveXConfig.API_URL : 'http://localhost:4000';
 
     // Pagination State
     let SHIP_PAGE = 1;

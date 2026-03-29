@@ -12,9 +12,7 @@ setTimeout(async () => {
             console.log(`[Migration] Verified ${consolidate.rowCount} staff roles.`);
         }
     } catch (e) {
-        if (process.env.NODE_ENV !== 'production') {
-            console.error('[Migration] Migration check failed:', e.message);
-        }
+        console.error('[Migration] Migration check failed:', e.message);
     }
 }, 5000);
 

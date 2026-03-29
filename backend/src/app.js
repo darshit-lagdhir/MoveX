@@ -6,14 +6,6 @@
  */
 
 const path = require('path');
-const dns = require('dns');
-
-// FORCE IPv4: Fixes Render/Supabase ENETUNREACH errors
-try {
-  if (dns.setDefaultResultOrder) {
-    dns.setDefaultResultOrder('ipv4first');
-  }
-} catch (e) {}
 
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 

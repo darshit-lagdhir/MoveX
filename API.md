@@ -8,7 +8,6 @@ Welcome to the full MoveX API guide! This document explains exactly how to send 
 
 ### Where is the Server?
 *   **On your computer:** `http://localhost:4000`
-*   **Online:** `https://your-render-app.onrender.com`
 *   **Configuration:** The frontend uses `js/config.js` to know where the backend is. Edit that file to change the URL.
 
 ### Using JSON

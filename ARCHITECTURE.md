@@ -8,10 +8,10 @@ This guide takes a deep look into the "Engine Room" of MoveX. It is written for 
 
 MoveX uses a modern **Split Architecture**. This means the Frontend and Backend are hosted separately for better speed and scalability.
 
-### Why Split?
-*   **Speed:** The Frontend (Cloudflare) is on the Edge, loading instantly worldwide.
-*   **Scalability:** The Backend (Render) only handles data, not serving HTML files.
-*   **Flexibility:** You can update the frontend text/images without restarting the backend server.
+### Why Localhost?
+*   **Speed:** Direct access to local resources for instant page loads.
+*   **Security:** Data never leaves the local network (except for Supabase connectivity).
+*   **Simplicity:** No complex deployment pipelines; just run `npm dev`.
 
 ### The "Iron Fortress" Philosophy
 We built MoveX with the idea that the **Server is the Master**. The browser (Frontend) can never be trusted. Every single click you make is checked by the server before any data is shown or saved.
@@ -29,7 +29,7 @@ We don't use heavy tools like "React" or "Angular." instead, we use a custom **H
     2. Stops the browser from refreshing the page.
     3. Fetches the new content in the background.
     4. Swaps the middle part of the screen so fast you don't even see it.
-*   **Zero-Build**: Because we don't use a "build" step, the code you see is exactly what the user sees. No hidden code, no secrets.
+*   **Zero-Build**: Because we don't use a "build" step, the code you see is exactly what the user sees. Development is fast and transparent.
 
 ### Pillar 2: The Guarded Backend (Node.js & Express)
 The backend is the "Security Guard" of the app.
@@ -98,7 +98,7 @@ In `app.js`, we set special instructions for the browser:
 
 ```
 movex/
-├── _headers                # Cloudflare/Nginx security settings
+├── .env                    # Local environment variables
 ├── dashboards/             # REAL HTML files (Protected by Backend)
 │   ├── admin/              # admin-dashboard.html, etc.
 │   ├── franchisee/         # franchisee-dashboard.html, etc.
@@ -127,7 +127,7 @@ Imagine you are an Admin changing a Parcel status:
 
 1.  **Frontend**: You click "Deliver." The `shipments.js` script sends a `POST` message to `/api/dashboard/admin/shipments/update-status`.
 2.  **App.js**: The server sees the message.
-3.  **CORS**: It checks if the message came from `localhost:4000` or your real site.
+3.  **CORS**: It checks if the message came from `localhost:4000`.
 4.  **Session Middleware**: It looks at your browser cookies. It finds your `movex.sid` and checks if it is alive in the database.
 5.  **Role Middleware**: It checks if you are an `admin`.
 6.  **Controller**: The business logic checks if "Deliver" is a valid status.

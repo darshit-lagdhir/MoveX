@@ -216,7 +216,7 @@ MoveX uses PostgreSQL with the following tables:
 
 **See:** `ERDIAGRAM/index.html` for visual ER diagram.
 
-### Supabase (Recommended for Production)
+### Supabase (Cloud Database)
 
 See **[SETUP.md](./SETUP.md)** for the full setup guide.
 
@@ -292,21 +292,6 @@ MoveX uses Supabase Storage for parcel photos:
 ### Recommended Platforms (Split Architecture)
 
 - **Backend**: **Render** (Node.js Web Service)
-- **Frontend**: **Cloudflare** (Pages / Workers)
-- **Database**: **Supabase** (PostgreSQL)
-
-Configuring the connection between them is handled via `js/config.js` (Frontend) and Environment Variables (Backend).
-
-### Checklist before going live
-
-- [ ] Set `NODE_ENV=production`.
-- [ ] Use long, random secrets for your passwords and tokens (32+ characters).
-- [ ] Setup your Supabase database.
-- [ ] Update your `FRONTEND_URL` so the app works online.
-- [ ] Make sure your website uses a secure padlock (HTTPS).
-
----
-
 ## 📄 Documentation
 
 - **[ERDIAGRAM/index.html](./ERDIAGRAM/index.html)** - Visual ER Diagram (Chen Notation)

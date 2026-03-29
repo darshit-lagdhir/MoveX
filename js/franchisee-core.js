@@ -12,7 +12,7 @@
 window.MoveXAdmin = (function () {
     'use strict';
 
-    const API_BASE = window.MoveXConfig ? window.MoveXConfig.API_URL : 'https://movex-ffqu.onrender.com';
+    const API_BASE = window.MoveXConfig ? window.MoveXConfig.API_URL : 'http://localhost:4000';
 
     // Data store
     let SHIPMENTS = [];
@@ -677,7 +677,7 @@ window.MoveXAdmin = (function () {
             console.log('Initializing Assignments Page');
             let allShipments = [];
             let selectedShipments = new Set();
-            const API_BASE = window.MoveXConfig ? window.MoveXConfig.API_URL : 'https://movex-ffqu.onrender.com';
+            const API_BASE = window.MoveXConfig ? window.MoveXConfig.API_URL : 'http://localhost:4000';
 
             // 1. Load Staff
             async function loadStaff() {

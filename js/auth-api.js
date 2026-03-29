@@ -4,7 +4,7 @@
   'use strict';
 
   // Auto-detect: localhost for dev, otherwise Render Backend
-  const API_BASE = window.MoveXConfig ? window.MoveXConfig.API_URL : 'https://movex-ffqu.onrender.com';
+  const API_BASE = window.MoveXConfig ? window.MoveXConfig.API_URL : 'http://localhost:4000';
 
   // --- AUTO-REDIRECT (Frontend Check) ---
   // If user lands on login page with active session, redirect to dashboard
