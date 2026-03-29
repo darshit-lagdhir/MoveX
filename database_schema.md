@@ -1,75 +1,40 @@
-# MoveX Database Schema
+# MoveX Simplification Phase 4: Standardized Database Schema
+**Current Status:** Simplification (Local Exam-Grade)
 
-## Table: `public.organizations`
+The simplified database is reduced to 3 primary tables. All complex JSONB and password reset tables are removed. Relationships are standardized via simple IDs.
 
-| NAME | DATATYPE | CONSTRAINTS |
-| :--- | :--- | :--- |
-| `organization_id` | `bigserial` | PRIMARY KEY |
-| `name` | `text` | NOT NULL |
-| `type` | `text` | NOT NULL, DEFAULT 'franchise' |
-| `non_serviceable_areas` | `text` | NULL |
-| `created_at` | `timestamp with time zone` | DEFAULT now() |
-| `updated_at` | `timestamp with time zone` | DEFAULT now() |
-| `status` | `character varying(50)` | DEFAULT 'active' |
-| `pincodes` | `text` | NULL |
-| `full_address` | `text` | NULL |
+### 1. **Users Table**
+`PRIMARY KEY (user_id)`
+| Column | Type | Description |
+|---|---|---|
+| `user_id` | SERIAL (PK) | Auto-increment ID |
+| `username` | VARCHAR(255) | Unique identifier for login |
+| `password_hash` | VARCHAR(255) | BCrypt (Cost 10) |
+| `full_name` | VARCHAR(100) | Full Name |
+| `role` | ENUM | admin, franchisee, staff, user |
+| `status` | TEXT | active, disabled |
+| `organization_id` | INT | Links to organizations (if franchise/staff) |
 
----
+### 2. **Organizations (Franchises)**
+`PRIMARY KEY (organization_id)`
+| Column | Type | Description |
+|---|---|---|
+| `organization_id` | SERIAL (PK) | Auto-increment ID |
+| `name` | TEXT | Franchise/Hub name |
+| `pincodes` | TEXT | Comma-separated coverage |
+| `status` | TEXT | active, inactive |
 
-## Table: `public.shipments`
-
-| NAME | DATATYPE | CONSTRAINTS |
-| :--- | :--- | :--- |
-| `shipment_id` | `bigserial` | NOT NULL |
-| `tracking_id` | `character varying(50)` | PRIMARY KEY |
-| `sender_name` | `character varying(100)` | NULL |
-| `receiver_name` | `character varying(100)` | NULL |
-| `origin_address` | `text` | NULL |
-| `destination_address` | `text` | NULL |
-| `status` | `character varying(50)` | DEFAULT 'pending' |
-| `current_location` | `character varying(100)` | NULL |
-| `price` | `numeric(10, 2)` | DEFAULT 0.00 |
-| `created_at` | `timestamp with time zone` | DEFAULT now() |
-| `updated_at` | `timestamp with time zone` | DEFAULT now() |
-| `organization_id` | `bigint` | FOREIGN KEY (organizations) |
-| `sender_phone` | `character varying(20)` | CHECK (10 digits) |
-| `receiver_phone` | `character varying(20)` | CHECK (10 digits) |
-| `sender_address` | `text` | NULL |
-| `receiver_address` | `text` | NULL |
-| `sender_pincode` | `character varying(10)` | CHECK (6 digits) |
-| `receiver_pincode` | `character varying(10)` | CHECK (6 digits) |
-| `weight` | `numeric(10, 2)` | DEFAULT 1.0 |
-| `creator_username` | `character varying(255)` | FOREIGN KEY (users) |
-| `assigned_staff_id` | `integer` | NULL |
-
----
-
-## Table: `public.users`
-
-| NAME | DATATYPE | CONSTRAINTS |
-| :--- | :--- | :--- |
-| `user_id` | `bigserial` | NOT NULL |
-| `username` | `character varying(255)` | PRIMARY KEY, UNIQUE |
-| `password_hash` | `character varying(255)` | NOT NULL |
-| `role` | `public.user_role` | NOT NULL, DEFAULT 'user' |
-| `status` | `public.user_status` | NOT NULL, DEFAULT 'active' |
-| `security_answers` | `jsonb` | DEFAULT '{}' |
-| `created_at` | `timestamp with time zone` | DEFAULT now() |
-| `updated_at` | `timestamp with time zone` | DEFAULT now() |
-| `last_login_at` | `timestamp with time zone` | NULL |
-| `organization_id` | `bigint` | FOREIGN KEY (organizations) |
-| `full_name` | `character varying(100)` | NULL |
-| `phone` | `character varying(50)` | CHECK (10 digits) |
-
----
-
-## Table: `public.password_resets`
-
-| NAME | DATATYPE | CONSTRAINTS |
-| :--- | :--- | :--- |
-| `reset_id` | `bigserial` | PRIMARY KEY |
-| `token_hash` | `text` | NOT NULL |
-| `expires_at` | `timestamp with time zone` | NOT NULL |
-| `used` | `boolean` | NOT NULL, DEFAULT false |
-| `created_at` | `timestamp with time zone` | NOT NULL, DEFAULT now() |
-| `username` | `character varying(255)` | FOREIGN KEY (users) |
+### 3. **Shipments**
+`PRIMARY KEY (shipment_id)`
+| Column | Type | Description |
+|---|---|---|
+| `shipment_id` | SERIAL (PK) | Primary shipment number |
+| `tracking_id` | VARCHAR(50) | Logic: 'MX-' + shipment_id |
+| `status` | VARCHAR(50) | pending, picked up, in transit, delivered |
+| `sender_name` | VARCHAR(100) | Name |
+| `receiver_name` | VARCHAR(100) | Name |
+| `weight` | NUMERIC | Weight (kg) |
+| `price` | NUMERIC | Price directly input by user |
+| `creator_username` | VARCHAR(255) | Who booked it |
+| `organization_id` | INT | Assigned Hub |
+| `assigned_staff_id` | INT | Assigned Delivery Person |
