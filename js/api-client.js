@@ -1,6 +1,6 @@
 /**
  * MoveX Unified API Client
- * Simplified for Exam Presentation
+ * Final Standardized Version
  */
 
 const API_URL = 'http://localhost:4000';
@@ -12,28 +12,18 @@ class MoveXAPI {
         if (sessionStr) {
             try {
                 const sessionData = JSON.parse(sessionStr);
-                username = sessionData.data?.username;
-            } catch (e) {
-                console.error("Invalid session format");
-            }
+                username = sessionData.username;
+            } catch (e) {}
         }
-        return {
-            'Content-Type': 'application/json',
-            'X-User-Username': username || ''
-        };
+        return { 'Content-Type': 'application/json', 'X-User-Username': username || '' };
     }
 
     static async fetch(endpoint, options = {}) {
-        const url = `${API_URL}/api/dashboard${endpoint}`;
-        const defaultOptions = {
-            headers: this.getHeaders(),
-            ...options
-        };
-
+        const url = `${API_URL}/api${endpoint}`; // Use /api directly
         try {
-            const response = await fetch(url, defaultOptions);
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Request failed');
+            const res = await fetch(url, { headers: this.getHeaders(), ...options });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Request failed');
             return data;
         } catch (err) {
             console.error(`API Error [${endpoint}]:`, err);
@@ -43,65 +33,23 @@ class MoveXAPI {
     }
 
     // AUTH & PROFILE
-    static async whoami() {
-        return this.fetch('/auth/whoami');
-    }
+    static async whoami() { return this.fetch('/profile/me'); }
 
-    // SHIPMENTS (Unified)
-    static async getShipments(role) {
-        return this.fetch(`/${role}/shipments`);
-    }
+    // UNIFIED DATA (One endpoint, role-aware)
+    static async getStats() { return this.fetch('/stats'); }
+    static async getShipments() { return this.fetch('/shipments'); }
 
-    static async getStats(role) {
-        return this.fetch(`/${role}/stats`);
-    }
-
-    static async updateStatus(role, tracking_id, status) {
-        return this.fetch(`/${role}/shipments/update-status`, {
-            method: 'POST',
-            body: JSON.stringify({ tracking_id, status })
-        });
-    }
-
-    // FRANCHISEE SPECIFIC
-    static async getAvailableAssignments() {
-        return this.fetch('/franchisee/assignments/available');
-    }
-
-    static async assignShipment(staff_id, tracking_id) {
-        return this.fetch('/franchisee/assign', {
-            method: 'POST',
-            body: JSON.stringify({ staff_id, tracking_id })
-        });
-    }
-
-    static async getStaff() {
-        return this.fetch('/franchisee/staff');
-    }
-
-    // USER SPECIFIC
-    static async createShipment(payload) {
-        return this.fetch('/user/shipments/create', {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
-    }
-
-    // ADMIN SPECIFIC
-    static async getAdminUsers() {
-        return this.fetch('/admin/users');
-    }
-
-    static async getAdminFranchises() {
-        return this.fetch('/admin/franchises');
-    }
-
-    static async resetUserPassword(username, password) {
-        return this.fetch('/admin/users/reset-password', {
-            method: 'POST',
-            body: JSON.stringify({ username, password })
-        });
-    }
+    // OPERATIONS
+    static async createShipment(payload) { return this.fetch('/shipments/create', { method: 'POST', body: JSON.stringify(payload) }); }
+    static async updateStatus(tracking_id, status) { return this.fetch('/shipments/update-status', { method: 'POST', body: JSON.stringify({ tracking_id, status }) }); }
+    
+    // MANAGEMENT
+    static async getStaff() { return this.fetch('/organization/staff'); }
+    static async assignShipment(tracking_id, staff_id) { return this.fetch('/shipments/assign', { method: 'POST', body: JSON.stringify({ tracking_id, staff_id }) }); }
+    
+    // ADMIN ONLY
+    static async getAdminUsers() { return this.fetch('/admin/users'); }
+    static async getAdminFranchises() { return this.fetch('/admin/franchises'); }
 }
 
 window.MoveX = MoveXAPI;

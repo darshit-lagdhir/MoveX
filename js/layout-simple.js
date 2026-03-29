@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sessionStr) {
         try {
             const sessionData = JSON.parse(sessionStr);
-            username = sessionData.data?.username || 'User';
+            username = sessionData.username || 'User';
         } catch (e) {}
     }
     

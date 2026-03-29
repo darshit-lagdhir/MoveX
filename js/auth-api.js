@@ -108,7 +108,7 @@
           username: data.user.username,
           loginTime: Date.now()
         };
-        sessionStorage.setItem('movexsecuresession', JSON.stringify({ data: session }));
+        sessionStorage.setItem('movexsecuresession', JSON.stringify(session));
         
         showNotification('Login successful!', 'success');
         setTimeout(() => {
