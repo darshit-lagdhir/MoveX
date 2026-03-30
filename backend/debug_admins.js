@@ -1,7 +1,8 @@
+require('dotenv').config();
 const { Client } = require('pg');
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const client = new Client({ 
-    connectionString: 'postgresql://postgres.pxgdvythhmxamcixbjsu:darshit1899@aws-1-ap-south-1.pooler.supabase.com:5432/postgres?sslmode=require',
+    connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false } 
 });
 client.connect()
