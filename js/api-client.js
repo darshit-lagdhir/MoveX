@@ -13,7 +13,7 @@ class MoveXAPI {
             try {
                 const sessionData = JSON.parse(sessionStr);
                 username = sessionData.username;
-            } catch (e) {}
+            } catch (e) { }
         }
         return { 'Content-Type': 'application/json', 'X-User-Username': username || '' };
     }
@@ -42,11 +42,11 @@ class MoveXAPI {
     // OPERATIONS
     static async createShipment(payload) { return this.fetch('/shipments/create', { method: 'POST', body: JSON.stringify(payload) }); }
     static async updateStatus(tracking_id, status) { return this.fetch('/shipments/update-status', { method: 'POST', body: JSON.stringify({ tracking_id, status }) }); }
-    
+
     // MANAGEMENT
     static async getStaff() { return this.fetch('/organization/staff'); }
     static async assignShipment(tracking_id, staff_id) { return this.fetch('/shipments/assign', { method: 'POST', body: JSON.stringify({ tracking_id, staff_id }) }); }
-    
+
     // ADMIN ONLY
     static async getAdminUsers() { return this.fetch('/admin/users'); }
     static async getAdminFranchises() { return this.fetch('/admin/franchises'); }
@@ -54,9 +54,15 @@ class MoveXAPI {
     static async adminUpdateUserStatus(user_id, status) { return this.fetch('/admin/users/update-status', { method: 'POST', body: JSON.stringify({ user_id, status }) }); }
     static async adminDeleteUser(user_id) { return this.fetch('/admin/users/delete', { method: 'POST', body: JSON.stringify({ user_id }) }); }
     static async adminCreateFranchise(payload) { return this.fetch('/admin/franchises/create', { method: 'POST', body: JSON.stringify(payload) }); }
+    static async adminUpdateFranchise(data) { return this.fetch('/admin/franchises/update', { method: 'POST', body: JSON.stringify(data) }); }
     static async adminDeleteFranchise(organization_id) { return this.fetch('/admin/franchises/delete', { method: 'POST', body: JSON.stringify({ organization_id }) }); }
     static async adminGetFinances() { return this.fetch('/admin/finances'); }
     static async adminGetReports() { return this.fetch('/admin/reports'); }
+    static async adminCheckServiceability(pincode) { return this.fetch(`/admin/franchises/check?pincode=${pincode}`); }
+
+    static async getUserProfile() { return this.fetch('/user/profile'); }
+    static async updateUserProfile(data) { return this.fetch('/user/update-profile', { method: 'POST', body: JSON.stringify(data) }); }
+    static async changePassword(data) { return this.fetch('/user/change-password', { method: 'POST', body: JSON.stringify(data) }); }
 }
 
 window.MoveX = MoveXAPI;

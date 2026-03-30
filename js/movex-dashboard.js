@@ -40,6 +40,9 @@
                setupListeners();
             }
 
+            if (document.getElementById('fin-total-revenue')) await setupFinance();
+            if (document.getElementById('profile_full_name')) await setupSettings();
+
             // 4. Inject Logout
             injectLogout();
 
@@ -170,11 +173,11 @@
         const bUser = document.getElementById('openAddUserModal') || document.getElementById('action-add-user');
         if (bUser) bUser.onclick = () => openModal('user');
         
-        const bCheck = document.getElementById('action-check-service') || document.getElementById('openAddFranchiseModal');
-        if (bCheck) {
-            if (bCheck.id === 'openAddFranchiseModal') bCheck.onclick = () => openModal('franchise');
-            else bCheck.onclick = () => window.location.href = 'admin-franchises.html';
-        }
+        const btnCheck = document.getElementById('action-check-service');
+        if (btnCheck) btnCheck.onclick = () => openServiceCheckModal();
+
+        const btnFran = document.getElementById('openAddFranchiseModal');
+        if (btnFran) btnFran.onclick = () => openModal('franchise');
     }
 
     function openModal(type) {
@@ -324,6 +327,10 @@
                         <span style="font-size:10px; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Establishment Date</span>
                         <div style="font-size:14px; font-weight:500;">${new Date(f.created_at).toLocaleDateString()}</div>
                     </div>
+                    <div style="grid-column: span 2;">
+                        <span style="font-size:10px; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Regional Helpline</span>
+                        <div style="font-size:15px; font-weight:700; color:var(--brand-primary);">${f.phone || 'NA'}</div>
+                    </div>
                 </div>
 
                 <div class="modal-footer">
@@ -332,6 +339,98 @@
             </div>`;
 
         document.body.appendChild(modal);
+    }
+
+    function openServiceCheckModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal-backdrop';
+        modal.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:9999;";
+        
+        modal.innerHTML = `
+            <div class="modal-card" style="width:400px; text-align:center; padding:30px;">
+                <div style="background:var(--warning-soft); color:var(--warning); width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </div>
+                <h2 style="margin-bottom:10px; font-size:1.5rem; font-weight:700;">Serviceability Audit</h2>
+                <p style="color:var(--text-secondary); margin-bottom:25px; font-size:0.9rem;">Enter any 6-digit pincode to identify the governing regional franchise hub.</p>
+                
+                <input type="text" id="checkPincodeInput" class="modal-input" placeholder="000000" maxlength="6" style="text-align:center; font-size:2rem; letter-spacing:10px; margin-bottom:20px; font-weight:900; height:70px; border-radius:12px; border: 2px solid var(--border-default);">
+                
+                <div class="modal-footer" style="flex-direction:column; gap:10px;">
+                    <button id="runCheckBtn" class="btn-primary" style="width:100%; padding:15px; font-weight:700; background:var(--warning); border-color:var(--warning);">🔍 RUN COVERAGE SEARCH</button>
+                    <button type="button" class="btn-secondary" onclick="this.closest('.modal-backdrop').remove()" style="width:100%;">Cancel Audit</button>
+                </div>
+            </div>`;
+
+        document.body.appendChild(modal);
+        
+        const input = document.getElementById('checkPincodeInput');
+        input.focus();
+        const btn = document.getElementById('runCheckBtn');
+
+        btn.onclick = async () => {
+            const pin = input.value.trim();
+            if (pin.length !== 6) return alert('Please enter a valid 6-digit pincode.');
+            
+            btn.innerHTML = '<span class="loading-spinner"></span> VERIFYING COVERAGE...';
+            btn.disabled = true;
+
+            try {
+                const res = await window.MoveX.adminCheckServiceability(pin);
+                modal.remove(); // Close search modal
+                
+                if (res.success) {
+                    // Reuse the existing detail modal logic
+                    openFranchiseManageModal(res.franchise);
+                } else {
+                    alert(res.message || 'No coverage found for this area.');
+                }
+            } catch (err) {
+                btn.innerHTML = '🔍 RUN COVERAGE SEARCH';
+                btn.disabled = false;
+            }
+        };
+    }
+
+    async function setupSettings() {
+        // Fetch current profile
+        const res = await window.MoveX.getUserProfile();
+        if (res.success) {
+            document.getElementById('profile_full_name').value = res.user.full_name || '';
+            document.getElementById('profile_phone').value = res.user.phone || '';
+        }
+
+        // Save Profile
+        document.getElementById('btn-save-profile').onclick = async () => {
+            const full_name = document.getElementById('profile_full_name').value;
+            const phone = document.getElementById('profile_phone').value;
+            const updateRes = await window.MoveX.updateUserProfile({ full_name, phone });
+            if (updateRes.success) {
+                alert('Profile updated successfully!');
+                location.reload();
+            }
+        };
+
+        // Change Password
+        document.getElementById('btn-save-password').onclick = async () => {
+            const old_password = document.getElementById('old_password').value;
+            const new_password = document.getElementById('new_password').value;
+            const confirm_password = document.getElementById('confirm_password').value;
+
+            if (new_password !== confirm_password) return alert('New passwords do not match');
+            if (new_password.length < 8) return alert('New password must be at least 8 characters');
+
+            const passRes = await window.MoveX.changePassword({ old_password, new_password });
+            if (passRes.success) {
+                alert('Password changed successfully!');
+                location.reload();
+            } else {
+                alert(passRes.message || 'Verification failed. Password not changed.');
+            }
+        };
     }
 
     async function setupAdmin() {

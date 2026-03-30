@@ -29,12 +29,25 @@ function requireRole(...roles) {
  */
 router.post('/auth/login', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { username, password, role } = req.body;
         const { rows } = await db.query('SELECT * FROM users WHERE username = $1', [username.trim().toLowerCase()]);
         const user = rows[0];
+
+        // 1. Basic Credential Check
         if (!user || !(await bcrypt.compare(password, user.password_hash))) {
             return res.status(400).json({ success: false, message: 'Invalid credentials.' });
         }
+
+        // 2. Role Integrity Check (Security Hardening)
+        if (role && user.role !== role) {
+            return res.status(403).json({ success: false, message: `Access Denied: Account not registered as ${role}.` });
+        }
+
+        // 3. Status Audit
+        if (user.status !== 'active') {
+            return res.status(403).json({ success: false, message: 'Account is currently suspended or inactive.' });
+        }
+
         res.json({ success: true, user: { username: user.username, role: user.role } });
     } catch (err) { res.status(500).json({ success: false, message: 'Login error.' }); }
 });
@@ -66,9 +79,9 @@ router.get('/stats', requireAuth, async (req, res) => {
             const usr = await db.query("SELECT COUNT(*) as count FROM users");
             const deliv = await db.query("SELECT COUNT(*) as count FROM shipments WHERE status = 'delivered'");
             const fran = await db.query("SELECT COUNT(*) as count FROM organizations");
-            stats = { 
-                totalShipments: parseInt(ship.rows[0].count), 
-                totalUsers: parseInt(usr.rows[0].count), 
+            stats = {
+                totalShipments: parseInt(ship.rows[0].count),
+                totalUsers: parseInt(usr.rows[0].count),
                 totalRevenue: parseFloat(rev.rows[0].total || 0),
                 deliveredCount: parseInt(deliv.rows[0].count),
                 totalFranchises: parseInt(fran.rows[0].count)
@@ -76,19 +89,19 @@ router.get('/stats', requireAuth, async (req, res) => {
         } else if (role === 'franchisee') {
             const ship = await db.query("SELECT COUNT(*) as count, SUM(price) as rev FROM shipments WHERE organization_id = $1", [organization_id]);
             const pend = await db.query("SELECT COUNT(*) as count FROM shipments WHERE organization_id = $1 AND status = 'pending'", [organization_id]);
-            stats = { 
-                totalShipments: parseInt(ship.rows[0].count), 
-                totalRevenue: parseFloat(ship.rows[0].rev || 0), 
-                pendingPickups: parseInt(pend.rows[0].count) 
+            stats = {
+                totalShipments: parseInt(ship.rows[0].count),
+                totalRevenue: parseFloat(ship.rows[0].rev || 0),
+                pendingPickups: parseInt(pend.rows[0].count)
             };
         } else { // User
             const total = await db.query("SELECT COUNT(*) as count FROM shipments WHERE creator_username = $1", [username]);
             const active = await db.query("SELECT COUNT(*) as count FROM shipments WHERE creator_username = $1 AND status NOT IN ('delivered', 'cancelled')", [username]);
             const deliv = await db.query("SELECT COUNT(*) as count FROM shipments WHERE creator_username = $1 AND status = 'delivered'", [username]);
-            stats = { 
-                totalShipments: parseInt(total.rows[0].count), 
-                activeShipments: parseInt(active.rows[0].count), 
-                deliveredShipments: parseInt(deliv.rows[0].count) 
+            stats = {
+                totalShipments: parseInt(total.rows[0].count),
+                activeShipments: parseInt(active.rows[0].count),
+                deliveredShipments: parseInt(deliv.rows[0].count)
             };
         }
         res.json({ success: true, stats });
@@ -105,9 +118,9 @@ router.get('/shipments', requireAuth, async (req, res) => {
         let params = [];
 
         if (role === 'admin') query += "ORDER BY created_at DESC LIMIT 50";
-        else if (role === 'franchisee') { query += "WHERE organization_id = $1 ORDER BY created_at DESC"; params=[organization_id]; }
-        else if (role === 'staff') { query += "WHERE assigned_staff_id = $1 ORDER BY created_at DESC"; params=[user_id]; }
-        else { query += "WHERE creator_username = $1 ORDER BY created_at DESC"; params=[username]; }
+        else if (role === 'franchisee') { query += "WHERE organization_id = $1 ORDER BY created_at DESC"; params = [organization_id]; }
+        else if (role === 'staff') { query += "WHERE assigned_staff_id = $1 ORDER BY created_at DESC"; params = [user_id]; }
+        else { query += "WHERE creator_username = $1 ORDER BY created_at DESC"; params = [username]; }
 
         const { rows } = await db.query(query, params);
         res.json({ success: true, shipments: rows });
@@ -134,9 +147,9 @@ router.post('/shipments/create', requireAuth, async (req, res) => {
         ]);
 
         res.json({ success: true, tracking_id: trk });
-    } catch (err) { 
+    } catch (err) {
         console.error(err);
-        res.status(400).json({ success: false, message: err.message }); 
+        res.status(400).json({ success: false, message: err.message });
     }
 });
 
@@ -179,11 +192,11 @@ router.post('/admin/users/update-status', requireAuth, requireRole('admin'), asy
 router.post('/admin/users/delete', requireAuth, requireRole('admin'), async (req, res) => {
     try {
         const { user_id } = req.body;
-        
+
         // Get user info first
         const userRes = await db.query("SELECT * FROM users WHERE user_id = $1", [user_id]);
         if (userRes.rows.length === 0) return res.status(404).json({ success: false, message: 'User not found' });
-        
+
         const user = userRes.rows[0];
 
         // 1. If Franchisee, we also delete the Hub organization asset
@@ -195,28 +208,33 @@ router.post('/admin/users/delete', requireAuth, requireRole('admin'), async (req
         await db.query("DELETE FROM users WHERE user_id = $1", [user_id]);
 
         res.json({ success: true });
-    } catch (err) { 
+    } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: 'Deletion logic failed.' }); 
+        res.status(500).json({ success: false, message: 'Deletion logic failed.' });
     }
 });
 
 router.get('/admin/franchises', requireAuth, requireRole('admin'), async (req, res) => {
-    const { rows } = await db.query("SELECT * FROM organizations ORDER BY created_at DESC");
+    const { rows } = await db.query(`
+        SELECT o.*, u.phone 
+        FROM organizations o
+        LEFT JOIN users u ON o.organization_id = u.organization_id AND u.role = 'franchisee'
+        ORDER BY o.created_at DESC
+    `);
     res.json({ success: true, franchises: rows });
 });
 
 router.post('/admin/franchises/create', requireAuth, requireRole('admin'), async (req, res) => {
     try {
         const { name, pincodes, full_address, username, password, phone } = req.body;
-        
+
         // 1. Create Organization
         const orgRes = await db.query(`
             INSERT INTO organizations (name, pincodes, full_address, type, status)
             VALUES ($1, $2, $3, 'franchise', 'active')
             RETURNING organization_id
         `, [name, pincodes, full_address]);
-        
+
         const orgId = orgRes.rows[0].organization_id;
 
         // 2. Create Franchisee User
@@ -227,9 +245,9 @@ router.post('/admin/franchises/create', requireAuth, requireRole('admin'), async
         `, [username.trim().toLowerCase(), hash, name, phone, orgId]);
 
         res.json({ success: true });
-    } catch (err) { 
+    } catch (err) {
         console.error(err);
-        res.status(400).json({ success: false, message: err.message }); 
+        res.status(400).json({ success: false, message: err.message });
     }
 });
 
@@ -237,6 +255,83 @@ router.post('/admin/franchises/delete', requireAuth, requireRole('admin'), async
     try {
         const { organization_id } = req.body;
         await db.query("DELETE FROM organizations WHERE organization_id = $1", [organization_id]);
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+// 🔐 USER SETTINGS & PROFILE
+router.get('/user/profile', requireAuth, async (req, res) => {
+    try {
+        const { user_id } = req.user;
+        const { rows } = await db.query("SELECT user_id, username, full_name, role, phone FROM users WHERE user_id = $1", [user_id]);
+        res.json({ success: true, user: rows[0] });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+router.post('/user/update-profile', requireAuth, async (req, res) => {
+    try {
+        const { user_id } = req.user;
+        const { full_name, phone } = req.body;
+        await db.query("UPDATE users SET full_name = $1, phone = $2 WHERE user_id = $3", [full_name, phone, user_id]);
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+router.post('/user/change-password', requireAuth, async (req, res) => {
+    try {
+        const { user_id } = req.user;
+        const { old_password, new_password } = req.body;
+
+        const userRes = await db.query("SELECT password_hash FROM users WHERE user_id = $1", [user_id]);
+        const match = await bcrypt.compare(old_password, userRes.rows[0].password_hash);
+        if (!match) return res.status(400).json({ success: false, message: 'Current password incorrect' });
+
+        const hash = await bcrypt.hash(new_password, 10);
+        await db.query("UPDATE users SET password_hash = $1 WHERE user_id = $2", [hash, user_id]);
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+// 🏗️ FRANCHISE SERVICEABILITY CHECK
+router.get('/admin/franchises/check', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const { pincode } = req.query;
+        if (!pincode) return res.status(400).json({ success: false, message: 'Pincode required' });
+
+        // Search for franchise whose pincodes column (comma separated) contains this pincode
+        const { rows } = await db.query(`
+            SELECT o.*, u.phone 
+            FROM organizations o
+            LEFT JOIN users u ON o.organization_id = u.organization_id AND u.role = 'franchisee'
+            WHERE o.pincodes LIKE $1
+        `, [`%${pincode}%`]);
+
+        if (rows.length === 0) {
+            return res.json({ success: false, message: 'No franchise hub covers this pincode.' });
+        }
+
+        res.json({ success: true, franchise: rows[0] });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+router.post('/admin/franchises/update', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const { organization_id, name, pincodes, full_address, phone } = req.body;
+        
+        // 1. Update Organization
+        await db.query(`
+            UPDATE organizations 
+            SET name = $1, pincodes = $2, full_address = $3 
+            WHERE organization_id = $4
+        `, [name, pincodes, full_address, organization_id]);
+
+        // 2. Update Franchisee User (Phone and Name)
+        await db.query(`
+            UPDATE users 
+            SET phone = $1, full_name = $2 
+            WHERE organization_id = $3 AND role = 'franchisee'
+        `, [phone, name, organization_id]);
+
         res.json({ success: true });
     } catch (err) { res.status(500).json({ success: false }); }
 });
@@ -256,8 +351,8 @@ router.get('/admin/finances', requireAuth, requireRole('admin'), async (req, res
             WHERE status = 'delivered'
             ORDER BY created_at DESC LIMIT 10
         `);
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             totalRevenue: parseFloat(rev.rows[0].total_delivered || 0),
             pendingRevenue: parseFloat(rev.rows[0].pending || 0),
             transactions: trans.rows
@@ -278,8 +373,8 @@ router.get('/admin/reports', requireAuth, requireRole('admin'), async (req, res)
             GROUP BY DATE(created_at) 
             ORDER BY date DESC LIMIT 30
         `);
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             totalShipments: parseInt(total.rows[0].count),
             deliveredCount: parseInt(deliv.rows[0].count),
             dailyReports: daily.rows
