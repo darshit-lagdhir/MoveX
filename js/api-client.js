@@ -45,6 +45,7 @@ class MoveXAPI {
 
     // MANAGEMENT
     static async getStaff() { return this.fetch('/organization/staff'); }
+    static async staffCreate(payload) { return this.fetch('/organization/staff/create', { method: 'POST', body: JSON.stringify(payload) }); }
     static async assignShipment(tracking_id, staff_id) { return this.fetch('/shipments/assign', { method: 'POST', body: JSON.stringify({ tracking_id, staff_id }) }); }
 
     // ADMIN ONLY

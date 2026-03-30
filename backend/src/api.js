@@ -387,4 +387,16 @@ router.get('/organization/staff', requireAuth, requireRole('franchisee'), async 
     res.json({ success: true, staff: rows });
 });
 
+router.post('/organization/staff/create', requireAuth, requireRole('franchisee'), async (req, res) => {
+    try {
+        const { username, password, full_name, phone } = req.body;
+        const hash = await bcrypt.hash(password, 10);
+        await db.query(`
+            INSERT INTO users (username, password_hash, full_name, phone, role, status, organization_id)
+            VALUES ($1, $2, $3, $4, 'staff', 'active', $5)
+        `, [username.trim().toLowerCase(), hash, full_name, phone, req.user.organization_id]);
+        res.json({ success: true });
+    } catch (err) { res.status(400).json({ success: false, message: err.message }); }
+});
+
 module.exports = router;

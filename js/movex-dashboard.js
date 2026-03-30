@@ -23,42 +23,78 @@
             if (tName) tName.textContent = session.full_name || session.username;
             if (tRole) tRole.textContent = role.charAt(0).toUpperCase() + role.slice(1);
 
-            // 2. Fetch Core Data
+            // 2. Fetch Base Data (Stats and Shipments)
             const [statsRes, shipRes] = await Promise.all([
                 window.MoveX.getStats().catch(() => ({success:false})),
                 window.MoveX.getShipments().catch(() => ({success:false}))
             ]);
 
-            if (statsRes.success) renderStats(statsRes.stats);
-            if (shipRes.success) {
-                allShipments = shipRes.shipments;
-                if (path.includes('admin-shipments') || path.includes('franchisee-dashboard') || document.getElementById('shipmentsTableBody')) {
-                    renderTable(allShipments);
-                }
-                
-                if (path.includes('admin-users')) setupAdmin('users');
-                if (path.includes('admin-franchises')) setupAdmin('franchises');
-                if (path.includes('admin-finance')) setupFinance();
-                if (path.includes('admin-reports')) setupReports();
-                
-                setupListeners();
+            if (shipRes.success) allShipments = shipRes.shipments;
+            if (statsRes.success) renderStats(statsRes.stats, role);
+
+            // 3. Role-Aware Orchestration
+            if (role === 'admin') {
+                await setupAdminController(path);
+            } else if (role === 'franchisee') {
+                await setupFranchiseeController(path, statsRes.stats);
             }
 
-            if (document.getElementById('fin-total-revenue')) await setupFinance();
+            // Global UI Listeners (Modals, Settings)
             if (document.getElementById('profile_full_name')) await setupSettings();
-
-            // 4. Inject Logout
+            setupListeners();
             injectLogout();
 
         } catch (err) { console.error('[MoveX] Init Error:', err); }
     }
 
-    function renderStats(stats) {
+    async function setupAdminController(path) {
+        if (allShipments.length > 0) renderTable(allShipments);
+        if (path.includes('admin-users')) setupAdmin('users');
+        if (path.includes('admin-franchises')) setupAdmin('franchises');
+        if (path.includes('admin-finance') || document.getElementById('fin-total-revenue')) setupFinance();
+        if (path.includes('admin-reports')) setupReports();
+    }
+
+    async function setupFranchiseeController(path, stats) {
+        // Hydrate specific tables by ID
+        if (document.getElementById('shipmentsTableBody')) {
+            renderTable(allShipments, 'default', 'shipmentsTableBody');
+        }
+        if (document.getElementById('pickupRequestsTableBody')) {
+            const pickups = allShipments.filter(s => s.status === 'pending');
+            renderTable(pickups, 'pickup', 'pickupRequestsTableBody');
+        }
+        if (document.getElementById('assignmentsTableBody')) {
+            const pendingStaff = allShipments.filter(s => s.status === 'pending' || s.status === 'in_transit');
+            renderTable(pendingStaff, 'assignment', 'assignmentsTableBody');
+        }
+        if (document.getElementById('staffTableBody')) {
+            const staffRes = await window.MoveX.getStaff().catch(() => ({ success: false }));
+            if (staffRes.success) renderStaffTable(staffRes.staff);
+        }
+        
+        // Populate KPIs from stats
+        if (stats) {
+            const m = {
+                'kpi-total-shipments': stats.totalShipments,
+                'kpi-pending-pickups': stats.pendingPickups,
+                'kpi-new-bookings': stats.pendingPickups,
+                'kpi-scheduled-today': stats.pendingPickups // Simplified for now
+            };
+            for (const [id, val] of Object.entries(m)) {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val ?? '0';
+            }
+        }
+    }
+
+    function renderStats(stats, role) {
         const m = {
             'kpi-total-shipments': stats.totalShipments,
             'kpi-total-revenue': stats.totalRevenue ? `₹${stats.totalRevenue.toLocaleString()}` : '0',
             'kpi-total-users': stats.totalUsers,
-            'kpi-total-franchises': stats.totalFranchises
+            'kpi-total-franchises': stats.totalFranchises,
+            'kpi-pending-pickups': stats.pendingPickups || 0
         };
         for (const [id, val] of Object.entries(m)) {
             const el = document.getElementById(id);
@@ -66,16 +102,21 @@
         }
     }
 
-    function renderTable(data, role) {
-        const tbody = document.getElementById('shipmentsTableBody') || document.getElementById('recentShipmentsBody') || document.getElementById('fullShipmentsBody');
+    function renderTable(data, mode = 'default', targetId = null) {
+        const tbody = targetId ? document.getElementById(targetId) : (
+                      document.getElementById('shipmentsTableBody') || 
+                      document.getElementById('recentShipmentsBody') || 
+                      document.getElementById('fullShipmentsBody') ||
+                      document.getElementById('pickupRequestsTableBody') ||
+                      document.getElementById('assignmentsTableBody'));
+
         if (!tbody) return;
-        tbody.innerHTML = (data || []).length === 0 ? '<tr><td colspan="10" style="text-align:center;padding:2rem;">No shipments found.</td></tr>' : '';
+        tbody.innerHTML = (data || []).length === 0 ? `<tr><td colspan="10" style="text-align:center;padding:3rem;color:var(--text-tertiary);">No shipments found in this category.</td></tr>` : '';
         
         (data || []).forEach(s => {
             const tr = document.createElement('tr');
             const d = new Date(s.created_at).toLocaleDateString();
             
-            // Clean Status for presentation
             let status = (s.status || 'Pending').replace(/_/g, ' ').toLowerCase();
             if (status === 'failed') status = 'cancelled';
             if (status === 'rto') status = 'return';
@@ -83,49 +124,80 @@
             const sC = status.includes('transit')?'status-transit':status.includes('delivery')?'status-out':status.includes('deliv')?'status-active':status.includes('return')?'status-return':status.includes('cancel')?'status-error':'status-warn';
             const displayStatus = status.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
-            // Standard Table Rows
-            tr.innerHTML = `<td>${s.tracking_id}</td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td>${s.sender_name}</td><td>${s.sender_pincode || '-'}</td><td>${s.receiver_pincode || '-'}</td><td>${d}</td><td>₹${s.price}</td><td><button class="btn-secondary manage-shipment-btn" style="height:auto;padding:4px 8px;font-size:11px;">Manage</button></td>`;
-            
-            tr.querySelector('.manage-shipment-btn').onclick = () => openManageModal(s);
+            if (mode === 'pickup') {
+                tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td>${s.sender_name}</td><td style="font-size:12px;">${s.sender_address}</td><td style="font-size:12px;color:var(--text-secondary);">${s.receiver_pincode}</td><td>${s.weight}kg</td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td><button class="btn-secondary manage-shipment-btn">Process</button></td>`;
+            } else if (mode === 'assignment') {
+                tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td>${s.receiver_name}</td><td style="font-size:12px;color:var(--text-secondary);">${s.receiver_address}</td><td><span class="status-badge status-warn">NOT ASSIGNED</span></td><td><button class="btn-secondary manage-shipment-btn">Assign Staff</button></td>`;
+            } else {
+                tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td>${s.sender_name}</td><td>${s.sender_pincode || '-'}</td><td>${s.receiver_pincode || '-'}</td><td>${d}</td><td>₹${s.price}</td><td><button class="btn-secondary manage-shipment-btn">Manage</button></td>`;
+            }
+
+            tr.querySelector('.manage-shipment-btn').onclick = () => openManageModal(s, mode);
             tbody.appendChild(tr);
         });
     }
 
-    function openManageModal(s) {
+    function renderStaffTable(staff) {
+        const tb = document.getElementById('staffTableBody');
+        if (!tb) return;
+        tb.innerHTML = (staff || []).length === 0 ? '<tr><td colspan="4" style="text-align:center;padding:3rem;">No staff found in this hub.</td></tr>' : '';
+        (staff || []).forEach(st => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><strong>${st.full_name}</strong></td><td>${st.phone || '-'}</td><td><span class="status-badge status-active">${st.status.toUpperCase()}</span></td><td style="text-align:right;"><button class="btn-secondary info-staff-btn">Details</button></td>`;
+            tr.querySelector('.info-staff-btn').onclick = () => {
+                alert(`Staff: ${st.full_name}\nUsername: ${st.username}\nPhone: ${st.phone}\nHub Context: Organization #${st.organization_id}`);
+            };
+            tb.appendChild(tr);
+        });
+    }
+
+    async function openManageModal(s, mode = 'default') {
         const modal = document.createElement('div');
         modal.className = 'modal-backdrop';
         modal.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:9999;";
         
-        const d = new Date(s.created_at).toLocaleString();
+        let staffDropdown = '';
+        if (mode === 'assignment') {
+            const staffRes = await window.MoveX.getStaff();
+            if (staffRes.success && staffRes.staff.length > 0) {
+                staffDropdown = `
+                    <div class="modal-section-title">👤 Assign Operational Staff</div>
+                    <select name="staff_id" class="modal-input" style="cursor:pointer; margin-bottom: 2rem;">
+                        <option value="">-- Choose Field Executive --</option>
+                        ${staffRes.staff.map(st => `<option value="${st.user_id}">${st.full_name} (${st.username})</option>`).join('')}
+                    </select>
+                `;
+            } else {
+                staffDropdown = `<p style="color:#dc2626; font-size:0.8rem; margin-bottom:1rem;">⚠️ No staff registered in this hub.</p>`;
+            }
+        }
+
         modal.innerHTML = `
             <div class="modal-card" style="width:600px;">
-                <h2 class="modal-header-title">Manage Shipment: ${s.tracking_id}</h2>
+                <h2 class="modal-header-title">${mode==='assignment'?'Task Assignment':'Shipment Control'}: ${s.tracking_id}</h2>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
                     <div>
-                        <div class="modal-section-title" style="margin-top:0;">📤 Sender Information</div>
-                        <p><strong>Name:</strong> ${s.sender_name}</p>
-                        <p><strong>Phone:</strong> ${s.sender_phone}</p>
-                        <p><strong>Address:</strong> ${s.sender_address}</p>
+                        <div class="modal-section-title" style="margin-top:0;">📤 Origin Profile</div>
+                        <p><strong>Sender:</strong> ${s.sender_name}</p>
                         <p><strong>Pincode:</strong> ${s.sender_pincode}</p>
                     </div>
                     <div>
-                        <div class="modal-section-title" style="margin-top:0;">📥 Receiver Information</div>
-                        <p><strong>Name:</strong> ${s.receiver_name}</p>
-                        <p><strong>Phone:</strong> ${s.receiver_phone}</p>
-                        <p><strong>Address:</strong> ${s.receiver_address}</p>
+                        <div class="modal-section-title" style="margin-top:0;">📥 Target Profile</div>
+                        <p><strong>Receiver:</strong> ${s.receiver_name}</p>
                         <p><strong>Pincode:</strong> ${s.receiver_pincode}</p>
                     </div>
                 </div>
                 
-                <div class="modal-section-title">📊 Package & Logistics</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;background:#f8fafc;padding:15px;border-radius:10px;">
-                    <div><span style="color:var(--text-secondary);font-size:12px;">Weight</span><br><strong>${s.weight} kg</strong></div>
-                    <div><span style="color:var(--text-secondary);font-size:12px;">Amount</span><br><strong>₹${s.price}</strong></div>
-                    <div><span style="color:var(--text-secondary);font-size:12px;">Created At</span><br><strong>${d}</strong></div>
+                <div class="modal-section-title">📊 Package Insights</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;background:#f8fafc;padding:15px;border-radius:10px;margin-bottom:20px;">
+                    <div><span style="color:var(--text-secondary);font-size:11px;">WEIGHT</span><br><strong>${s.weight} kg</strong></div>
+                    <div><span style="color:var(--text-secondary);font-size:11px;">BILLING</span><br><strong>₹${s.price}</strong></div>
+                    <div><span style="color:var(--text-secondary);font-size:11px;">REGISTERED</span><br><strong>${new Date(s.created_at).toLocaleDateString()}</strong></div>
                 </div>
 
-                <div class="modal-section-title">🛠️ Update Status</div>
-                <form id="updateStatusForm">
+                <form id="manageForm">
+                    ${staffDropdown}
+                    <div class="modal-section-title">🛠️ Operational Status</div>
                     <select name="status" class="modal-input" style="cursor:pointer; margin-bottom: 2rem;">
                         <option value="pending" ${s.status==='pending'?'selected':''}>Pending</option>
                         <option value="in_transit" ${s.status==='in_transit'?'selected':''}>In Transit</option>
@@ -135,7 +207,7 @@
                         <option value="cancelled" ${s.status==='cancelled'?'selected':''}>Cancelled</option>
                     </select>
                     <div class="modal-footer">
-                        <button type="submit" class="btn-primary" style="flex:2; padding:1rem;">✅ SAVE NEW STATUS</button>
+                        <button type="submit" class="btn-primary" style="flex:2; padding:1rem;">✅ COMMIT CHANGES</button>
                         <button type="button" class="btn-secondary" onclick="this.closest('.modal-backdrop').remove()" style="flex:1; padding:1rem;">Dismiss</button>
                     </div>
                 </form>
@@ -143,12 +215,20 @@
 
         document.body.appendChild(modal);
         
-        document.getElementById('updateStatusForm').onsubmit = async (e) => {
+        document.getElementById('manageForm').onsubmit = async (e) => {
             e.preventDefault();
             const status = e.target.status.value;
+            const staffId = e.target.staff_id?.value;
+
             const res = await window.MoveX.updateStatus(s.tracking_id, status);
-            if (res.success) { alert('Status updated successfully!'); location.reload(); }
-            else alert('Failed to update status.');
+            if (res.success) { 
+                if (staffId) {
+                    await window.MoveX.assignShipment(s.tracking_id, staffId);
+                }
+                alert('Logistics pipeline updated!'); 
+                location.reload(); 
+            }
+            else alert('Failed to update pipeline.');
         };
     }
 
@@ -182,6 +262,9 @@
 
         const btnFran = document.getElementById('openAddFranchiseModal');
         if (btnFran) btnFran.onclick = () => openModal('franchise');
+
+        const btnStaff = document.getElementById('addStaffBtn');
+        if (btnStaff) btnStaff.onclick = () => openModal('staff');
     }
 
     function openModal(type) {
@@ -258,6 +341,23 @@
                         </div>
                     </form>
                 </div>`;
+        } else if (type === 'staff') {
+            modal.innerHTML = `
+                <div class="modal-card" style="width:400px;">
+                    <h2 class="modal-header-title">Provision New Hub Staff</h2>
+                    <form id="mForm" style="display: flex; flex-direction: column; gap: 15px;">
+                        <input type="text" name="username" class="modal-input" placeholder="Staff Username" required>
+                        <input type="password" name="password" class="modal-input" placeholder="Temporary Password" required>
+                        <input type="text" name="full_name" class="modal-input" placeholder="Staff Full Name" required>
+                        <input type="text" name="phone" class="modal-input" placeholder="Staff Mobile" required maxlength="10">
+                        <input type="hidden" name="role" value="staff">
+                        <div class="modal-role-badge">👷 LOCAL HUB OPERATIONAL STAFF</div>
+                        <div class="modal-footer" style="margin-top: 15px;">
+                            <button type="submit" class="btn-primary" style="flex:2;">CREATE STAFF</button>
+                            <button type="button" class="btn-secondary" onclick="this.closest('.modal-backdrop').remove()" style="flex:1;">Cancel</button>
+                        </div>
+                    </form>
+                </div>`;
         } else {
             modal.innerHTML = `
                 <div class="modal-card" style="width:480px;">
@@ -284,6 +384,7 @@
             let res;
             if (type === 'shipment') res = await window.MoveX.createShipment(data);
             else if (type === 'franchise') res = await window.MoveX.adminCreateFranchise(data);
+            else if (type === 'staff') res = await window.MoveX.staffCreate(data);
             else res = await window.MoveX.adminCreateUser(data);
 
             if (res.success) { 
@@ -403,38 +504,60 @@
         // Fetch current profile
         const res = await window.MoveX.getUserProfile();
         if (res.success) {
-            document.getElementById('profile_full_name').value = res.user.full_name || '';
-            document.getElementById('profile_phone').value = res.user.phone || '';
+            const u = res.user;
+            const elProfileName = document.getElementById('profile_full_name');
+            const elProfilePhone = document.getElementById('profile_phone');
+            
+            if (elProfileName) elProfileName.value = u.full_name || '';
+            if (elProfilePhone) elProfilePhone.value = u.phone || '';
+
+            // Handle Franchise Hub Settings if available
+            if (document.getElementById('franchise-name-display')) {
+                const franchiseRes = await window.MoveX.getStats(); // Uses stats for hub info
+                if (franchiseRes.success) {
+                    const fName = document.getElementById('franchise-name-display');
+                    const fAddr = document.getElementById('franchise_address');
+                    const fPin = document.getElementById('franchise_pincodes');
+                    if (fName) fName.textContent = u.full_name; // Assuming hub name is user's name for now
+                    // We need a specific endpoint for hub details if address is required
+                }
+            }
         }
 
         // Save Profile
-        document.getElementById('btn-save-profile').onclick = async () => {
-            const full_name = document.getElementById('profile_full_name').value;
-            const phone = document.getElementById('profile_phone').value;
-            const updateRes = await window.MoveX.updateUserProfile({ full_name, phone });
-            if (updateRes.success) {
-                alert('Profile updated successfully!');
-                location.reload();
-            }
-        };
+        const btnSaveProfile = document.getElementById('btn-save-profile');
+        if (btnSaveProfile) {
+            btnSaveProfile.onclick = async () => {
+                const full_name = document.getElementById('profile_full_name').value;
+                const phone = document.getElementById('profile_phone').value;
+                const updateRes = await window.MoveX.updateUserProfile({ full_name, phone });
+                if (updateRes.success) {
+                    alert('Profile updated successfully!');
+                    location.reload();
+                }
+            };
+        }
 
         // Change Password
-        document.getElementById('btn-save-password').onclick = async () => {
-            const old_password = document.getElementById('old_password').value;
-            const new_password = document.getElementById('new_password').value;
-            const confirm_password = document.getElementById('confirm_password').value;
+        const btnSavePass = document.getElementById('btn-save-password');
+        if (btnSavePass) {
+            btnSavePass.onclick = async () => {
+                const old_password = document.getElementById('old_password').value;
+                const new_password = document.getElementById('new_password').value;
+                const confirm_password = document.getElementById('confirm_password').value;
 
-            if (new_password !== confirm_password) return alert('New passwords do not match');
-            if (new_password.length < 8) return alert('New password must be at least 8 characters');
+                if (new_password !== confirm_password) return alert('New passwords do not match');
+                if (new_password.length < 8) return alert('New password must be at least 8 characters');
 
-            const passRes = await window.MoveX.changePassword({ old_password, new_password });
-            if (passRes.success) {
-                alert('Password changed successfully!');
-                location.reload();
-            } else {
-                alert(passRes.message || 'Verification failed. Password not changed.');
-            }
-        };
+                const passRes = await window.MoveX.changePassword({ old_password, new_password });
+                if (passRes.success) {
+                    alert('Password changed successfully!');
+                    location.reload();
+                } else {
+                    alert(passRes.message || 'Verification failed. Password not changed.');
+                }
+            };
+        }
     }
 
     async function setupAdmin() {

@@ -603,7 +603,7 @@ textarea:focus {
     background: var(--surface-primary);
     border-radius: 0;
     border: 1px solid var(--border-default);
-    overflow: hidden;
+    overflow-x: auto; /* Enable horizontal scroll for wide tables */
     box-shadow: var(--shadow-sm);
 }
 
