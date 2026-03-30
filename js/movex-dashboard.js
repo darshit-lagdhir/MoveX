@@ -68,6 +68,14 @@
             const pendingStaff = allShipments.filter(s => s.status === 'pending' || s.status === 'in_transit');
             renderTable(pendingStaff, 'assignment', 'assignmentsTableBody');
         }
+        if (document.getElementById('transactionsTableBody')) {
+            const delivered = allShipments.filter(s => s.status === 'delivered');
+            renderTable(delivered, 'revenue', 'transactionsTableBody');
+        }
+        if (document.getElementById('recentShipmentsBody')) {
+            const delivered = allShipments.filter(s => s.status === 'delivered');
+            renderTable(delivered, 'default', 'recentShipmentsBody');
+        }
         if (document.getElementById('staffTableBody')) {
             const staffRes = await window.MoveX.getStaff().catch(() => ({ success: false }));
             if (staffRes.success) renderStaffTable(staffRes.staff);
@@ -108,7 +116,8 @@
                       document.getElementById('recentShipmentsBody') || 
                       document.getElementById('fullShipmentsBody') ||
                       document.getElementById('pickupRequestsTableBody') ||
-                      document.getElementById('assignmentsTableBody'));
+                      document.getElementById('assignmentsTableBody') ||
+                      document.getElementById('transactionsTableBody'));
 
         if (!tbody) return;
         tbody.innerHTML = (data || []).length === 0 ? `<tr><td colspan="10" style="text-align:center;padding:3rem;color:var(--text-tertiary);">No shipments found in this category.</td></tr>` : '';
@@ -128,6 +137,8 @@
                 tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td>${s.sender_name}</td><td style="font-size:12px;">${s.sender_address}</td><td style="font-size:12px;color:var(--text-secondary);">${s.receiver_pincode}</td><td>${s.weight}kg</td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td><button class="btn-secondary manage-shipment-btn">Process</button></td>`;
             } else if (mode === 'assignment') {
                 tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td>${s.receiver_name}</td><td style="font-size:12px;color:var(--text-secondary);">${s.receiver_address}</td><td><span class="status-badge status-warn">NOT ASSIGNED</span></td><td><button class="btn-secondary manage-shipment-btn">Assign Staff</button></td>`;
+            } else if (mode === 'revenue') {
+                tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td>${d}</td><td>${s.receiver_name}</td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td><strong>₹${s.price}</strong></td>`;
             } else {
                 tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td>${s.sender_name}</td><td>${s.sender_pincode || '-'}</td><td>${s.receiver_pincode || '-'}</td><td>${d}</td><td>₹${s.price}</td><td><button class="btn-secondary manage-shipment-btn">Manage</button></td>`;
             }
@@ -144,11 +155,58 @@
         (staff || []).forEach(st => {
             const tr = document.createElement('tr');
             tr.innerHTML = `<td><strong>${st.full_name}</strong></td><td>${st.phone || '-'}</td><td><span class="status-badge status-active">${st.status.toUpperCase()}</span></td><td style="text-align:right;"><button class="btn-secondary info-staff-btn">Details</button></td>`;
-            tr.querySelector('.info-staff-btn').onclick = () => {
-                alert(`Staff: ${st.full_name}\nUsername: ${st.username}\nPhone: ${st.phone}\nHub Context: Organization #${st.organization_id}`);
-            };
+            tr.querySelector('.info-staff-btn').onclick = () => openStaffDetailModal(st);
             tb.appendChild(tr);
         });
+    }
+
+    function openStaffDetailModal(st) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-backdrop';
+        modal.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:9999;";
+        
+        modal.innerHTML = `
+            <div class="modal-card" style="width:400px; padding:0; overflow:hidden;">
+                <!-- Header with Icon -->
+                <div style="background:var(--brand-primary); padding:30px; text-align:center; color:#ffffff;">
+                    <div style="width:80px; height:80px; background:rgba(255,255,255,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px;">
+                        <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                    <h2 style="font-size:1.5rem; font-weight:800; margin-bottom:5px;">${st.full_name}</h2>
+                    <span style="font-size:0.875rem; opacity:0.8; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Hub Staff Account</span>
+                </div>
+
+                <!-- Info Grid -->
+                <div style="padding:25px; display:grid; gap:20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:15px; border-bottom:1px solid #f1f5f9;">
+                        <span style="color:var(--text-secondary); font-size:0.85rem; font-weight:600;">Authentication Handle</span>
+                        <span style="font-weight:700; color:var(--text-primary); background:#f1f5f9; padding:4px 10px; border-radius:6px; font-size:0.9rem;">@${st.username}</span>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:15px; border-bottom:1px solid #f1f5f9;">
+                        <span style="color:var(--text-secondary); font-size:0.85rem; font-weight:600;">Verified Phone</span>
+                        <span style="font-weight:700; color:var(--text-primary); font-size:0.9rem;">${st.phone || 'No Phone Link'}</span>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:15px; border-bottom:1px solid #f1f5f9;">
+                        <span style="color:var(--text-secondary); font-size:0.85rem; font-weight:600;">Hub Context</span>
+                        <span style="font-weight:700; color:var(--brand-primary); font-size:0.9rem;">Regional Cluster #${st.organization_id}</span>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="color:var(--text-secondary); font-size:0.85rem; font-weight:600;">Service Status</span>
+                        <span class="status-badge status-active" style="margin:0;">${st.status.toUpperCase()}</span>
+                    </div>
+                </div>
+
+                <div style="padding:20px; background:#f8fafc; border-top:1px solid #f1f5f9;">
+                    <button type="button" class="btn-primary" onclick="this.closest('.modal-backdrop').remove()" style="width:100%; padding:15px; font-size:1rem; font-weight:700;">✅ ACKNOWLEDGE IDENTITY</button>
+                </div>
+            </div>`;
+
+        document.body.appendChild(modal);
     }
 
     async function openManageModal(s, mode = 'default') {
