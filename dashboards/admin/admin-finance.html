@@ -81,14 +81,6 @@
                     </svg>
                     <span>Finance</span>
                 </a>
-                <a href="admin-reports.html" class="nav-item">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path
-                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                        </path>
-                    </svg>
-                    <span>Reports</span>
-                </a>
 
                 <div class="nav-group-title">System</div>
                 <a href="admin-settings.html" class="nav-item">
@@ -146,21 +138,16 @@
                         <p class="page-subtitle">Platform revenue, COD collections, and payouts.</p>
                     </div>
 
-                    <div class="grid-kpi">
+                    <div class="grid-kpi" style="grid-template-columns: 1fr 1fr;">
                         <div class="card">
                             <div class="card-title">Total Revenue</div>
                             <div class="card-value" id="fin-total-revenue">Loading...</div>
-                            <div class="card-trend trend-up"><span>Lifetime</span></div>
+                            <div class="card-trend trend-up"><span>Delivered Only</span></div>
                         </div>
                         <div class="card">
                             <div class="card-title">Pending Revenue</div>
                             <div class="card-value" id="fin-pending-cod">Loading...</div>
-                            <div class="card-trend"><span>Not yet delivered</span></div>
-                        </div>
-                        <div class="card">
-                            <div class="card-title">Est. Payouts</div>
-                            <div class="card-value" id="fin-franchise-payouts">Loading...</div>
-                            <div class="card-trend"><span>Calculated</span></div>
+                            <div class="card-trend"><span>Uncollected</span></div>
                         </div>
                     </div>
 

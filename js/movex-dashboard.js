@@ -31,13 +31,14 @@
 
             if (statsRes.success) renderStats(statsRes.stats);
             if (shipRes.success) {
-                allShipments = shipRes.shipments;
-                renderTable(allShipments, role);
+               if (path.includes('admin-shipments')) setupAdmin('shipments');
+               if (path.includes('admin-users')) setupAdmin('users');
+               if (path.includes('admin-franchises')) setupAdmin('franchises');
+               if (path.includes('admin-finance')) setupFinance();
+               if (path.includes('admin-reports')) setupReports();
+               
+               setupListeners();
             }
-
-            // 3. Setup Listeners
-            setupListeners();
-            if (role === 'admin') setupAdmin();
 
             // 4. Inject Logout
             injectLogout();
@@ -50,8 +51,7 @@
             'kpi-total-shipments': stats.totalShipments,
             'kpi-total-revenue': stats.totalRevenue ? `₹${stats.totalRevenue.toLocaleString()}` : '0',
             'kpi-total-users': stats.totalUsers,
-            'kpi-total-franchises': stats.totalFranchises,
-            'kpi-active-areas': (stats.totalFranchises || 0) * 8
+            'kpi-total-franchises': stats.totalFranchises
         };
         for (const [id, val] of Object.entries(m)) {
             const el = document.getElementById(id);
@@ -67,13 +67,82 @@
         (data || []).forEach(s => {
             const tr = document.createElement('tr');
             const d = new Date(s.created_at).toLocaleDateString();
-            const sL = (s.status || '').toLowerCase();
-            const sC = sL.includes('transit')?'status-transit':sL.includes('delivery')?'status-out':sL.includes('deliv')?'status-active':sL.includes('return')?'status-return':sL.includes('cancel')?'status-error':'status-warn';
             
+            // Clean Status for presentation
+            let status = (s.status || 'Pending').replace(/_/g, ' ').toLowerCase();
+            if (status === 'failed') status = 'cancelled';
+            if (status === 'rto') status = 'return';
+            
+            const sC = status.includes('transit')?'status-transit':status.includes('delivery')?'status-out':status.includes('deliv')?'status-active':status.includes('return')?'status-return':status.includes('cancel')?'status-error':'status-warn';
+            const displayStatus = status.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
             // Standard Table Rows
-            tr.innerHTML = `<td>${s.tracking_id}</td><td><span class="status-badge ${sC}">${s.status}</span></td><td>${s.sender_name}</td><td>${s.sender_pincode || '-'}</td><td>${s.receiver_pincode || '-'}</td><td>${d}</td><td>₹${s.price}</td><td><button class="btn-secondary" style="height:auto;padding:4px 8px;font-size:11px;">View</button></td>`;
+            tr.innerHTML = `<td>${s.tracking_id}</td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td>${s.sender_name}</td><td>${s.sender_pincode || '-'}</td><td>${s.receiver_pincode || '-'}</td><td>${d}</td><td>₹${s.price}</td><td><button class="btn-secondary manage-shipment-btn" style="height:auto;padding:4px 8px;font-size:11px;">Manage</button></td>`;
+            
+            tr.querySelector('.manage-shipment-btn').onclick = () => openManageModal(s);
             tbody.appendChild(tr);
         });
+    }
+
+    function openManageModal(s) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-backdrop';
+        modal.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:9999;";
+        
+        const d = new Date(s.created_at).toLocaleString();
+        modal.innerHTML = `
+            <div class="modal-card" style="width:600px;">
+                <h2 class="modal-header-title">Manage Shipment: ${s.tracking_id}</h2>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+                    <div>
+                        <div class="modal-section-title" style="margin-top:0;">📤 Sender Information</div>
+                        <p><strong>Name:</strong> ${s.sender_name}</p>
+                        <p><strong>Phone:</strong> ${s.sender_phone}</p>
+                        <p><strong>Address:</strong> ${s.sender_address}</p>
+                        <p><strong>Pincode:</strong> ${s.sender_pincode}</p>
+                    </div>
+                    <div>
+                        <div class="modal-section-title" style="margin-top:0;">📥 Receiver Information</div>
+                        <p><strong>Name:</strong> ${s.receiver_name}</p>
+                        <p><strong>Phone:</strong> ${s.receiver_phone}</p>
+                        <p><strong>Address:</strong> ${s.receiver_address}</p>
+                        <p><strong>Pincode:</strong> ${s.receiver_pincode}</p>
+                    </div>
+                </div>
+                
+                <div class="modal-section-title">📊 Package & Logistics</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;background:#f8fafc;padding:15px;border-radius:10px;">
+                    <div><span style="color:var(--text-secondary);font-size:12px;">Weight</span><br><strong>${s.weight} kg</strong></div>
+                    <div><span style="color:var(--text-secondary);font-size:12px;">Amount</span><br><strong>₹${s.price}</strong></div>
+                    <div><span style="color:var(--text-secondary);font-size:12px;">Created At</span><br><strong>${d}</strong></div>
+                </div>
+
+                <div class="modal-section-title">🛠️ Update Status</div>
+                <form id="updateStatusForm">
+                    <select name="status" class="modal-input" style="cursor:pointer; margin-bottom: 2rem;">
+                        <option value="pending" ${s.status==='pending'?'selected':''}>Pending</option>
+                        <option value="in_transit" ${s.status==='in_transit'?'selected':''}>In Transit</option>
+                        <option value="out_for_delivery" ${s.status==='out_for_delivery'?'selected':''}>Out for Delivery</option>
+                        <option value="delivered" ${s.status==='delivered'?'selected':''}>Delivered</option>
+                        <option value="return" ${s.status==='return'?'selected':''}>Return</option>
+                        <option value="cancelled" ${s.status==='cancelled'?'selected':''}>Cancelled</option>
+                    </select>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn-primary" style="flex:2; padding:1rem;">✅ SAVE NEW STATUS</button>
+                        <button type="button" class="btn-secondary" onclick="this.closest('.modal-backdrop').remove()" style="flex:1; padding:1rem;">Dismiss</button>
+                    </div>
+                </form>
+            </div>`;
+
+        document.body.appendChild(modal);
+        
+        document.getElementById('updateStatusForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const status = e.target.status.value;
+            const res = await window.MoveX.updateStatus(s.tracking_id, status);
+            if (res.success) { alert('Status updated successfully!'); location.reload(); }
+            else alert('Failed to update status.');
+        };
     }
 
     function filterShipments() {
@@ -101,46 +170,336 @@
         const bUser = document.getElementById('openAddUserModal') || document.getElementById('action-add-user');
         if (bUser) bUser.onclick = () => openModal('user');
         
-        const bCheck = document.getElementById('action-check-service');
-        if (bCheck) bCheck.onclick = () => window.location.href = 'admin-franchises.html';
+        const bCheck = document.getElementById('action-check-service') || document.getElementById('openAddFranchiseModal');
+        if (bCheck) {
+            if (bCheck.id === 'openAddFranchiseModal') bCheck.onclick = () => openModal('franchise');
+            else bCheck.onclick = () => window.location.href = 'admin-franchises.html';
+        }
     }
 
     function openModal(type) {
         const modal = document.createElement('div');
         modal.className = 'modal-backdrop';
-        modal.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:9999;";
+        modal.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:9999;";
         
         if (type === 'shipment') {
-            modal.innerHTML = `<div class="card" style="width:600px;padding:2rem;"><h2 style="margin:0 0 1rem;color:var(--brand-primary);">Book Shipment</h2><form id="mForm" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><input type="text" name="sender_name" placeholder="Sender Name" required><input type="text" name="sender_phone" placeholder="Sender Phone" required maxlength="10"><input type="text" name="sender_pincode" placeholder="Sender Pincode" required maxlength="6"><input type="text" name="receiver_name" placeholder="Receiver Name" required><input type="text" name="receiver_phone" placeholder="Receiver Phone" required maxlength="10"><input type="text" name="receiver_pincode" placeholder="Receiver Pincode" required maxlength="6"><input type="number" name="price" placeholder="Amount" required><input type="number" name="weight" placeholder="Weight (kg)" required><div style="grid-column:span 2;display:flex;gap:10px;margin-top:15px;"><button type="submit" class="btn-primary" style="flex:2;">CREATE SHIPMENT</button><button type="button" class="btn-secondary" onclick="this.closest('.modal-backdrop').remove()" style="flex:1;">CANCEL</button></div></form></div>`;
+            modal.innerHTML = `
+                <div class="modal-card">
+                    <h2 class="modal-header-title">Create New Shipment</h2>
+                    <form id="mForm" class="modal-form-grid">
+                        <div class="modal-section-title">📦 Sender Details</div>
+                        <input type="text" name="sender_name" class="modal-input" placeholder="Sender Full Name" required>
+                        <input type="text" name="sender_phone" class="modal-input" placeholder="Sender Mobile (10)" required maxlength="10">
+                        <textarea name="sender_address" class="modal-input modal-textarea" placeholder="Complete Pickup Address" required></textarea>
+                        <input type="text" name="sender_pincode" class="modal-input" placeholder="Sender Pincode (6)" required maxlength="6" style="grid-column: span 2;">
+                        
+                        <div class="modal-section-title">📍 Receiver Details</div>
+                        <input type="text" name="receiver_name" class="modal-input" placeholder="Receiver Full Name" required>
+                        <input type="text" name="receiver_phone" class="modal-input" placeholder="Receiver Mobile (10)" required maxlength="10">
+                        <textarea name="receiver_address" class="modal-input modal-textarea" placeholder="Complete Delivery Address" required></textarea>
+                        <input type="text" name="receiver_pincode" class="modal-input" placeholder="Receiver Pincode (6)" required maxlength="6" style="grid-column: span 2;">
+                        
+                        <div class="modal-section-title">💰 Billing Information</div>
+                        <input type="number" name="price" class="modal-input" placeholder="Booking Amount (₹)" required>
+                        <input type="number" name="weight" class="modal-input" placeholder="Total Weight (kg)" required>
+                        
+                        <div class="modal-footer" style="grid-column: span 2;">
+                            <button type="submit" class="btn-primary" style="flex:2; padding:1rem;">🚀 CONFIRM BOOKING</button>
+                            <button type="button" class="btn-secondary" onclick="this.closest('.modal-backdrop').remove()" style="flex:1;">Cancel</button>
+                        </div>
+                    </form>
+                </div>`;
+        } else if (type === 'franchise') {
+            modal.innerHTML = `
+                <div class="modal-card" style="width:600px; max-height: 90vh; overflow-y: auto;">
+                    <h2 class="modal-header-title">Register New Franchise Hub</h2>
+                    <form id="mForm" class="modal-form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                        
+                        <div class="modal-section-title" style="grid-column: span 2;">🏢 Hub Details</div>
+                        <div style="grid-column: span 2;">
+                            <label style="font-size:11px; color:var(--text-secondary); text-transform:uppercase;">Franchise Official Name</label>
+                            <input type="text" name="name" class="modal-input" placeholder="e.g. MoveX Bangalore Central" required>
+                        </div>
+                        <div style="grid-column: span 2;">
+                            <label style="font-size:11px; color:var(--text-secondary); text-transform:uppercase;">Serviceable Pincodes (Comma separated)</label>
+                            <input type="text" name="pincodes" class="modal-input" placeholder="e.g. 560001, 560002" required>
+                        </div>
+                        <div style="grid-column: span 2;">
+                            <label style="font-size:11px; color:var(--text-secondary); text-transform:uppercase;">Full Regional Address</label>
+                            <textarea name="full_address" class="modal-input modal-textarea" placeholder="Complete Hub Address" required style="height: 60px;"></textarea>
+                        </div>
+
+                        <div class="modal-section-title" style="grid-column: span 2;">🔐 Management Account</div>
+                        <div>
+                            <label style="font-size:11px; color:var(--text-secondary); text-transform:uppercase;">Username</label>
+                            <input type="text" name="username" class="modal-input" placeholder="franchise_manager" required>
+                        </div>
+                        <div>
+                            <label style="font-size:11px; color:var(--text-secondary); text-transform:uppercase;">Password</label>
+                            <input type="password" name="password" class="modal-input" placeholder="••••••••" required>
+                        </div>
+                        <div style="grid-column: span 2;">
+                            <label style="font-size:11px; color:var(--text-secondary); text-transform:uppercase;">Contact Phone Number</label>
+                            <input type="text" name="phone" class="modal-input" placeholder="10 Digit Mobile" required maxlength="10">
+                        </div>
+
+                        <div class="modal-role-badge" style="grid-column: span 2;">📍 ARCHITECTING REGIONAL LOGISTICS HUB ASSET</div>
+                        
+                        <div class="modal-footer" style="grid-column: span 2; margin-top: 15px;">
+                            <button type="submit" class="btn-primary" style="flex:2; padding:12px;">🚀 DEPLOY FRANCHISE HUB</button>
+                            <button type="button" class="btn-secondary" onclick="this.closest('.modal-backdrop').remove()" style="flex:1;">Cancel</button>
+                        </div>
+                    </form>
+                </div>`;
         } else {
-            modal.innerHTML = `<div class="card" style="width:450px;padding:2rem;"><h2 style="margin:0 0 1rem;color:var(--brand-primary);">Create Administrator</h2><form id="mForm" style="display:grid;gap:10px;"><input type="text" name="username" placeholder="Admin Username" required><input type="password" name="password" placeholder="Password" required><input type="text" name="full_name" placeholder="Full Display Name" required><input type="text" name="phone" placeholder="Phone (10 Digits)" required maxlength="10"><input type="hidden" name="role" value="admin"><div style="padding:10px;background:#f8fafc;border-radius:6px;text-align:center;font-weight:700;color:var(--brand-primary);">ROLE: SYSTEM ADMIN</div><div style="display:flex;gap:10px;margin-top:15px;"><button type="submit" class="btn-primary" style="flex:2;">SAVE ADMIN</button><button type="button" class="btn-secondary" onclick="this.closest('.modal-backdrop').remove()" style="flex:1;">CANCEL</button></div></form></div>`;
+            modal.innerHTML = `
+                <div class="modal-card" style="width:480px;">
+                    <h2 class="modal-header-title">Register Administrator</h2>
+                    <form id="mForm" style="display: flex; flex-direction: column; gap: 15px;">
+                        <input type="text" name="username" class="modal-input" placeholder="Desired Username" required>
+                        <input type="password" name="password" class="modal-input" placeholder="Secure Password" required>
+                        <input type="text" name="full_name" class="modal-input" placeholder="Full Employee Name" required>
+                        <input type="text" name="phone" class="modal-input" placeholder="Mobile Number (10 Digits)" required maxlength="10">
+                        <input type="hidden" name="role" value="admin">
+                        <div class="modal-role-badge">🛡️ SECURED SYSTEM ADMINISTRATOR ROLE</div>
+                        <div class="modal-footer" style="margin-top: 15px;">
+                            <button type="submit" class="btn-primary" style="flex:2;">SAVE ACCOUNT</button>
+                            <button type="button" class="btn-secondary" onclick="this.closest('.modal-backdrop').remove()" style="flex:1;">Cancel</button>
+                        </div>
+                    </form>
+                </div>`;
         }
         document.body.appendChild(modal);
         const f = document.getElementById('mForm');
         f.onsubmit = async (e) => {
             e.preventDefault();
             const data = Object.fromEntries(new FormData(f).entries());
-            const res = type === 'shipment' ? await window.MoveX.createShipment(data) : await window.MoveX.adminCreateUser(data);
-            if (res.success) { alert(type==='shipment'?'Shipment Created!':'Admin Created!'); location.reload(); }
-            else alert(res.message || 'Creation failed.');
+            let res;
+            if (type === 'shipment') res = await window.MoveX.createShipment(data);
+            else if (type === 'franchise') res = await window.MoveX.adminCreateFranchise(data);
+            else res = await window.MoveX.adminCreateUser(data);
+
+            if (res.success) { 
+                alert(type==='shipment'?'Shipment Created!':type==='franchise'?'Franchise Created!':'Admin Created!'); 
+                location.reload(); 
+            }
+            else alert(res.message || 'Action failed.');
         };
+    }
+
+    function openFranchiseManageModal(f) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-backdrop';
+        modal.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:9999;";
+        
+        modal.innerHTML = `
+            <div class="modal-card" style="width:500px;">
+                <h2 class="modal-header-title">Regional Hub Report: ${f.name}</h2>
+                <div style="margin-bottom:20px; background:#f8fafc; padding:20px; border-radius:12px; border: 1px solid var(--border-subtle); display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div style="grid-column: span 2;">
+                        <span style="font-size:10px; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Hub Official Name</span>
+                        <div style="font-size:16px; font-weight:700; color:var(--brand-primary);">${f.name}</div>
+                    </div>
+                    <div>
+                        <span style="font-size:10px; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Registration ID</span>
+                        <div style="font-size:14px; font-weight:600;">#FR-${f.organization_id}</div>
+                    </div>
+                    <div>
+                        <span style="font-size:10px; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Service Status</span>
+                        <div style="font-size:14px; color:var(--status-success-text); font-weight:700;">${f.status.toUpperCase()}</div>
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <span style="font-size:10px; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Assigned Pincode Block</span>
+                        <div style="font-size:14px; font-weight:500; background:#eef2ff; color:#4338ca; padding:8px; border-radius:6px;">${f.pincodes || 'National Access'}</div>
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <span style="font-size:10px; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Regional Hub Address</span>
+                        <div style="font-size:13px; line-height:1.6; color:#334155;">${f.full_address || 'Detailed address not registered'}</div>
+                    </div>
+                    <div>
+                        <span style="font-size:10px; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Enterprise Type</span>
+                        <div style="font-size:14px; font-weight:500; text-transform:capitalize;">${f.type || 'Franchise'}</div>
+                    </div>
+                    <div>
+                        <span style="font-size:10px; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Establishment Date</span>
+                        <div style="font-size:14px; font-weight:500;">${new Date(f.created_at).toLocaleDateString()}</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-primary" onclick="this.closest('.modal-backdrop').remove()" style="flex:1;">✅ DOCUMENT AUDITED</button>
+                </div>
+            </div>`;
+
+        document.body.appendChild(modal);
     }
 
     async function setupAdmin() {
         if (document.getElementById('usersTableBody')) {
             const res = await window.MoveX.getAdminUsers();
             if (res.success) {
-                const tb = document.getElementById('usersTableBody');
-                tb.innerHTML = res.users.map(u => `<tr><td>${u.user_id}</td><td>${u.username}</td><td>${u.full_name}</td><td>${u.role}</td><td><span class="status-badge status-active">${u.status}</span></td><td>-</td></tr>`).join('');
+                window._allUsers = res.users;
+                renderUsersTable(res.users);
             }
+            // Only search on button click per request
+            document.getElementById('userSearchBtn')?.addEventListener('click', filterUsers);
         }
         if (document.getElementById('franchiseTableBody')) {
             const res = await window.MoveX.getAdminFranchises();
             if (res.success) {
                 const tb = document.getElementById('franchiseTableBody');
-                tb.innerHTML = res.franchises.map(f => `<tr><td>${f.organization_id}</td><td>${f.name}</td><td>${f.pincodes || 'National'}</td><td><span class="status-badge status-active">${f.status}</span></td><td>-</td></tr>`).join('');
+                tb.innerHTML = '';
+                res.franchises.forEach(f => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${f.organization_id}</td><td>${f.name}</td><td>${f.pincodes || 'National'}</td><td><span class="status-badge status-active">${f.status.toUpperCase()}</span></td><td><button class="btn-secondary manage-franchise-btn" style="height:auto;padding:4px 8px;font-size:11px;">Manage</button></td>`;
+                    tr.querySelector('.manage-franchise-btn').onclick = () => openFranchiseManageModal(f);
+                    tb.appendChild(tr);
+                });
+                
+                // Update KPIs for Franchise Page
+                const elTotal = document.getElementById('kpi-total-franchises');
+                const elArea = document.getElementById('kpi-active-areas');
+                if (elTotal) elTotal.textContent = res.franchises.length;
+                if (elArea) elArea.textContent = res.franchises.reduce((acc, curr) => acc + (curr.pincodes ? curr.pincodes.split(',').length : 1), 0);
             }
         }
+    }
+
+    async function setupFinance() {
+        const res = await window.MoveX.adminGetFinances();
+        if (!res.success) return;
+
+        // KPI Update
+        const elTotal = document.getElementById('fin-total-revenue');
+        const elPend = document.getElementById('fin-pending-cod');
+        
+        if (elTotal) elTotal.textContent = `₹${res.totalRevenue.toLocaleString()}`;
+        if (elPend) elPend.textContent = `₹${res.pendingRevenue.toLocaleString()}`;
+
+        // Table Update
+        const tb = document.getElementById('finTransactionsBody');
+        if (tb) {
+            tb.innerHTML = res.transactions.map(t => `
+                <tr>
+                    <td>#${t.id.slice(-6)}</td>
+                    <td>${new Date(t.date).toLocaleDateString()}</td>
+                    <td><span class="status-badge" style="background:#e0f2fe; color:#0369a1;">Shipment</span></td>
+                    <td>${t.entity}</td>
+                    <td style="font-weight:600;">₹${parseFloat(t.amount || 0).toLocaleString()}</td>
+                    <td><span class="status-badge status-active">${t.status.toUpperCase()}</span></td>
+                </tr>
+            `).join('');
+        }
+    }
+
+    async function setupReports() {
+        const res = await window.MoveX.adminGetReports();
+        if (!res.success) return;
+
+        // Stats Update
+        const elTotal = document.getElementById('kpi-total-shipments');
+        const elSuccess = document.getElementById('kpi-success-rate');
+        
+        if (elTotal) elTotal.textContent = res.totalShipments;
+        if (elSuccess) {
+            const rate = res.totalShipments > 0 ? ((res.deliveredCount / res.totalShipments) * 100).toFixed(1) : 0;
+            elSuccess.textContent = `${rate}%`;
+        }
+
+        // Table Update
+        const tb = document.getElementById('reportsTableBody');
+        if (tb) {
+            tb.innerHTML = res.dailyReports.map(d => `
+                <tr>
+                    <td>${new Date(d.date).toLocaleDateString()}</td>
+                    <td style="font-weight:600;">${d.total}</td>
+                    <td style="color:var(--status-success-text);">${d.completed}</td>
+                    <td style="color:var(--status-error-text);">${d.total - d.completed}</td>
+                    <td style="font-weight:700;">₹${parseFloat(d.revenue || 0).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+    }
+
+    function renderUsersTable(users) {
+        const tb = document.getElementById('usersTableBody');
+        if (!tb) return;
+        tb.innerHTML = '';
+        if (users.length === 0) {
+            tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;">No users found matching filters.</td></tr>';
+            return;
+        }
+        users.forEach(u => {
+            const tr = document.createElement('tr');
+            const sC = u.status === 'active' ? 'status-active' : 'status-error';
+            tr.innerHTML = `<td>${u.user_id}</td><td>${u.username}</td><td>${u.full_name}</td><td><span style="text-transform:capitalize;">${u.role}</span></td><td><span class="status-badge ${sC}">${u.status.toUpperCase()}</span></td><td><button class="btn-secondary manage-user-btn" style="height:auto;padding:4px 8px;font-size:11px;">Manage</button></td>`;
+            tr.querySelector('.manage-user-btn').onclick = () => openUserManageModal(u);
+            tb.appendChild(tr);
+        });
+    }
+
+    function filterUsers() {
+        const query = document.getElementById('userSearchInput')?.value.toLowerCase().trim();
+        const role = document.getElementById('userRoleFilter')?.value;
+        const status = document.getElementById('userStatusFilter')?.value;
+
+        let filtered = window._allUsers || [];
+        if (query) {
+            filtered = filtered.filter(u => 
+                u.username.toLowerCase().includes(query) || 
+                u.full_name.toLowerCase().includes(query) || 
+                u.user_id.toString().includes(query)
+            );
+        }
+        if (role) filtered = filtered.filter(u => u.role === role);
+        if (status) filtered = filtered.filter(u => u.status === status);
+
+        renderUsersTable(filtered);
+    }
+
+    function openUserManageModal(u) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-backdrop';
+        modal.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:9999;";
+        
+        modal.innerHTML = `
+            <div class="modal-card" style="width:400px;">
+                <h2 class="modal-header-title">Manage User: ${u.username}</h2>
+                <div style="margin-bottom:20px; background:#f8fafc; padding:15px; border-radius:10px;">
+                    <p><strong>Full Name:</strong> ${u.full_name}</p>
+                    <p><strong>Role:</strong> <span style="text-transform:capitalize;">${u.role}</span></p>
+                    <p><strong>Phone:</strong> ${u.phone || 'N/A'}</p>
+                </div>
+
+                <div class="modal-section-title">🛡️ Security Status</div>
+                <select id="userStatusSelect" class="modal-input" style="margin-bottom:20px;">
+                    <option value="active" ${u.status==='active'?'selected':''}>Active (Full Access)</option>
+                    <option value="disabled" ${u.status==='disabled'?'selected':''}>Disabled (No Login)</option>
+                </select>
+
+                <div class="modal-footer" style="flex-direction:column; gap:10px;">
+                    <button id="saveUserStatus" class="btn-primary" style="width:100%;">APPLY STATUS CHANGE</button>
+                    <div style="margin-top:10px; border-top:1px solid var(--border-subtle); padding-top:10px;">
+                        <button id="deleteUserBtn" class="btn-secondary" style="width:100%; color:#dc2626; border-color:#fee2e2; background:#fef2f2;">🗑️ DELETE ACCOUNT PERMANENTLY</button>
+                    </div>
+                    <button class="btn-secondary" style="width:100%; margin-top:10px;" onclick="this.closest('.modal-backdrop').remove()">Close</button>
+                </div>
+            </div>`;
+
+        document.body.appendChild(modal);
+
+        document.getElementById('saveUserStatus').onclick = async () => {
+            const status = document.getElementById('userStatusSelect').value;
+            const res = await window.MoveX.adminUpdateUserStatus(u.user_id, status);
+            if (res.success) { alert('User status updated!'); location.reload(); }
+        };
+
+        document.getElementById('deleteUserBtn').onclick = async () => {
+            if (confirm(`Are you absolutely sure you want to PERMANENTLY DELETE user "${u.username}"? This cannot be undone.`)) {
+                const res = await window.MoveX.adminDeleteUser(u.user_id);
+                if (res.success) { alert('Account deleted!'); location.reload(); }
+            }
+        };
     }
 
     function injectLogout() {

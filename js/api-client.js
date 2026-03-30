@@ -51,6 +51,12 @@ class MoveXAPI {
     static async getAdminUsers() { return this.fetch('/admin/users'); }
     static async getAdminFranchises() { return this.fetch('/admin/franchises'); }
     static async adminCreateUser(payload) { return this.fetch('/admin/users/create', { method: 'POST', body: JSON.stringify(payload) }); }
+    static async adminUpdateUserStatus(user_id, status) { return this.fetch('/admin/users/update-status', { method: 'POST', body: JSON.stringify({ user_id, status }) }); }
+    static async adminDeleteUser(user_id) { return this.fetch('/admin/users/delete', { method: 'POST', body: JSON.stringify({ user_id }) }); }
+    static async adminCreateFranchise(payload) { return this.fetch('/admin/franchises/create', { method: 'POST', body: JSON.stringify(payload) }); }
+    static async adminDeleteFranchise(organization_id) { return this.fetch('/admin/franchises/delete', { method: 'POST', body: JSON.stringify({ organization_id }) }); }
+    static async adminGetFinances() { return this.fetch('/admin/finances'); }
+    static async adminGetReports() { return this.fetch('/admin/reports'); }
 }
 
 window.MoveX = MoveXAPI;

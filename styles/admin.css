@@ -702,6 +702,93 @@ textarea:focus {
     border: 1px solid #DDD6FE;
 }
 
+/* Premium Modal Styling */
+.modal-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 750px;
+    max-width: 95%;
+    max-height: 90vh; /* Fixed height to prevent overflow */
+    overflow-y: auto; /* Scroll if content is too long */
+    position: relative;
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+}
+
+/* Hide Scrollbar for Chrome/Safari */
+.modal-card::-webkit-scrollbar {
+    display: none;
+}
+
+.modal-header-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--brand-primary);
+    margin-bottom: 2rem;
+    letter-spacing: -0.025em;
+}
+
+.modal-section-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 1.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+    grid-column: span 2;
+}
+
+.modal-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.9375rem;
+    transition: all 0.2s;
+    background: #f8fafc;
+}
+
+.modal-input:focus {
+    background: #ffffff;
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 4px var(--brand-primary-soft);
+    outline: none;
+}
+
+.modal-textarea {
+    grid-column: span 2;
+    min-height: 80px;
+    resize: vertical;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2.5rem;
+}
+
+.modal-role-badge {
+    grid-column: span 2;
+    background: #f5f3ff;
+    color: #4f46e5;
+    padding: 0.75rem;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.875rem;
+    border: 1px dashed #c4b5fd;
+}
+
 /* Tooltips */
 [data-tooltip] {
     position: relative;

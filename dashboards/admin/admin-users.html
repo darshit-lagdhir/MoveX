@@ -81,14 +81,6 @@
                     </svg>
                     <span>Finance</span>
                 </a>
-                <a href="admin-reports.html" class="nav-item">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path
-                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                        </path>
-                    </svg>
-                    <span>Reports</span>
-                </a>
 
                 <div class="nav-group-title">System</div>
                 <a href="admin-settings.html" class="nav-item">
@@ -141,32 +133,22 @@
             <main>
                 <div class="dashboard-container">
                     <div class="page-header">
-                                <div>
-                                    <h1 class="page-title">User Management</h1>
-                                    <p class="page-subtitle">Manage system access, roles, and security.</p>
-                                </div>
-                                <button class="btn-primary" id="openAddUserModal">
-                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
-                                        viewBox="0 0 24 24">
-                                        <path d="M12 4v16m8-8H4"></path>
-                                    </svg>
-                                    Add User
-                                </button>
-                            </div>
+                        <div>
+                            <h1 class="page-title">User Management</h1>
+                            <p class="page-subtitle">Manage system access, roles, and security.</p>
                         </div>
-    
-                        <div class="card" style="padding: 0;">
-                            <div class="search-bar-container"
-                                style="padding: 1.5rem; border-bottom: 1px solid var(--border-subtle);">
-                                <div style="position: relative; flex: 2; height: 46px;">
-                                    <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary);"
-                                        width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                    </svg>
-                                    <input type="text" id="userSearchInput" placeholder="Search by username, name, or ID..." class="search-input"
-                                        style="width: 100%; padding-left: 3rem;">
-                                </div>
+                        <button class="btn-primary" id="openAddUserModal">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Add User
+                        </button>
+                    </div>
+
+                    <div class="card" style="margin-bottom: 2rem; padding: 1.5rem;">
+                        <div class="search-bar-container">
+                            <input type="text" id="userSearchInput" placeholder="Search by username, name, or ID..." class="search-input">
                             <select id="userRoleFilter" class="search-select">
                                 <option value="">All Roles</option>
                                 <option value="staff">Staff</option>
@@ -178,9 +160,12 @@
                                 <option value="active">Active</option>
                                 <option value="disabled">Disabled</option>
                             </select>
+                            <button id="userSearchBtn" class="search-btn">Search</button>
                         </div>
+                    </div>
 
-                        <div class="data-table-container" style="border: none; border-radius: 0;">
+                    <div class="card card-table" style="padding: 0 !important; overflow: hidden !important;">
+                        <div class="data-table-container" style="border: none;">
                             <table class="data-table">
                                 <thead>
                                     <tr>

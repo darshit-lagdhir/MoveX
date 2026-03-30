@@ -59,15 +59,17 @@ router.get('/stats', requireAuth, async (req, res) => {
         const { role, organization_id, username } = req.user;
         let stats = {};
 
+        // ADMIN STATS
         if (role === 'admin') {
-            const ship = await db.query("SELECT COUNT(*) as count, SUM(price) as rev FROM shipments");
+            const ship = await db.query("SELECT COUNT(*) as count FROM shipments");
+            const rev = await db.query("SELECT SUM(price) as total FROM shipments WHERE status = 'delivered'");
             const usr = await db.query("SELECT COUNT(*) as count FROM users");
             const deliv = await db.query("SELECT COUNT(*) as count FROM shipments WHERE status = 'delivered'");
             const fran = await db.query("SELECT COUNT(*) as count FROM organizations");
             stats = { 
                 totalShipments: parseInt(ship.rows[0].count), 
                 totalUsers: parseInt(usr.rows[0].count), 
-                totalRevenue: parseFloat(ship.rows[0].rev || 0),
+                totalRevenue: parseFloat(rev.rows[0].total || 0),
                 deliveredCount: parseInt(deliv.rows[0].count),
                 totalFranchises: parseInt(fran.rows[0].count)
             };
@@ -166,9 +168,123 @@ router.post('/admin/users/create', requireAuth, requireRole('admin'), async (req
     } catch (err) { res.status(400).json({ success: false, message: err.message }); }
 });
 
+router.post('/admin/users/update-status', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const { user_id, status } = req.body;
+        await db.query("UPDATE users SET status = $1 WHERE user_id = $2", [status, user_id]);
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+router.post('/admin/users/delete', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const { user_id } = req.body;
+        
+        // Get user info first
+        const userRes = await db.query("SELECT * FROM users WHERE user_id = $1", [user_id]);
+        if (userRes.rows.length === 0) return res.status(404).json({ success: false, message: 'User not found' });
+        
+        const user = userRes.rows[0];
+
+        // 1. If Franchisee, we also delete the Hub organization asset
+        if (user.role === 'franchisee' && user.organization_id) {
+            await db.query("DELETE FROM organizations WHERE organization_id = $1", [user.organization_id]);
+        }
+
+        // 2. Delete the User account
+        await db.query("DELETE FROM users WHERE user_id = $1", [user_id]);
+
+        res.json({ success: true });
+    } catch (err) { 
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Deletion logic failed.' }); 
+    }
+});
+
 router.get('/admin/franchises', requireAuth, requireRole('admin'), async (req, res) => {
     const { rows } = await db.query("SELECT * FROM organizations ORDER BY created_at DESC");
     res.json({ success: true, franchises: rows });
+});
+
+router.post('/admin/franchises/create', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const { name, pincodes, full_address, username, password, phone } = req.body;
+        
+        // 1. Create Organization
+        const orgRes = await db.query(`
+            INSERT INTO organizations (name, pincodes, full_address, type, status)
+            VALUES ($1, $2, $3, 'franchise', 'active')
+            RETURNING organization_id
+        `, [name, pincodes, full_address]);
+        
+        const orgId = orgRes.rows[0].organization_id;
+
+        // 2. Create Franchisee User
+        const hash = await bcrypt.hash(password, 10);
+        await db.query(`
+            INSERT INTO users (username, password_hash, full_name, phone, role, status, organization_id)
+            VALUES ($1, $2, $3, $4, 'franchisee', 'active', $5)
+        `, [username.trim().toLowerCase(), hash, name, phone, orgId]);
+
+        res.json({ success: true });
+    } catch (err) { 
+        console.error(err);
+        res.status(400).json({ success: false, message: err.message }); 
+    }
+});
+
+router.post('/admin/franchises/delete', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const { organization_id } = req.body;
+        await db.query("DELETE FROM organizations WHERE organization_id = $1", [organization_id]);
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+// 📊 FINANCE API
+router.get('/admin/finances', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const rev = await db.query(`
+            SELECT 
+                SUM(CASE WHEN status = 'delivered' THEN price ELSE 0 END) as total_delivered, 
+                SUM(CASE WHEN status NOT IN ('delivered', 'cancelled') THEN price ELSE 0 END) as pending 
+            FROM shipments
+        `);
+        const trans = await db.query(`
+            SELECT tracking_id as id, created_at as date, 'Shipment' as type, sender_name as entity, price as amount, status 
+            FROM shipments 
+            WHERE status = 'delivered'
+            ORDER BY created_at DESC LIMIT 10
+        `);
+        res.json({ 
+            success: true, 
+            totalRevenue: parseFloat(rev.rows[0].total_delivered || 0),
+            pendingRevenue: parseFloat(rev.rows[0].pending || 0),
+            transactions: trans.rows
+        });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+// 📈 REPORTS API
+router.get('/admin/reports', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const total = await db.query("SELECT COUNT(*) as count FROM shipments");
+        const deliv = await db.query("SELECT COUNT(*) as count FROM shipments WHERE status = 'delivered'");
+        const daily = await db.query(`
+            SELECT DATE(created_at) as date, COUNT(*) as total, 
+            COUNT(CASE WHEN status = 'delivered' THEN 1 END) as completed,
+            SUM(price) as revenue
+            FROM shipments 
+            GROUP BY DATE(created_at) 
+            ORDER BY date DESC LIMIT 30
+        `);
+        res.json({ 
+            success: true, 
+            totalShipments: parseInt(total.rows[0].count),
+            deliveredCount: parseInt(deliv.rows[0].count),
+            dailyReports: daily.rows
+        });
+    } catch (err) { res.status(500).json({ success: false }); }
 });
 
 router.get('/organization/staff', requireAuth, requireRole('franchisee'), async (req, res) => {
