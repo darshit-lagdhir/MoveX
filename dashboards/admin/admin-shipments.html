@@ -164,16 +164,13 @@
                             <input type="text" id="shipmentSearchInput" placeholder="Enter Tracking ID..."
                                 class="search-input">
                             <select id="shipmentStatusFilter" class="search-select">
-                                <option>All Status</option>
-                                <option>Pending</option>
-                                <option>Picked Up</option>
-                                <option>In Transit</option>
-                                <option>Out for Delivery</option>
-                                <option>Delivered</option>
-                                <option>Hold</option>
-                                <option>RTO</option>
-                                <option>Failed</option>
-                                <option>Cancelled</option>
+                                <option value="all">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="in transit">In Transit</option>
+                                <option value="out for delivery">Out for Delivery</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="return">Return</option>
+                                <option value="cancelled">Cancelled</option>
                             </select>
                             <input type="date" id="shipmentDateFilter" class="search-date">
                             <button id="shipmentSearchBtn" class="search-btn">Search</button>

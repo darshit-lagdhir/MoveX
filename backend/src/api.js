@@ -63,11 +63,13 @@ router.get('/stats', requireAuth, async (req, res) => {
             const ship = await db.query("SELECT COUNT(*) as count, SUM(price) as rev FROM shipments");
             const usr = await db.query("SELECT COUNT(*) as count FROM users");
             const deliv = await db.query("SELECT COUNT(*) as count FROM shipments WHERE status = 'delivered'");
+            const fran = await db.query("SELECT COUNT(*) as count FROM organizations");
             stats = { 
                 totalShipments: parseInt(ship.rows[0].count), 
                 totalUsers: parseInt(usr.rows[0].count), 
                 totalRevenue: parseFloat(ship.rows[0].rev || 0),
-                deliveredCount: parseInt(deliv.rows[0].count)
+                deliveredCount: parseInt(deliv.rows[0].count),
+                totalFranchises: parseInt(fran.rows[0].count)
             };
         } else if (role === 'franchisee') {
             const ship = await db.query("SELECT COUNT(*) as count, SUM(price) as rev FROM shipments WHERE organization_id = $1", [organization_id]);
