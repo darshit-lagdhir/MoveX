@@ -31,13 +31,17 @@
 
             if (statsRes.success) renderStats(statsRes.stats);
             if (shipRes.success) {
-               if (path.includes('admin-shipments')) setupAdmin('shipments');
-               if (path.includes('admin-users')) setupAdmin('users');
-               if (path.includes('admin-franchises')) setupAdmin('franchises');
-               if (path.includes('admin-finance')) setupFinance();
-               if (path.includes('admin-reports')) setupReports();
-               
-               setupListeners();
+                allShipments = shipRes.shipments;
+                if (path.includes('admin-shipments') || path.includes('franchisee-dashboard') || document.getElementById('shipmentsTableBody')) {
+                    renderTable(allShipments);
+                }
+                
+                if (path.includes('admin-users')) setupAdmin('users');
+                if (path.includes('admin-franchises')) setupAdmin('franchises');
+                if (path.includes('admin-finance')) setupFinance();
+                if (path.includes('admin-reports')) setupReports();
+                
+                setupListeners();
             }
 
             if (document.getElementById('fin-total-revenue')) await setupFinance();
