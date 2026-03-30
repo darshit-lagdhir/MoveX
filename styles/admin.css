@@ -272,7 +272,7 @@ textarea:focus {
     background: var(--brand-primary-soft);
 }
 
-/* SIDEBAR - Hope UI Alignment */
+/* SIDEBAR - Fixed Static Blueprint */
 .sidebar {
     width: 250px;
     background: var(--surface-primary);
@@ -282,43 +282,29 @@ textarea:focus {
     position: fixed;
     height: 100vh;
     z-index: 50;
-    transition: all var(--transition-smooth);
     overflow-y: auto;
     overflow-x: hidden;
 }
 
-@media (max-width: 768px) {
-    .sidebar {
-        transform: translateX(-100%);
-        left: -250px;
-        position: fixed;
-        height: 100vh;
-        z-index: 1000;
-        width: 250px !important;
-        /* Force full width on mobile open */
-    }
-
-    .sidebar.collapsed {
-        width: 250px;
-        /* Disable collapse on mobile, just hide */
-    }
-
-    .main-content {
-        margin-left: 0 !important;
-        width: 100% !important;
-    }
+/* Sidebar Branding */
+.sidebar .nav-logo {
+    padding: 0 1.5rem;
 }
 
-.sidebar.collapsed {
-    width: 80px;
+.main-content {
+    flex: 1;
+    margin-left: 250px;
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - 250px);
 }
 
-/* Open Sidebar on Mobile when Toggled */
-.sidebar.active {
-    transform: translateX(0) !important;
-    left: 0 !important;
+/* Hide Hamburger per user request */
+.toggle-btn {
+    display: none !important;
 }
 
+/* Sidebar items simplified - No Collapse Logic */
 .sidebar-header {
     height: 60px;
     padding: 0 1.5rem;
@@ -326,50 +312,6 @@ textarea:focus {
     align-items: center;
     gap: 1rem;
     border-bottom: 1px solid var(--border-subtle);
-}
-
-/* Sidebar branding now uses .nav-logo from base.css */
-.sidebar.collapsed .sidebar-header {
-    padding: 0;
-    justify-content: center;
-}
-
-.sidebar.collapsed .nav-logo .logo-text {
-    display: none;
-}
-
-.sidebar.collapsed .nav-logo {
-    gap: 0;
-    justify-content: center;
-    width: 100%;
-}
-
-.sidebar.collapsed .nav-group-title {
-    opacity: 0;
-    height: 0;
-    padding: 0;
-    margin: 0;
-    overflow: hidden;
-}
-
-.sidebar.collapsed .nav-item {
-    justify-content: center;
-    padding: 0.75rem 0;
-    gap: 0;
-}
-
-.sidebar.collapsed .nav-item span {
-    display: none;
-}
-
-.sidebar.collapsed .nav-item svg {
-    margin: 0;
-}
-
-.sidebar.collapsed .nav-item.active::after {
-    width: 4px;
-    left: 0;
-    right: auto;
 }
 
 .sidebar-nav {

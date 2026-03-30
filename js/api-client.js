@@ -50,6 +50,7 @@ class MoveXAPI {
     // ADMIN ONLY
     static async getAdminUsers() { return this.fetch('/admin/users'); }
     static async getAdminFranchises() { return this.fetch('/admin/franchises'); }
+    static async adminCreateUser(payload) { return this.fetch('/admin/users/create', { method: 'POST', body: JSON.stringify(payload) }); }
 }
 
 window.MoveX = MoveXAPI;
