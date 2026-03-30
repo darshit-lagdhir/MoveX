@@ -89,9 +89,18 @@ router.get('/stats', requireAuth, async (req, res) => {
         } else if (role === 'franchisee') {
             const ship = await db.query("SELECT COUNT(*) as count, SUM(price) as rev FROM shipments WHERE organization_id = $1", [organization_id]);
             const pend = await db.query("SELECT COUNT(*) as count FROM shipments WHERE organization_id = $1 AND status = 'pending'", [organization_id]);
+            const monthly = await db.query(`
+                SELECT SUM(price) as rev 
+                FROM shipments 
+                WHERE organization_id = $1 
+                AND status = 'delivered' 
+                AND created_at >= DATE_TRUNC('month', CURRENT_DATE)
+            `, [organization_id]);
+            
             stats = {
                 totalShipments: parseInt(ship.rows[0].count),
                 totalRevenue: parseFloat(ship.rows[0].rev || 0),
+                monthlyRevenue: parseFloat(monthly.rows[0].rev || 0),
                 pendingPickups: parseInt(pend.rows[0].count)
             };
         } else { // User

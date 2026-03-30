@@ -69,11 +69,10 @@
             renderTable(pendingStaff, 'assignment', 'assignmentsTableBody');
         }
         if (document.getElementById('transactionsTableBody')) {
-            const delivered = allShipments.filter(s => s.status === 'delivered');
-            renderTable(delivered, 'revenue', 'transactionsTableBody');
+            renderTable(allShipments, 'revenue', 'transactionsTableBody');
         }
         if (document.getElementById('recentShipmentsBody')) {
-            const delivered = allShipments.filter(s => s.status === 'delivered');
+            const delivered = allShipments.filter(s => s.status && s.status.toLowerCase() === 'delivered');
             renderTable(delivered, 'default', 'recentShipmentsBody');
         }
         if (document.getElementById('staffTableBody')) {
@@ -102,7 +101,9 @@
             'kpi-total-revenue': stats.totalRevenue ? `₹${stats.totalRevenue.toLocaleString()}` : '0',
             'kpi-total-users': stats.totalUsers,
             'kpi-total-franchises': stats.totalFranchises,
-            'kpi-pending-pickups': stats.pendingPickups || 0
+            'kpi-pending-pickups': stats.pendingPickups || 0,
+            'kpi-monthly-revenue': stats.monthlyRevenue ? `₹${stats.monthlyRevenue.toLocaleString()}` : '₹0',
+            'kpi-delivered-count': stats.deliveredCount || 0
         };
         for (const [id, val] of Object.entries(m)) {
             const el = document.getElementById(id);
@@ -142,8 +143,9 @@
             } else {
                 tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td>${s.sender_name}</td><td>${s.sender_pincode || '-'}</td><td>${s.receiver_pincode || '-'}</td><td>${d}</td><td>₹${s.price}</td><td><button class="btn-secondary manage-shipment-btn">Manage</button></td>`;
             }
-
-            tr.querySelector('.manage-shipment-btn').onclick = () => openManageModal(s, mode);
+            const btn = tr.querySelector('.manage-shipment-btn');
+            if (btn) btn.onclick = () => openManageModal(s, mode);
+            
             tbody.appendChild(tr);
         });
     }
