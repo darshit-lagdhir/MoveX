@@ -176,121 +176,114 @@
                 </marker>
             </defs>
 
-            <!-- LEFT: FRANCHISEE ACTOR -->
-            <rect x="50" y="55" width="180" height="790" class="entity" />
-            <text x="140" y="430" class="text-main" style="font-size:18px;">FRANCHISEE</text>
-            <text x="140" y="455" class="text-main" style="font-size:18px;">HUB</text>
-            <text x="140" y="478" class="text-meta">Role: Franchisee</text>
-
-            <!--
-                PROCESSES from actual franchisee pages:
-                1.0 Login               → /api/auth/login
-                2.0 Manage Shipments    → franchisee-shipments.html (create/view/update status)
-                3.0 Assign Staff        → franchisee-assignments.html (pick staff + shipments)
-                4.0 Manage Staff        → franchisee-staff.html (add/edit/disable staff)
-                5.0 Settings            → franchisee-settings.html (update profile + view org)
-
-                DATASTORES franchisee actually touches:
-                D1: Users          → login check, add/edit staff
-                D2: Shipments      → create shipment, update status, assign staff
-                D3: Organizations  → view pincodes, check serviceability
-            -->
-
-            <!-- 1.0 Login -->
+            <!-- LEFT: FRANCHISEE ACTOR & VERTICAL BUS -->
+            <rect x="50" y="80" width="180" height="80" class="entity" />
+            <text x="140" y="125" class="text-main" style="font-size:16px;">Franchisee</text>
+            <!-- 5 PROCESSES -->
             <circle cx="500" cy="120" r="50" class="process" />
-            <text x="500" y="115" class="text-meta">1.0</text>
-            <text x="500" y="130" class="text-main" style="font-size:12px;">Login</text>
+            <path d="M 456 95 L 544 95" stroke="var(--accent)" stroke-width="1.5" />
+            <text x="500" y="90" class="text-meta">1.0</text>
+            <text x="500" y="125" class="text-main" style="font-size:13px;">Login</text>
 
-            <!-- 2.0 Manage Shipments -->
             <circle cx="500" cy="280" r="50" class="process" />
-            <text x="500" y="275" class="text-meta">2.0</text>
-            <text x="500" y="290" class="text-main" style="font-size:12px;">Manage Shipments</text>
+            <path d="M 456 255 L 544 255" stroke="var(--accent)" stroke-width="1.5" />
+            <text x="500" y="250" class="text-meta">2.0</text>
+            <text x="500" y="280" class="text-main" style="font-size:13px;">Manage</text>
+            <text x="500" y="298" class="text-main" style="font-size:13px;">Shipments</text>
 
-            <!-- 3.0 Assign Staff -->
             <circle cx="500" cy="440" r="50" class="process" />
-            <text x="500" y="435" class="text-meta">3.0</text>
-            <text x="500" y="450" class="text-main" style="font-size:12px;">Assign Staff</text>
+            <path d="M 456 415 L 544 415" stroke="var(--accent)" stroke-width="1.5" />
+            <text x="500" y="410" class="text-meta">3.0</text>
+            <text x="500" y="440" class="text-main" style="font-size:13px;">Assign</text>
+            <text x="500" y="458" class="text-main" style="font-size:13px;">Staff</text>
 
-            <!-- 4.0 Manage Staff -->
             <circle cx="500" cy="600" r="50" class="process" />
-            <text x="500" y="595" class="text-meta">4.0</text>
-            <text x="500" y="610" class="text-main" style="font-size:12px;">Manage Staff</text>
+            <path d="M 456 575 L 544 575" stroke="var(--accent)" stroke-width="1.5" />
+            <text x="500" y="570" class="text-meta">4.0</text>
+            <text x="500" y="600" class="text-main" style="font-size:13px;">Manage</text>
+            <text x="500" y="618" class="text-main" style="font-size:13px;">Staff</text>
 
-            <!-- 5.0 Settings -->
             <circle cx="500" cy="760" r="50" class="process" />
-            <text x="500" y="755" class="text-meta">5.0</text>
-            <text x="500" y="770" class="text-main" style="font-size:12px;">Settings</text>
+            <path d="M 456 735 L 544 735" stroke="var(--accent)" stroke-width="1.5" />
+            <text x="500" y="730" class="text-meta">5.0</text>
+            <text x="500" y="765" class="text-main" style="font-size:13px;">Settings</text>
 
-            <!-- DATASTORES (only 3 the franchisee actually uses) -->
-            <path d="M 1100 95 H 900 V 155 H 1100" class="ds-line" />
-            <rect x="915" y="95" width="15" height="60" class="ds-bar" />
-            <text x="1010" y="130" class="text-main" style="font-size:13px;">D1: Users</text>
+            <!-- DATASTORES (Configured for Franchisee Logic: D1, D2, D3) -->
+            <path d="M 1100 95 H 850 V 155 H 1100" class="ds-line" />
+            <rect x="865" y="95" width="15" height="60" class="ds-bar" />
+            <text x="980" y="130" class="text-main" style="font-size:13px;">D1: Users</text>
 
-            <path d="M 1100 255 H 900 V 315 H 1100" class="ds-line" />
-            <rect x="915" y="255" width="15" height="60" class="ds-bar" />
-            <text x="1010" y="290" class="text-main" style="font-size:13px;">D2: Shipments</text>
+            <path d="M 1030 255 H 850 V 315 H 1030" class="ds-line" />
+            <rect x="865" y="255" width="15" height="60" class="ds-bar" />
+            <text x="955" y="290" class="text-main" style="font-size:13px;">D2: Shipments</text>
 
-            <path d="M 1100 415 H 900 V 475 H 1100" class="ds-line" />
-            <rect x="915" y="415" width="15" height="60" class="ds-bar" />
-            <text x="1010" y="450" class="text-main" style="font-size:13px;">D2: Shipments</text>
+            <path d="M 1030 735 H 850 V 795 H 1030" class="ds-line" />
+            <rect x="865" y="735" width="15" height="60" class="ds-bar" />
+            <text x="955" y="770" class="text-main" style="font-size:13px;">D3: Organizations</text>
 
-            <path d="M 1100 575 H 900 V 635 H 1100" class="ds-line" />
-            <rect x="915" y="575" width="15" height="60" class="ds-bar" />
-            <text x="1010" y="610" class="text-main" style="font-size:13px;">D1: Users</text>
+            <!-- ============ RIGHT FLOWS (to Data Stores) ============ -->
 
-            <path d="M 1100 735 H 900 V 795 H 1100" class="ds-line" />
-            <rect x="915" y="735" width="15" height="60" class="ds-bar" />
-            <text x="1010" y="770" class="text-main" style="font-size:13px;">D3: Organizations</text>
+            <!-- 1.0 Login → D1: Users -->
+            <path d="M 549 110 H 850" class="arrow-line" marker-end="url(#arr)" />
+            <text x="700" y="105" class="text-flow">Check Username &amp; Hash</text>
+            <path d="M 850 130 H 549" class="arrow-line" marker-end="url(#arr)" />
+            <text x="700" y="145" class="text-flow">User Role &amp; Org ID</text>
+
+            <!-- 2.0 Manage Shipments → D2: Shipments -->
+            <path d="M 549 270 H 850" class="arrow-line" marker-end="url(#arr)" />
+            <text x="700" y="265" class="text-flow">Insert / Update Shipment</text>
+            <path d="M 850 290 H 549" class="arrow-line" marker-end="url(#arr)" />
+            <text x="700" y="305" class="text-flow">Org Shipment Records</text>
+
+            <!-- 3.0 Assign Staff → D2: Shipments (L-Shape UP to D2) -->
+            <path d="M 549 430 H 990 V 315" class="arrow-line" marker-end="url(#arr)" />
+            <text x="770" y="425" class="text-flow">Set assigned_staff_id</text>
+            <path d="M 1010 315 V 450 H 549" class="arrow-line" marker-end="url(#arr)" />
+            <text x="780" y="465" class="text-flow">Updated Row Count</text>
+
+            <!-- 4.0 Manage Staff → D1: Users (L-Shape Bypass UP to D1) -->
+            <path d="M 549 590 H 1050 V 155" class="arrow-line" marker-end="url(#arr)" />
+            <text x="800" y="585" class="text-flow">Insert / Update Staff</text>
+            <path d="M 1070 155 V 610 H 549" class="arrow-line" marker-end="url(#arr)" />
+            <text x="810" y="625" class="text-flow">Staff In Same Org</text>
+
+            <!-- 5.0 Settings → D3: Organizations -->
+            <path d="M 549 750 H 850" class="arrow-line" marker-end="url(#arr)" />
+            <text x="700" y="745" class="text-flow">Get Org By ID</text>
+            <path d="M 850 770 H 549" class="arrow-line" marker-end="url(#arr)" />
+            <text x="700" y="785" class="text-flow">Name, Pincodes, Address</text>
+
+            <!-- ============ LEFT FLOWS (from Actor) ============ -->
 
             <!-- 1.0 Login -->
-            <path d="M 230 110 H 445" class="arrow-line" marker-end="url(#arr)" />
+            <path d="M 230 110 H 451" class="arrow-line" marker-end="url(#arr)" />
             <text x="338" y="105" class="text-flow">Username &amp; Password</text>
-            <path d="M 445 130 H 230" class="arrow-line" marker-end="url(#arr)" />
+            <path d="M 451 130 H 230" class="arrow-line" marker-end="url(#arr)" />
             <text x="338" y="145" class="text-flow">Dashboard Access</text>
-            <path d="M 555 110 H 900" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="105" class="text-flow">Check Username &amp; Hash</text>
-            <path d="M 900 130 H 555" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="145" class="text-flow">User Role &amp; Org ID</text>
 
             <!-- 2.0 Manage Shipments -->
-            <path d="M 230 270 H 445" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="265" class="text-flow">Create / Update Status</text>
-            <path d="M 445 290 H 230" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="305" class="text-flow">Tracking ID &amp; List</text>
-            <path d="M 555 270 H 900" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="265" class="text-flow">Insert / Update Shipment</text>
-            <path d="M 900 290 H 555" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="305" class="text-flow">Org Shipment Records</text>
+            <path d="M 210 160 V 270 H 451" class="arrow-line" marker-end="url(#arr)" />
+            <text x="325" y="265" class="text-flow">Create / Update Status</text>
+            <path d="M 451 290 H 190 V 160" class="arrow-line" marker-end="url(#arr)" />
+            <text x="325" y="305" class="text-flow">Tracking ID &amp; List</text>
 
             <!-- 3.0 Assign Staff -->
-            <path d="M 230 430 H 445" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="425" class="text-flow">Pick Staff &amp; Shipments</text>
-            <path d="M 445 450 H 230" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="465" class="text-flow">Assignment Done</text>
-            <path d="M 555 430 H 900" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="425" class="text-flow">Set assigned_staff_id</text>
-            <path d="M 900 450 H 555" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="465" class="text-flow">Updated Row Count</text>
+            <path d="M 170 160 V 430 H 451" class="arrow-line" marker-end="url(#arr)" />
+            <text x="325" y="425" class="text-flow">Pick Staff &amp; Shipments</text>
+            <path d="M 451 450 H 150 V 160" class="arrow-line" marker-end="url(#arr)" />
+            <text x="325" y="465" class="text-flow">Assignment Done</text>
 
             <!-- 4.0 Manage Staff -->
-            <path d="M 230 590 H 445" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="585" class="text-flow">Add / Edit / Disable Staff</text>
-            <path d="M 445 610 H 230" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="625" class="text-flow">Staff List</text>
-            <path d="M 555 590 H 900" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="585" class="text-flow">Insert / Update Staff</text>
-            <path d="M 900 610 H 555" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="625" class="text-flow">Staff In Same Org</text>
+            <path d="M 130 160 V 590 H 451" class="arrow-line" marker-end="url(#arr)" />
+            <text x="325" y="585" class="text-flow">Add / Edit / Disable Staff</text>
+            <path d="M 451 610 H 110 V 160" class="arrow-line" marker-end="url(#arr)" />
+            <text x="325" y="625" class="text-flow">Staff List</text>
 
             <!-- 5.0 Settings -->
-            <path d="M 230 750 H 445" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="745" class="text-flow">View Pincodes &amp; Address</text>
-            <path d="M 445 770 H 230" class="arrow-line" marker-end="url(#arr)" />
-            <text x="338" y="785" class="text-flow">Org Info</text>
-            <path d="M 555 750 H 900" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="745" class="text-flow">Get Org By ID</text>
-            <path d="M 900 770 H 555" class="arrow-line" marker-end="url(#arr)" />
-            <text x="728" y="785" class="text-flow">Name, Pincodes, Address</text>
+            <path d="M 90 160 V 750 H 451" class="arrow-line" marker-end="url(#arr)" />
+            <text x="325" y="745" class="text-flow">View Pincodes &amp; Address</text>
+            <path d="M 451 770 H 70 V 160" class="arrow-line" marker-end="url(#arr)" />
+            <text x="325" y="785" class="text-flow">Org Info</text>
         </svg>
     </div>
 </body>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoveX DFD - Level 0 Context Diagram</title>
+    <title>MoveX</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <style>
@@ -149,7 +149,7 @@
 
 <body>
     <header class="header">
-        <h1>MoveX Logistics - Level 0 Context Diagram</h1>
+        <h1>MoveX</h1>
     </header>
 
     <div class="nav-links">
@@ -171,26 +171,20 @@
 
             <!-- TOP ROW: 4 EXTERNAL ENTITIES (matching 4 user roles) -->
             <rect x="50" y="60" width="180" height="80" class="entity" />
-            <text x="140" y="95" class="text-main">System Admin</text>
-            <text x="140" y="115" class="text-meta">Role: Admin</text>
+            <text x="140" y="105" class="text-main">Admin</text>
 
             <rect x="290" y="60" width="180" height="80" class="entity" />
-            <text x="380" y="95" class="text-main">Customer</text>
-            <text x="380" y="115" class="text-meta">Role: User</text>
+            <text x="380" y="105" class="text-main">Customer</text>
 
             <rect x="530" y="60" width="180" height="80" class="entity" />
-            <text x="620" y="95" class="text-main">Franchisee Hub</text>
-            <text x="620" y="115" class="text-meta">Role: Franchisee</text>
+            <text x="620" y="105" class="text-main">Franchisee</text>
 
             <rect x="770" y="60" width="180" height="80" class="entity" />
-            <text x="860" y="95" class="text-main">Hub Staff</text>
-            <text x="860" y="115" class="text-meta">Role: Staff</text>
+            <text x="860" y="105" class="text-main">Staff</text>
 
             <!-- CENTRAL SYSTEM CIRCLE -->
             <circle cx="500" cy="540" r="110" class="system-circle" />
-            <text x="500" y="515" font-weight="900" font-size="22" fill="#2563eb" text-anchor="middle">MoveX</text>
-            <text x="500" y="545" class="text-main" style="font-size: 16px;">Logistics System</text>
-            <text x="500" y="565" class="text-meta" style="font-size: 11px;">(Process 0.0)</text>
+            <text x="500" y="540" font-weight="900" font-size="22" fill="#2563eb" text-anchor="middle">MoveX</text>
 
             <!--
                 FLOW LABELS — simple English, based on actual backend routes:
@@ -209,34 +203,34 @@
             -->
 
             <!-- SYSTEM ADMIN FLOWS -->
-            <path d="M 120 140 V 475 H 415" class="arrow-line" marker-end="url(#arrhead)" />
+            <path d="M 120 140 V 475 H 411" class="arrow-line" marker-end="url(#arrhead)" />
             <text x="105" y="300" class="text-flow" transform="rotate(-90 105 300)">Login / Manage Users
                 / Shipments</text>
-            <path d="M 435 460 H 160 V 140" class="arrow-line" marker-end="url(#arrhead)" />
+            <path d="M 424 460 H 160 V 140" class="arrow-line" marker-end="url(#arrhead)" />
             <text x="175" y="300" class="text-flow" transform="rotate(-90 175 300)">Dashboard Stats /
                 User &amp; Franchise Lists</text>
 
             <!-- CUSTOMER FLOWS -->
-            <path d="M 360 140 V 445 H 465" class="arrow-line" marker-end="url(#arrhead)" />
+            <path d="M 360 140 V 445 H 444" class="arrow-line" marker-end="url(#arrhead)" />
             <text x="345" y="290" class="text-flow" transform="rotate(-90 345 290)">Register / Login /
                 Book Shipment</text>
-            <path d="M 485 435 H 400 V 140" class="arrow-line" marker-end="url(#arrhead)" />
+            <path d="M 467 435 H 400 V 140" class="arrow-line" marker-end="url(#arrhead)" />
             <text x="415" y="290" class="text-flow" transform="rotate(-90 415 290)">Tracking Info /
                 Booking Confirmation</text>
 
             <!-- FRANCHISEE HUB FLOWS -->
-            <path d="M 600 140 V 435 H 535" class="arrow-line" marker-end="url(#arrhead)" />
+            <path d="M 600 140 V 435 H 533" class="arrow-line" marker-end="url(#arrhead)" />
             <text x="585" y="290" class="text-flow" transform="rotate(-90 585 290)">Create Shipment /
                 Assign Staff</text>
-            <path d="M 555 445 H 640 V 140" class="arrow-line" marker-end="url(#arrhead)" />
+            <path d="M 556 445 H 640 V 140" class="arrow-line" marker-end="url(#arrhead)" />
             <text x="655" y="290" class="text-flow" transform="rotate(-90 655 290)">Shipment List /
                 Pickup Requests</text>
 
             <!-- HUB STAFF FLOWS -->
-            <path d="M 840 140 V 475 H 575" class="arrow-line" marker-end="url(#arrhead)" />
+            <path d="M 840 140 V 475 H 589" class="arrow-line" marker-end="url(#arrhead)" />
             <text x="825" y="300" class="text-flow" transform="rotate(-90 825 300)">Login /
                 Delivery Status Updates</text>
-            <path d="M 585 500 H 880 V 140" class="arrow-line" marker-end="url(#arrhead)" />
+            <path d="M 602 500 H 880 V 140" class="arrow-line" marker-end="url(#arrhead)" />
             <text x="895" y="300" class="text-flow" transform="rotate(-90 895 300)">Assigned Deliveries /
                 Profile Info</text>
         </svg>
