@@ -170,6 +170,32 @@ router.post('/shipments/update-status', requireAuth, async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
+router.post('/shipments/assign', requireAuth, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin' && req.user.role !== 'franchisee') {
+            return res.status(403).json({ success: false, message: 'Forbidden: Only admins or hub operators can assign tasks.' });
+        }
+
+        const { tracking_id, staff_id } = req.body;
+        
+        // Verify the staff exists
+        const staffRes = await db.query("SELECT * FROM users WHERE user_id = $1 AND role = 'staff'", [staff_id]);
+        if (staffRes.rows.length === 0) return res.status(404).json({ success: false, message: 'Staff member not found.' });
+
+        // Update shipment assignment
+        await db.query(`
+            UPDATE shipments 
+            SET assigned_staff_id = $1, updated_at = NOW() 
+            WHERE tracking_id = $2
+        `, [staff_id, tracking_id]);
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Assignment error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 /**
  * 🏛️ ADMIN & ORG
  */
