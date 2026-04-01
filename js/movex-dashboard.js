@@ -10,7 +10,7 @@
 
     async function init() {
         const path = window.location.pathname;
-        const role = path.includes('admin') ? 'admin' : path.includes('franchisee') ? 'franchisee' : 'user';
+        const role = path.includes('admin') ? 'admin' : path.includes('franchisee') ? 'franchisee' : path.includes('staff') ? 'staff' : 'user';
 
         try {
             const raw = sessionStorage.getItem('movexsecuresession');
@@ -37,6 +37,8 @@
                 await setupAdminController(path);
             } else if (role === 'franchisee') {
                 await setupFranchiseeController(path, statsRes.stats);
+            } else if (role === 'staff') {
+                await setupStaffController(path, statsRes.stats);
             }
 
             // Global UI Listeners (Modals, Settings)
@@ -95,6 +97,28 @@
         }
     }
 
+    async function setupStaffController(path, stats) {
+        // Hydrate specific tables by ID for Staff
+        if (document.getElementById('tasksTableBody')) {
+            renderTable(allShipments, 'staff_assignment', 'tasksTableBody');
+        }
+
+        // Populate KPIs from shipments manually
+        const elPending = document.getElementById('kpi-pending-hub');
+        const elOut = document.getElementById('kpi-out-delivery');
+        const elDelivered = document.getElementById('kpi-delivered-today');
+        
+        if (elPending || elOut || elDelivered) {
+            const pendingStaff = allShipments.filter(s => s.status === 'in_transit' || s.status === 'pending').length;
+            const processOut = allShipments.filter(s => s.status === 'out_for_delivery').length;
+            const delToday = allShipments.filter(s => s.status.toLowerCase() === 'delivered').length;
+
+            if (elPending) elPending.textContent = pendingStaff;
+            if (elOut) elOut.textContent = processOut;
+            if (elDelivered) elDelivered.textContent = delToday;
+        }
+    }
+
     function renderStats(stats, role) {
         const m = {
             'kpi-total-shipments': stats.totalShipments,
@@ -138,6 +162,8 @@
                 tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td>${s.sender_name}</td><td style="font-size:12px;">${s.sender_address}</td><td style="font-size:12px;color:var(--text-secondary);">${s.receiver_pincode}</td><td>${s.weight}kg</td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td><button class="btn-secondary manage-shipment-btn">Process</button></td>`;
             } else if (mode === 'assignment') {
                 tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td>${s.receiver_name}</td><td style="font-size:12px;color:var(--text-secondary);">${s.receiver_address}</td><td><span class="status-badge status-warn">NOT ASSIGNED</span></td><td><button class="btn-secondary manage-shipment-btn">Assign Staff</button></td>`;
+            } else if (mode === 'staff_assignment') {
+                tr.innerHTML = `<td><span style="color:var(--text-secondary);font-size:12px;">#${s.tracking_id.slice(-6)}</span></td><td><strong>${s.tracking_id}</strong></td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td>${s.sender_name}</td><td>${s.receiver_name}</td><td>${s.receiver_phone || '-'}</td><td><button class="btn-secondary manage-shipment-btn">Update Task</button></td>`;
             } else if (mode === 'revenue') {
                 tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td>${d}</td><td>${s.receiver_name}</td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td><strong>₹${s.price}</strong></td>`;
             } else {
