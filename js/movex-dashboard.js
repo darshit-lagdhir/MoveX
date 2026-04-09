@@ -334,23 +334,27 @@
             <div class="modal-card" style="width:600px;">
                 <h2 class="modal-header-title">${mode==='assignment'?'Task Assignment':'Shipment Control'}: ${s.tracking_id}</h2>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
-                    <div>
-                        <div class="modal-section-title" style="margin-top:0;">📤 Origin Profile</div>
-                        <p><strong>Sender:</strong> ${s.sender_name}</p>
-                        <p><strong>Pincode:</strong> ${s.sender_pincode}</p>
+                    <div style="background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #f1f5f9; box-shadow: var(--shadow-sm);">
+                        <div class="modal-section-title" style="margin-top:0; color:var(--brand-primary); font-size:10px; padding-bottom:5px; border-bottom:2px solid var(--brand-primary-soft);">📤 Origin (Sender)</div>
+                        <p style="margin:10px 0 5px;"><strong>${s.sender_name}</strong></p>
+                        <p style="margin-bottom:5px; font-size:13px;"><svg style="width:14px;height:14px;vertical-align:middle;margin-right:5px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>${s.sender_phone || 'N/A'}</p>
+                        <p style="margin-bottom:8px; font-size:12px; color:var(--text-secondary); line-height:1.4;"><strong>Address:</strong><br>${s.sender_address}, ${s.sender_city || ''}</p>
+                        <p style="font-size:12px;"><strong>PIN:</strong> <span style="background:var(--brand-primary-soft); color:var(--brand-primary); padding:2px 6px; border-radius:4px; font-weight:700;">${s.sender_pincode}</span></p>
                     </div>
-                    <div>
-                        <div class="modal-section-title" style="margin-top:0;">📥 Target Profile</div>
-                        <p><strong>Receiver:</strong> ${s.receiver_name}</p>
-                        <p><strong>Pincode:</strong> ${s.receiver_pincode}</p>
+                    <div style="background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #f1f5f9; box-shadow: var(--shadow-sm);">
+                        <div class="modal-section-title" style="margin-top:0; color:var(--accent-purple); font-size:10px; padding-bottom:5px; border-bottom:2px solid #f5f3ff;">📥 Destination (Receiver)</div>
+                        <p style="margin:10px 0 5px;"><strong>${s.receiver_name}</strong></p>
+                        <p style="margin-bottom:5px; font-size:13px;"><svg style="width:14px;height:14px;vertical-align:middle;margin-right:5px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>${s.receiver_phone || 'N/A'}</p>
+                        <p style="margin-bottom:8px; font-size:12px; color:var(--text-secondary); line-height:1.4;"><strong>Address:</strong><br>${s.receiver_address}, ${s.receiver_city || ''}</p>
+                        <p style="font-size:12px;"><strong>PIN:</strong> <span style="background:#f5f3ff; color:var(--accent-purple); padding:2px 6px; border-radius:4px; font-weight:700;">${s.receiver_pincode}</span></p>
                     </div>
                 </div>
                 
-                <div class="modal-section-title">📊 Package Insights</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;background:#f8fafc;padding:15px;border-radius:10px;margin-bottom:20px;">
-                    <div><span style="color:var(--text-secondary);font-size:11px;">WEIGHT</span><br><strong>${s.weight} kg</strong></div>
-                    <div><span style="color:var(--text-secondary);font-size:11px;">BILLING</span><br><strong>₹${s.price}</strong></div>
-                    <div><span style="color:var(--text-secondary);font-size:11px;">REGISTERED</span><br><strong>${new Date(s.created_at).toLocaleDateString()}</strong></div>
+                <div class="modal-section-title">📦 Shipment Inventory Details</div>
+                <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:15px;background:#f8fafc;padding:15px;border-radius:12px;margin-bottom:20px; border:1px solid #e2e8f0;">
+                    <div><span style="color:var(--text-secondary);font-size:10px;text-transform:uppercase;font-weight:700;">Weight</span><br><strong style="font-size:1.1rem;">${s.weight}</strong><small>kg</small></div>
+                    <div><span style="color:var(--text-secondary);font-size:10px;text-transform:uppercase;font-weight:700;">Total Bill</span><br><strong style="font-size:1.1rem;color:var(--success);">₹${s.price}</strong></div>
+                    <div style="grid-column: span 2;"><span style="color:var(--text-secondary);font-size:10px;text-transform:uppercase;font-weight:700;">Item Description</span><br><strong style="font-size:0.9rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${s.contents || 'No description'}">${s.contents || 'General Parcel'}</strong></div>
                 </div>
 
                 ${mode === 'customer' ? `
