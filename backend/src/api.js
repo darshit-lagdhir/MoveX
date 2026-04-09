@@ -59,14 +59,108 @@ router.post('/auth/login', async (req, res) => {
 
 router.post('/auth/register', async (req, res) => {
     try {
-        const { username, password, full_name, phone } = req.body;
+        const { username, password, full_name, phone, security_answers } = req.body;
         const hash = await bcrypt.hash(password, 10);
         await db.query(
-            'INSERT INTO users (username, password_hash, role, status, full_name, phone) VALUES ($1, $2, $3, $4, $5, $6)',
-            [username.trim().toLowerCase(), hash, 'user', 'active', full_name, phone]
+            'INSERT INTO users (username, password_hash, role, status, full_name, phone, security_answers) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+            [username.trim().toLowerCase(), hash, 'user', 'active', full_name, phone, JSON.stringify(security_answers || {})]
         );
         res.json({ success: true });
     } catch (err) { res.status(400).json({ success: false, message: 'Registration failed.' }); }
+});
+
+router.post('/auth/forgot-password/check-user', async (req, res) => {
+    try {
+        const { username } = req.body;
+        const normalizedUsername = username.trim().toLowerCase();
+        const { rows } = await db.query('SELECT role, status FROM users WHERE username = $1', [normalizedUsername]);
+        
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Username not found.' });
+        }
+        if (rows[0].role !== 'user') {
+            return res.status(403).json({ success: false, message: 'Recovery is only for Customer accounts.' });
+        }
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+router.post('/auth/forgot-password/verify', async (req, res) => {
+    try {
+        const { username, answers } = req.body;
+        const normalizedUsername = username.trim().toLowerCase();
+        
+        // 1. Precise Credential Audit
+        const { rows } = await db.query('SELECT security_answers, role FROM users WHERE username = $1', [normalizedUsername]);
+        
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'No recovery records found for this username.' });
+        }
+        
+        const user = rows[0];
+
+        // 2. Role Restriction Enforcement
+        if (user.role !== 'user') {
+            return res.status(403).json({ success: false, message: 'Recovery portal is only accessible to standard Customer accounts.' });
+        }
+
+        const stored = user.security_answers || {};
+        const q1Stored = (stored.q1 || stored.a1 || "").toString().toLowerCase().trim();
+        const q2Stored = (stored.q2 || stored.a2 || "").toString().toLowerCase().trim();
+        const q3Stored = (stored.q3 || stored.a3 || "").toString().toLowerCase().trim();
+
+        const q1Input = (answers.q1 || answers.a1 || "").toString().toLowerCase().trim();
+        const q2Input = (answers.q2 || answers.a2 || "").toString().toLowerCase().trim();
+        const q3Input = (answers.q3 || answers.a3 || "").toString().toLowerCase().trim();
+
+        // 3. Security Question Challenge Validation
+        const isCorrect = (
+            q1Stored === q1Input &&
+            q2Stored === q2Input &&
+            q3Stored === q3Input
+        );
+
+        if (!isCorrect) {
+            return res.status(401).json({ success: false, message: 'Security verification failed. Answers do not match our records.' });
+        }
+
+        // Answers correct! Generate a reset token in the password_resets table
+        const token = Math.random().toString(36).slice(-10).toUpperCase();
+        const expires = new Date(Date.now() + 15 * 60000); // 15 mins
+
+        await db.query(
+            'INSERT INTO password_resets (username, token_hash, expires_at) VALUES ($1, $2, $3)',
+            [normalizedUsername, token, expires]
+        );
+
+        res.json({ success: true, token });
+    } catch (err) { 
+        console.error('Verify error:', err);
+        res.status(500).json({ success: false, message: 'System processing error during verification.' }); 
+    }
+});
+
+router.post('/auth/forgot-password/reset', async (req, res) => {
+    try {
+        const { username, token, new_password } = req.body;
+        
+        // Validate token
+        const { rows } = await db.query(
+            'SELECT * FROM password_resets WHERE username = $1 AND token_hash = $2 AND used = false AND expires_at > NOW()',
+            [username.trim().toLowerCase(), token]
+        );
+
+        if (rows.length === 0) return res.status(401).json({ success: false, message: 'Invalid or expired reset token.' });
+
+        // Update password
+        const hash = await bcrypt.hash(new_password, 10);
+        await db.query('UPDATE users SET password_hash = $1 WHERE username = $2', [hash, username.trim().toLowerCase()]);
+        
+        // Mark token as used
+        await db.query('UPDATE password_resets SET used = true WHERE reset_id = $1', [rows[0].reset_id]);
+
+        res.json({ success: true, message: 'Password has been reset successfully.' });
+    } catch (err) { res.status(500).json({ success: false, message: 'Reset failed.' }); }
 });
 
 /**

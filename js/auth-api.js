@@ -145,8 +145,12 @@
       const password = document.getElementById('register-password')?.value;
       const confirm = document.getElementById('register-confirm-password')?.value;
 
-      if (!username || !fullName || !phone || !password || !confirm) {
-        showNotification('Please fill all registration fields.', 'error');
+        const q1 = document.getElementById('register-q1')?.value.trim();
+      const q2 = document.getElementById('register-q2')?.value.trim();
+      const q3 = document.getElementById('register-q3')?.value.trim();
+
+      if (!username || !fullName || !phone || !password || !confirm || !q1 || !q2 || !q3) {
+        showNotification('Please fill all registration fields, including security questions.', 'error');
         return;
       }
 
@@ -162,7 +166,13 @@
         const res = await fetch(`${API_BASE}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, full_name: fullName, phone, password })
+          body: JSON.stringify({ 
+            username, 
+            full_name: fullName, 
+            phone, 
+            password,
+            security_answers: { q1, q2, q3 }
+          })
         });
 
         const data = await res.json().catch(() => ({}));
@@ -182,10 +192,101 @@
     });
   }
 
+  function setupForgotFlow() {
+    const btnNext = document.getElementById('btn-forgot-next');
+    const btnVerify = document.getElementById('btn-forgot-verify');
+    const btnReset = document.getElementById('btn-forgot-reset');
+
+    let recoveryUser = '';
+    let recoveryToken = '';
+
+    if (btnNext) {
+      btnNext.onclick = async () => {
+        recoveryUser = document.getElementById('forgot-username').value.trim();
+        if (!recoveryUser) return showNotification('Please enter your username first.', 'error');
+        
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/forgot-password/check-user`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: recoveryUser })
+          });
+          const data = await res.json();
+          if (data.success) {
+            // Move to questions step
+            document.getElementById('step1-forgot').style.display = 'none';
+            document.getElementById('step2-forgot').style.display = 'block';
+          } else {
+            showNotification(data.message || 'Error occurred.', 'error');
+          }
+        } catch (e) {
+          showNotification('Cannot reach server.', 'error');
+        }
+      };
+    }
+
+    if (btnVerify) {
+      btnVerify.onclick = async () => {
+        const q1 = document.getElementById('forgot-a1').value.trim();
+        const q2 = document.getElementById('forgot-a2').value.trim();
+        const q3 = document.getElementById('forgot-a3').value.trim();
+
+        if (!q1 || !q2 || !q3) return showNotification('Please answer all 3 questions.', 'error');
+
+        try {
+          console.log('Verifying answers for:', recoveryUser);
+          const res = await fetch(`${API_BASE}/api/auth/forgot-password/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: recoveryUser, answers: { q1, q2, q3 } })
+          });
+          const data = await res.json();
+          if (data.success) {
+            recoveryToken = data.token;
+            console.log('Recovery proof obtained.');
+            showNotification('Identity Verified! Set your new password.', 'success');
+            document.getElementById('step2-forgot').style.display = 'none';
+            document.getElementById('step3-forgot').style.display = 'block';
+          } else {
+            console.warn('Verification failed:', data.message);
+            showNotification(data.message || 'Answers are incorrect.', 'error');
+          }
+        } catch (e) { 
+          console.error(e);
+          showNotification('Verification failed due to a system error.', 'error'); 
+        }
+      };
+    }
+
+    if (btnReset) {
+      btnReset.onclick = async () => {
+        const pass = document.getElementById('forgot-new-pass').value;
+        const confirm = document.getElementById('forgot-confirm-pass').value;
+        if (pass !== confirm) return showNotification('Passwords do not match.', 'error');
+
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/forgot-password/reset`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: recoveryUser, token: recoveryToken, new_password: pass })
+          });
+          const data = await res.json();
+          if (data.success) {
+            showNotification('Password updated! You can login now.', 'success');
+            setTimeout(() => location.reload(), 1500);
+          } else {
+            showNotification(data.message || 'Reset failed.', 'error');
+          }
+        } catch (e) { showNotification('Reset failed.', 'error'); }
+      };
+    }
+  }
+
   function init() {
     setupCardFlip();
     setupLoginForm();
     setupRegisterForm();
+    setupForgotFlow();
     
     // Simple password toggle
     document.querySelectorAll('.password-toggle').forEach(btn => {
