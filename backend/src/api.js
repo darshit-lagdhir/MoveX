@@ -33,23 +33,28 @@ router.post('/auth/login', async (req, res) => {
         const { rows } = await db.query('SELECT * FROM users WHERE username = $1', [username.trim().toLowerCase()]);
         const user = rows[0];
 
-        // 1. Basic Credential Check
-        if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+        // 1. Existence and Status Audit (Check status before password to avoid leak/unnecessary processing)
+        if (!user) {
             return res.status(400).json({ success: false, message: 'Invalid credentials.' });
         }
-
-        // 2. Role Integrity Check (Security Hardening)
-        if (role && user.role !== role) {
-            return res.status(403).json({ success: false, message: `Access Denied: Account not registered as ${role}.` });
-        }
-
-        // 3. Status Audit
         if (user.status !== 'active') {
             return res.status(403).json({ success: false, message: 'Account is currently suspended or inactive.' });
         }
 
+        // 2. Credential Check
+        if (!(await bcrypt.compare(password, user.password_hash))) {
+            return res.status(400).json({ success: false, message: 'Invalid credentials.' });
+        }
+
+        // 3. Role Integrity Check (Security Hardening)
+        if (role && user.role !== role) {
+            return res.status(403).json({ success: false, message: `Access Denied: Account not registered as ${role}.` });
+        }
+
         res.json({ success: true, user: { username: user.username, role: user.role } });
-    } catch (err) { res.status(500).json({ success: false, message: 'Login error.' }); }
+    } catch (err) { 
+        res.status(500).json({ success: false, message: 'Login error.' }); 
+    }
 });
 
 router.post('/auth/register', async (req, res) => {
@@ -186,7 +191,7 @@ router.post('/shipments/update-status', requireAuth, async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-router.post('/shipments/delete', requireAuth, async (req, res) => {
+router.post('/shipments/delete', requireAuth, requireRole('admin'), async (req, res) => {
     try {
         const { tracking_id } = req.body;
         await db.query("DELETE FROM shipments WHERE tracking_id = $1", [tracking_id]);
