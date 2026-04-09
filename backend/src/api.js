@@ -88,7 +88,7 @@ router.get('/stats', requireAuth, async (req, res) => {
             };
         } else if (role === 'franchisee') {
             const ship = await db.query("SELECT COUNT(*) as count, SUM(price) as rev FROM shipments WHERE organization_id = $1", [organization_id]);
-            const pend = await db.query("SELECT COUNT(*) as count FROM shipments WHERE organization_id = $1 AND status = 'pending'", [organization_id]);
+            const pend = await db.query("SELECT COUNT(*) as count FROM shipments WHERE organization_id = $1 AND status = 'booked'", [organization_id]);
             const monthly = await db.query(`
                 SELECT SUM(price) as rev 
                 FROM shipments 
@@ -123,13 +123,21 @@ router.get('/stats', requireAuth, async (req, res) => {
 router.get('/shipments', requireAuth, async (req, res) => {
     try {
         const { role, user_id, organization_id, username } = req.user;
-        let query = "SELECT * FROM shipments ";
+        let query = `
+            SELECT s.*, u.full_name as staff_name 
+            FROM shipments s
+            LEFT JOIN users u ON s.assigned_staff_id = u.user_id 
+        `;
         let params = [];
 
         if (role === 'admin') query += "ORDER BY created_at DESC LIMIT 50";
-        else if (role === 'franchisee') { query += "WHERE organization_id = $1 ORDER BY created_at DESC"; params = [organization_id]; }
-        else if (role === 'staff') { query += "WHERE assigned_staff_id = $1 ORDER BY created_at DESC"; params = [user_id]; }
-        else { query += "WHERE creator_username = $1 ORDER BY created_at DESC"; params = [username]; }
+        else if (role === 'franchisee') { 
+            // Franchisees see shipments assigned to them OR originating from their serviceable pincodes
+            query += "WHERE s.organization_id = $1 OR s.sender_pincode = ANY(SELECT unnest(string_to_array(pincodes, ',')) FROM organizations WHERE organization_id = $1) ORDER BY s.created_at DESC"; 
+            params = [organization_id]; 
+        }
+        else if (role === 'staff') { query += "WHERE s.assigned_staff_id = $1 ORDER BY s.created_at DESC"; params = [user_id]; }
+        else { query += "WHERE s.creator_username = $1 ORDER BY s.created_at DESC"; params = [username]; }
 
         const { rows } = await db.query(query, params);
         res.json({ success: true, shipments: rows });
@@ -141,14 +149,22 @@ router.post('/shipments/create', requireAuth, async (req, res) => {
         const d = req.body;
         // Generate Tracking ID MX + random 6 digits
         const trk = 'MX' + Math.floor(100000 + Math.random() * 900000);
-        const orgId = req.user.role === 'franchisee' ? req.user.organization_id : (d.organization_id || null);
+        let orgId = req.user.role === 'franchisee' ? req.user.organization_id : (d.organization_id || null);
+
+        // Auto-assign hub based on sender pincode if not provided (for customer/admin bookings)
+        if (!orgId && d.sender_pincode) {
+            const orgSearch = await db.query("SELECT organization_id FROM organizations WHERE $1 = ANY(string_to_array(pincodes, ','))", [d.sender_pincode]);
+            if (orgSearch.rows.length > 0) {
+                orgId = orgSearch.rows[0].organization_id;
+            }
+        }
 
         await db.query(`
             INSERT INTO shipments (
                 tracking_id, sender_name, sender_phone, sender_address, sender_pincode,
                 receiver_name, receiver_phone, receiver_address, receiver_pincode,
                 weight, price, status, organization_id, creator_username
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'pending', $12, $13)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'booked', $12, $13)
         `, [
             trk, d.sender_name, d.sender_phone, d.sender_address, d.sender_pincode || '000000',
             d.receiver_name, d.receiver_phone, d.receiver_address, d.receiver_pincode || '000000',
@@ -166,6 +182,14 @@ router.post('/shipments/update-status', requireAuth, async (req, res) => {
     try {
         const { tracking_id, status } = req.body;
         await db.query("UPDATE shipments SET status = $1, updated_at = NOW() WHERE tracking_id = $2", [status, tracking_id]);
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+router.post('/shipments/delete', requireAuth, async (req, res) => {
+    try {
+        const { tracking_id } = req.body;
+        await db.query("DELETE FROM shipments WHERE tracking_id = $1", [tracking_id]);
         res.json({ success: true });
     } catch (err) { res.status(500).json({ success: false }); }
 });

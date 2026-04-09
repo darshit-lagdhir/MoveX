@@ -39,6 +39,8 @@
                 await setupFranchiseeController(path, statsRes.stats);
             } else if (role === 'staff') {
                 await setupStaffController(path, statsRes.stats);
+            } else if (role === 'user') {
+                await setupUserController(path, statsRes.stats);
             }
 
             // Global UI Listeners (Modals, Settings)
@@ -60,10 +62,11 @@
     async function setupFranchiseeController(path, stats) {
         // Hydrate specific tables by ID
         if (document.getElementById('shipmentsTableBody')) {
-            renderTable(allShipments, 'default', 'shipmentsTableBody');
+            const list = allShipments.filter(s => s.status !== 'booked');
+            renderTable(list, 'default', 'shipmentsTableBody');
         }
         if (document.getElementById('pickupRequestsTableBody')) {
-            const pickups = allShipments.filter(s => s.status === 'pending');
+            const pickups = allShipments.filter(s => s.status === 'booked');
             renderTable(pickups, 'pickup', 'pickupRequestsTableBody');
         }
         if (document.getElementById('assignmentsTableBody')) {
@@ -118,6 +121,68 @@
             if (elDelivered) elDelivered.textContent = delToday;
         }
     }
+    
+    async function setupUserController(path, stats) {
+        // 1. Hydrate specific tables by ID for User
+        if (document.getElementById('fullShipmentsBody')) {
+            renderTable(allShipments, 'customer', 'fullShipmentsBody');
+        }
+
+        // 2. Booking Form Handling
+        const bookForm = document.getElementById('bookingForm');
+        if (bookForm) {
+            bookForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = e.submitter || bookForm.querySelector('button[type="submit"]');
+                const originalText = btn ? btn.innerHTML : 'Confirm Booking';
+                
+                if (btn) {
+                    btn.innerHTML = '<span class="loading-spinner"></span> PROCESSING...';
+                    btn.disabled = true;
+                }
+
+                try {
+                    const formData = new FormData(bookForm);
+                    const payload = Object.fromEntries(formData.entries());
+                    
+                    // Simple price calculation logic (e.g., ₹50 per kg)
+                    const weight = parseFloat(payload.weight) || 0;
+                    payload.price = weight * 50;
+
+                    const res = await window.MoveX.createShipment(payload);
+                    if (res.success) {
+                        alert(`Booking Confirmed!\nTracking ID: ${res.tracking_id}`);
+                        window.location.href = 'user-dashboard.html';
+                    } else {
+                        alert(res.message || 'Booking failed.');
+                    }
+                } catch (err) {
+                    console.error('Booking Error:', err);
+                    alert('An error occurred during booking. Please try again.');
+                } finally {
+                    if (btn) {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                }
+            });
+        }
+
+        // 3. Populate KPIs from stats
+        const elTotal = document.getElementById('kpi-user-total');
+        const elActive = document.getElementById('kpi-user-active');
+        const elDelivered = document.getElementById('kpi-user-delivered');
+        
+        if (stats) {
+            if (elTotal) elTotal.textContent = stats.totalShipments || 0;
+            if (elActive) elActive.textContent = stats.activeShipments || 0;
+            if (elDelivered) elDelivered.textContent = stats.deliveredShipments || 0;
+        } else if (allShipments && allShipments.length >= 0) {
+            if (elTotal) elTotal.textContent = allShipments.length;
+            if (elActive) elActive.textContent = allShipments.filter(s => s.status !== 'delivered' && s.status !== 'cancelled').length;
+            if (elDelivered) elDelivered.textContent = allShipments.filter(s => s.status && s.status.toLowerCase() === 'delivered').length;
+        }
+    }
 
     function renderStats(stats, role) {
         const m = {
@@ -159,13 +224,16 @@
             const displayStatus = status.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
             if (mode === 'pickup') {
-                tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td>${s.sender_name}</td><td style="font-size:12px;">${s.sender_address}</td><td style="font-size:12px;color:var(--text-secondary);">${s.receiver_pincode}</td><td>${s.weight}kg</td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td><button class="btn-secondary manage-shipment-btn">Process</button></td>`;
+                tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td>${s.sender_name}<br><span style="font-size:10px;color:var(--text-secondary);">To: ${s.receiver_name}</span></td><td style="font-size:11px;">${s.sender_address}</td><td style="font-size:11px;">${s.receiver_address}</td><td>${s.weight}kg</td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td style="text-align:right;"><button class="btn-secondary manage-shipment-btn">Review Request</button></td>`;
             } else if (mode === 'assignment') {
-                tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td>${s.receiver_name}</td><td style="font-size:12px;color:var(--text-secondary);">${s.receiver_address}</td><td><span class="status-badge status-warn">NOT ASSIGNED</span></td><td><button class="btn-secondary manage-shipment-btn">Assign Staff</button></td>`;
+                const staffDisplay = s.staff_name ? `<span class="status-badge status-active">${s.staff_name.toUpperCase()}</span>` : `<span class="status-badge status-warn">NOT ASSIGNED</span>`;
+                tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td>${s.receiver_name}</td><td style="font-size:12px;color:var(--text-secondary);">${s.receiver_address}</td><td>${staffDisplay}</td><td><button class="btn-secondary manage-shipment-btn">${s.staff_name ? 'Reassign' : 'Assign Staff'}</button></td>`;
             } else if (mode === 'staff_assignment') {
                 tr.innerHTML = `<td><span style="color:var(--text-secondary);font-size:12px;">#${s.tracking_id.slice(-6)}</span></td><td><strong>${s.tracking_id}</strong></td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td>${s.sender_name}</td><td>${s.receiver_name}</td><td>${s.receiver_phone || '-'}</td><td><button class="btn-secondary manage-shipment-btn">Update Task</button></td>`;
             } else if (mode === 'revenue') {
                 tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td>${d}</td><td>${s.receiver_name}</td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td><strong>₹${s.price}</strong></td>`;
+            } else if (mode === 'customer') {
+                tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td>${s.sender_name}</td><td>${s.receiver_name}</td><td>${s.receiver_pincode || '-'}</td><td>${d}</td><td>₹${s.price}</td><td style="text-align:right;"><button class="btn-secondary manage-shipment-btn">Details</button></td>`;
             } else {
                 tr.innerHTML = `<td><strong>${s.tracking_id}</strong></td><td><span class="status-badge ${sC}">${displayStatus}</span></td><td>${s.sender_name}</td><td>${s.sender_pincode || '-'}</td><td>${s.receiver_pincode || '-'}</td><td>${d}</td><td>₹${s.price}</td><td><button class="btn-secondary manage-shipment-btn">Manage</button></td>`;
             }
@@ -258,6 +326,10 @@
             }
         }
 
+        let status = (s.status || 'Pending').replace(/_/g, ' ').toLowerCase();
+        const sC = status.includes('transit')?'status-transit':status.includes('delivery')?'status-out':status.includes('deliv')?'status-active':status.includes('return')?'status-return':status.includes('cancel')?'status-error':'status-warn';
+        const displayStatus = status.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
         modal.innerHTML = `
             <div class="modal-card" style="width:600px;">
                 <h2 class="modal-header-title">${mode==='assignment'?'Task Assignment':'Shipment Control'}: ${s.tracking_id}</h2>
@@ -281,27 +353,62 @@
                     <div><span style="color:var(--text-secondary);font-size:11px;">REGISTERED</span><br><strong>${new Date(s.created_at).toLocaleDateString()}</strong></div>
                 </div>
 
-                <form id="manageForm">
-                    ${staffDropdown}
-                    <div class="modal-section-title">🛠️ Operational Status</div>
-                    <select name="status" class="modal-input" style="cursor:pointer; margin-bottom: 2rem;">
-                        <option value="pending" ${s.status==='pending'?'selected':''}>Pending</option>
-                        <option value="in_transit" ${s.status==='in_transit'?'selected':''}>In Transit</option>
-                        <option value="out_for_delivery" ${s.status==='out_for_delivery'?'selected':''}>Out for Delivery</option>
-                        <option value="delivered" ${s.status==='delivered'?'selected':''}>Delivered</option>
-                        <option value="return" ${s.status==='return'?'selected':''}>Return</option>
-                        <option value="cancelled" ${s.status==='cancelled'?'selected':''}>Cancelled</option>
-                    </select>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn-primary" style="flex:2; padding:1rem;">✅ COMMIT CHANGES</button>
-                        <button type="button" class="btn-secondary" onclick="this.closest('.modal-backdrop').remove()" style="flex:1; padding:1rem;">Dismiss</button>
+                ${mode === 'customer' ? `
+                    <div style="background:#f1f5f9; padding:20px; border-radius:12px; margin-top:10px;">
+                        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; font-weight:700;">Live Journey Status</span>
+                        <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
+                            <div class="status-badge ${sC}" style="margin:0; font-size:1rem; padding:8px 16px;">${displayStatus}</div>
+                        </div>
+                        <p style="margin-top:15px; font-size:13px; color:var(--text-secondary); line-height:1.5;">This shipment is currently being handled by our logistics network. Please contact support if you have any questions regarding your delivery.</p>
+                        <button type="button" class="btn-primary" onclick="this.closest('.modal-backdrop').remove()" style="width:100%; margin-top:20px; padding:15px;">Close View</button>
                     </div>
-                </form>
+                ` : mode === 'pickup' ? `
+                    <div style="margin-top:20px; padding:20px; border:1px solid var(--border-subtle); border-radius:12px; background:#fff;">
+                        <div class="modal-section-title">🛡️ Hub Decision Required</div>
+                        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:20px;">Review the order details above. Accepting this request will move it to your active shipments pipeline.</p>
+                        <div style="display:flex; gap:12px;">
+                            <button id="acceptPickupBtn" class="btn-primary" style="flex:2; background:#10b981; border-color:#10b981;">✅ ACCEPT PICKUP</button>
+                            <button id="rejectPickupBtn" class="btn-secondary" style="flex:1; color:#ef4444; border-color:#fee2e2; background:#fef2f2;">❌ REJECT</button>
+                        </div>
+                    </div>
+                ` : `
+                    <form id="manageForm">
+                        ${staffDropdown}
+                        <div class="modal-section-title">🛠️ Operational Status</div>
+                        <select name="status" class="modal-input" style="cursor:pointer; margin-bottom: 2rem;">
+                            <option value="pending" ${s.status==='pending'?'selected':''}>Pending</option>
+                            <option value="in_transit" ${s.status==='in_transit'?'selected':''}>In Transit</option>
+                            <option value="out_for_delivery" ${s.status==='out_for_delivery'?'selected':''}>Out for Delivery</option>
+                            <option value="delivered" ${s.status==='delivered'?'selected':''}>Delivered</option>
+                            <option value="return" ${s.status==='return'?'selected':''}>Return</option>
+                            <option value="cancelled" ${s.status==='cancelled'?'selected':''}>Cancelled</option>
+                        </select>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn-primary" style="flex:2; padding:1rem;">✅ COMMIT CHANGES</button>
+                            <button type="button" class="btn-secondary" onclick="this.closest('.modal-backdrop').remove()" style="flex:1; padding:1rem;">Dismiss</button>
+                        </div>
+                    </form>
+                `}
             </div>`;
 
         document.body.appendChild(modal);
+
+        if (mode === 'pickup') {
+            document.getElementById('acceptPickupBtn').onclick = async () => {
+                const res = await window.MoveX.updateStatus(s.tracking_id, 'pending');
+                if (res.success) { alert('Request accepted. Moved to Shipments.'); location.reload(); }
+            };
+            document.getElementById('rejectPickupBtn').onclick = async () => {
+                if (confirm('Are you sure you want to reject and delete this pickup request?')) {
+                    const res = await window.MoveX.deleteShipment(s.tracking_id);
+                    if (res.success) { alert('Request rejected and deleted.'); location.reload(); }
+                }
+            };
+        }
         
-        document.getElementById('manageForm').onsubmit = async (e) => {
+        const mForm = document.getElementById('manageForm');
+        if (mForm) {
+            mForm.onsubmit = async (e) => {
             e.preventDefault();
             const status = e.target.status.value;
             const staffId = e.target.staff_id?.value;
@@ -317,6 +424,7 @@
             else alert('Failed to update pipeline.');
         };
     }
+}
 
     function filterShipments() {
         const sId = document.getElementById('shipmentSearchInput')?.value.toLowerCase().trim();

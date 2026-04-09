@@ -42,6 +42,7 @@ class MoveXAPI {
     // OPERATIONS
     static async createShipment(payload) { return this.fetch('/shipments/create', { method: 'POST', body: JSON.stringify(payload) }); }
     static async updateStatus(tracking_id, status) { return this.fetch('/shipments/update-status', { method: 'POST', body: JSON.stringify({ tracking_id, status }) }); }
+    static async deleteShipment(tracking_id) { return this.fetch('/shipments/delete', { method: 'POST', body: JSON.stringify({ tracking_id }) }); }
 
     // MANAGEMENT
     static async getStaff() { return this.fetch('/organization/staff'); }
