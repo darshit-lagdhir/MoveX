@@ -17,8 +17,8 @@
         html, body {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            height: 100%;
+            overflow: auto;
+            min-height: 100%;
         }
         main.container {
             padding: 2rem;
@@ -120,7 +120,7 @@
                                 <p class="welcome-subtitle">Register to get started with MoveX</p>
                             </div>
 
-                            <form class="login-form" id="registerForm" novalidate style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+                            <form class="login-form" id="registerForm" novalidate>
                                 <div class="input-group">
                                     <div class="modern-input">
                                         <input type="text" id="register-name" class="input-field" placeholder="Full Name">
@@ -129,7 +129,7 @@
                                 </div>
                                 <div class="input-group">
                                     <div class="modern-input">
-                                        <input type="tel" id="register-phone" class="input-field" placeholder="10-digit Mobile">
+                                        <input type="tel" id="register-phone" class="input-field" placeholder="10-digit Mobile" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                                         <label for="register-phone" class="floating-label">Phone Number</label>
                                     </div>
                                 </div>
@@ -151,7 +151,7 @@
                                         <label for="register-confirm-password" class="floating-label">Confirm Password</label>
                                     </div>
                                 </div>
-
+ 
                                 <!-- SECURITY QUESTIONS -->
                                 <div style="margin: 15px 0; padding: 10px; background: var(--brand-primary-soft); border-radius: 8px;">
                                     <p style="font-size: 11px; font-weight: 700; color: var(--brand-primary); text-transform: uppercase; margin-bottom: 10px;">Identity Security Questions</p>
@@ -165,12 +165,14 @@
                                         <input type="text" id="register-q3" class="modal-input" placeholder="Favorite City?" style="height: 38px; font-size: 13px;">
                                     </div>
                                 </div>
-
+ 
                                 <button type="submit" class="btn-login magnetic-btn" id="registerBtn">
-                                    <span class="btn-content"><span class="btn-text">Sign Up</span></span>
+                                    <span class="btn-content">
+                                        <span class="btn-text">Register Account</span>
+                                    </span>
                                 </button>
-
-                                <div class="form-footer">
+ 
+                                <div class="form-footer" style="padding-bottom: 1rem;">
                                     <span>Already have an account?</span>
                                     <a href="#" class="footer-link" id="show-login">Back to Login</a>
                                 </div>
