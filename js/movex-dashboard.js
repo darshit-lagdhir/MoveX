@@ -586,7 +586,7 @@
             else res = await window.MoveX.adminCreateUser(data);
 
             if (res.success) { 
-                alert(type==='shipment'?'Shipment Created!':type==='franchise'?'Franchise Created!':'Admin Created!'); 
+                alert(type==='shipment'?'Shipment Created!':type==='franchise'?'Franchise Created!':'Staff Created!'); 
                 location.reload(); 
             }
             else alert(res.message || 'Action failed.');

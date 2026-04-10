@@ -60,13 +60,25 @@ router.post('/auth/login', async (req, res) => {
 router.post('/auth/register', async (req, res) => {
     try {
         const { username, password, full_name, phone, security_answers } = req.body;
+        const normalizedUsername = username.trim().toLowerCase();
+
+        // 1. Check if user already exists (regardless of role)
+        const check = await db.query('SELECT username FROM users WHERE username = $1', [normalizedUsername]);
+        if (check.rows.length > 0) {
+            return res.status(400).json({ success: false, message: 'This username is already taken. Please choose another.' });
+        }
+
+        // 2. Create the user with default 'user' role
         const hash = await bcrypt.hash(password, 10);
         await db.query(
             'INSERT INTO users (username, password_hash, role, status, full_name, phone, security_answers) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-            [username.trim().toLowerCase(), hash, 'user', 'active', full_name, phone, JSON.stringify(security_answers || {})]
+            [normalizedUsername, hash, 'user', 'active', full_name, phone, JSON.stringify(security_answers || {})]
         );
         res.json({ success: true });
-    } catch (err) { res.status(400).json({ success: false, message: 'Registration failed.' }); }
+    } catch (err) { 
+        console.error('Registration error:', err);
+        res.status(400).json({ success: false, message: 'Registration failed. Please try again later.' }); 
+    }
 });
 
 router.post('/auth/forgot-password/check-user', async (req, res) => {
