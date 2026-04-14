@@ -314,3 +314,5 @@ MoveX uses Supabase Storage for parcel photos:
 <div align="center">
   <p><strong>MoveX</strong> - Moving logistics forward</p>
 </div>
+
+
