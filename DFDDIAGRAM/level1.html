@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoveX DFD - Level 1 (All Roles)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --accent: #a21caf;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding-bottom: 50px;
+        }
+
+        .header {
+            background: var(--surface);
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-weight: 800;
+            font-size: 20px;
+            letter-spacing: -0.3px;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+        }
+
+        .diagram-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--surface);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 30px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.02);
+            animation: fadeIn 0.5s ease;
+        }
+
+        svg {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 85vh;
+        }
+
+        .entity {
+            fill: white;
+            stroke: var(--text);
+            stroke-width: 2.5;
+        }
+
+        .process {
+            fill: #fdf4ff;
+            stroke: var(--accent);
+            stroke-width: 2.5;
+        }
+
+        .ds-line {
+            fill: none;
+            stroke: #059669;
+            stroke-width: 2.5;
+        }
+
+        .ds-bar {
+            fill: #059669;
+        }
+
+        .arrow-line {
+            stroke: #64748b;
+            stroke-width: 1.8;
+            fill: none;
+        }
+
+        .text-main {
+            font-weight: 800;
+            font-size: 15px;
+            fill: var(--text);
+            text-anchor: middle;
+        }
+
+        .text-meta {
+            font-weight: 600;
+            font-size: 10px;
+            fill: #64748b;
+            text-anchor: middle;
+            text-transform: uppercase;
+        }
+
+        .text-flow {
+            font-weight: 700;
+            font-size: 9px;
+            fill: #334155;
+            text-anchor: middle;
+            text-transform: uppercase;
+        }
+
+        .text-note {
+            font-weight: 600;
+            font-size: 8px;
+            fill: #94a3b8;
+            text-anchor: middle;
+            font-style: italic;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <h1>MoveX Logistics - Level 1 DFD (All Roles Combined)</h1>
+    </header>
+    <div class="nav-links">
+        <a class="nav-btn" href="level0.html">Level 0</a>
+        <a class="nav-btn active" href="level1.html">Level 1 (All)</a>
+        <a class="nav-btn" href="admin_level1.html">Admin</a>
+        <a class="nav-btn" href="franchisee_level1.html">Franchisee</a>
+        <a class="nav-btn" href="staff_level1.html">Staff</a>
+        <a class="nav-btn" href="user_level1.html">User</a>
+    </div>
+    <div class="diagram-container">
+        <!--
+            COMBINED Level 1 — shows ALL processes from ALL 4 roles in one diagram.
+
+            PROCESSES (consolidated from all 4 role DFDs):
+            1.0  Login               — All 4 roles                → D1: Users
+            2.0  Register            — User only                  → D1: Users
+            3.0  Manage Shipments    — Admin creates, Franchisee creates/updates, User books, Staff updates → D2: Shipments
+            4.0  Manage Users        — Admin adds/disables/resets, Franchisee adds staff → D1: Users
+            5.0  Manage Franchises   — Admin only                 → D3: Organizations
+            6.0  Settings            — All 4 roles update profile → D1: Users
+            7.0  Reset Password      — User only                  → D4: Password Resets
+
+            DATASTORES (only 4 — the actual tables used):
+            D1: Users
+            D2: Shipments
+            D3: Organizations
+            D4: Password Resets (User only)
+        -->
+        <svg viewBox="0 0 1200 1180">
+            <defs>
+                <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                    <path d="M0,0 L6,3 L0,6 Z" fill="#64748b" />
+                </marker>
+            </defs>
+
+            <!-- LEFT: ACTOR BOUNDARY (all roles) -->
+            <rect x="50" y="55" width="180" height="1070" class="entity" />
+            <text x="140" y="550" class="text-main" style="font-size:18px;">ALL</text>
+            <text x="140" y="575" class="text-main" style="font-size:18px;">ACTORS</text>
+            <text x="140" y="598" class="text-meta">Admin / User</text>
+            <text x="140" y="613" class="text-meta">Franchisee / Staff</text>
+
+            <!-- 7 PROCESSES -->
+            <!-- 1.0 Login -->
+            <circle cx="500" cy="120" r="50" class="process" />
+            <text x="500" y="110" class="text-meta">1.0</text>
+            <text x="500" y="125" class="text-main" style="font-size:12px;">Login</text>
+            <text x="500" y="140" class="text-note">All Roles</text>
+
+            <!-- 2.0 Register -->
+            <circle cx="500" cy="280" r="50" class="process" />
+            <text x="500" y="270" class="text-meta">2.0</text>
+            <text x="500" y="285" class="text-main" style="font-size:12px;">Register</text>
+            <text x="500" y="300" class="text-note">User Only</text>
+
+            <!-- 3.0 Manage Shipments -->
+            <circle cx="500" cy="440" r="50" class="process" />
+            <text x="500" y="430" class="text-meta">3.0</text>
+            <text x="500" y="445" class="text-main" style="font-size:12px;">Manage Shipments</text>
+            <text x="500" y="460" class="text-note">Admin / Franchisee / User / Staff</text>
+
+            <!-- 4.0 Manage Users -->
+            <circle cx="500" cy="600" r="50" class="process" />
+            <text x="500" y="590" class="text-meta">4.0</text>
+            <text x="500" y="605" class="text-main" style="font-size:12px;">Manage Users</text>
+            <text x="500" y="620" class="text-note">Admin / Franchisee</text>
+
+            <!-- 5.0 Manage Franchises -->
+            <circle cx="500" cy="760" r="50" class="process" />
+            <text x="500" y="750" class="text-meta">5.0</text>
+            <text x="500" y="765" class="text-main" style="font-size:12px;">Manage Franchises</text>
+            <text x="500" y="780" class="text-note">Admin Only</text>
+
+            <!-- 6.0 Settings -->
+            <circle cx="500" cy="920" r="50" class="process" />
+            <text x="500" y="910" class="text-meta">6.0</text>
+            <text x="500" y="925" class="text-main" style="font-size:12px;">Settings</text>
+            <text x="500" y="940" class="text-note">All Roles</text>
+
+            <!-- 7.0 Reset Password -->
+            <circle cx="500" cy="1060" r="50" class="process" />
+            <text x="500" y="1050" class="text-meta">7.0</text>
+            <text x="500" y="1065" class="text-main" style="font-size:12px;">Reset Password</text>
+            <text x="500" y="1080" class="text-note">User Only</text>
+
+            <!-- DATASTORES — one per row -->
+            <!-- D1: Users for Login -->
+            <path d="M 1100 95 H 900 V 155 H 1100" class="ds-line" />
+            <rect x="915" y="95" width="15" height="60" class="ds-bar" />
+            <text x="1010" y="130" class="text-main" style="font-size:13px;">D1: Users</text>
+
+            <!-- D1: Users for Register -->
+            <path d="M 1100 255 H 900 V 315 H 1100" class="ds-line" />
+            <rect x="915" y="255" width="15" height="60" class="ds-bar" />
+            <text x="1010" y="290" class="text-main" style="font-size:13px;">D1: Users</text>
+
+            <!-- D2: Shipments for Manage Shipments -->
+            <path d="M 1100 415 H 900 V 475 H 1100" class="ds-line" />
+            <rect x="915" y="415" width="15" height="60" class="ds-bar" />
+            <text x="1010" y="450" class="text-main" style="font-size:13px;">D2: Shipments</text>
+
+            <!-- D1: Users for Manage Users -->
+            <path d="M 1100 575 H 900 V 635 H 1100" class="ds-line" />
+            <rect x="915" y="575" width="15" height="60" class="ds-bar" />
+            <text x="1010" y="610" class="text-main" style="font-size:13px;">D1: Users</text>
+
+            <!-- D3: Organizations for Manage Franchises -->
+            <path d="M 1100 735 H 900 V 795 H 1100" class="ds-line" />
+            <rect x="915" y="735" width="15" height="60" class="ds-bar" />
+            <text x="1010" y="770" class="text-main" style="font-size:13px;">D3: Organizations</text>
+
+            <!-- D1: Users for Settings -->
+            <path d="M 1100 895 H 900 V 955 H 1100" class="ds-line" />
+            <rect x="915" y="895" width="15" height="60" class="ds-bar" />
+            <text x="1010" y="930" class="text-main" style="font-size:13px;">D1: Users</text>
+
+            <!-- D4: Password Resets for Reset Password -->
+            <path d="M 1100 1035 H 900 V 1095 H 1100" class="ds-line" />
+            <rect x="915" y="1035" width="15" height="60" class="ds-bar" />
+            <text x="1010" y="1070" class="text-main" style="font-size:13px;">D4: Password Resets</text>
+
+            <!-- ============ FLOWS ============ -->
+
+            <!-- 1.0 Login → D1: Users -->
+            <path d="M 230 110 H 445" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="105" class="text-flow">Username &amp; Password</text>
+            <path d="M 445 130 H 230" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="145" class="text-flow">Dashboard Access</text>
+            <path d="M 555 110 H 900" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="105" class="text-flow">Check Username &amp; Hash</text>
+            <path d="M 900 130 H 555" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="145" class="text-flow">User Role &amp; Status</text>
+
+            <!-- 2.0 Register → D1: Users -->
+            <path d="M 230 270 H 445" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="265" class="text-flow">Name, Username, Password</text>
+            <path d="M 445 290 H 230" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="305" class="text-flow">Account Created</text>
+            <path d="M 555 270 H 900" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="265" class="text-flow">Insert New User</text>
+            <path d="M 900 290 H 555" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="305" class="text-flow">User ID</text>
+
+            <!-- 3.0 Manage Shipments → D2: Shipments -->
+            <path d="M 230 430 H 445" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="425" class="text-flow">Create / Track / Update Status</text>
+            <path d="M 445 450 H 230" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="465" class="text-flow">Tracking ID &amp; Shipment List</text>
+            <path d="M 555 430 H 900" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="425" class="text-flow">Insert / Update Shipment</text>
+            <path d="M 900 450 H 555" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="465" class="text-flow">All Shipment Records</text>
+
+            <!-- 4.0 Manage Users → D1: Users -->
+            <path d="M 230 590 H 445" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="585" class="text-flow">Add / Disable / Reset PW</text>
+            <path d="M 445 610 H 230" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="625" class="text-flow">User &amp; Staff List</text>
+            <path d="M 555 590 H 900" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="585" class="text-flow">Insert / Update User</text>
+            <path d="M 900 610 H 555" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="625" class="text-flow">All Users With Org</text>
+
+            <!-- 5.0 Manage Franchises → D3: Organizations -->
+            <path d="M 230 750 H 445" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="745" class="text-flow">Add / Edit / Delete</text>
+            <path d="M 445 770 H 230" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="785" class="text-flow">Franchise List &amp; Stats</text>
+            <path d="M 555 750 H 900" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="745" class="text-flow">Insert / Update / Delete Org</text>
+            <path d="M 900 770 H 555" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="785" class="text-flow">Org Pincodes &amp; Status</text>
+
+            <!-- 6.0 Settings → D1: Users -->
+            <path d="M 230 910 H 445" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="905" class="text-flow">Update Name / Phone / PW</text>
+            <path d="M 445 930 H 230" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="945" class="text-flow">Profile Info</text>
+            <path d="M 555 910 H 900" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="905" class="text-flow">Update Own Record</text>
+            <path d="M 900 930 H 555" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="945" class="text-flow">Name, Phone, Hash</text>
+
+            <!-- 7.0 Reset Password → D4: Password Resets -->
+            <path d="M 230 1050 H 445" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="1045" class="text-flow">Security Answers</text>
+            <path d="M 445 1070 H 230" class="arrow-line" marker-end="url(#arr)" />
+            <text x="338" y="1085" class="text-flow">Password Changed</text>
+            <path d="M 555 1050 H 900" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="1045" class="text-flow">Save Reset Token Hash</text>
+            <path d="M 900 1070 H 555" class="arrow-line" marker-end="url(#arr)" />
+            <text x="728" y="1085" class="text-flow">Token Hash Valid / Used</text>
+        </svg>
+    </div>
+</body>
+
+</html>

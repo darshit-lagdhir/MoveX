@@ -1,0 +1,14 @@
+# MoveX System Test Cases
+
+| Test ID &nbsp;&nbsp;&nbsp; | Test Scenario Name &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Test Data &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Expected Result &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Actual Result &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Test Status &nbsp;&nbsp;&nbsp;&nbsp; |
+|:---|:---|:---|:---|:---|:---|
+| T1 | User Authentication | Username: Valid<br>Password: Valid | Dashboard session started;<br>Homepage displayed | User logged in;<br>Homepage displayed | Pass |
+| T2 | Account Registration | Valid user phone number;<br>Password length >= 8;<br>Unique Username filled | Successful registration | Registration successful | Pass |
+| T3 | Shipment Generation | Valid destination address;<br>Calculated weight attached | DB record created;<br>Tracking ID generated | DB record created;<br>Tracking ID generated | Pass |
+| T4 | Hub Serviceability | Checked valid Franchisee Pincode | Displays Regional Hub Details | Displays Regional Hub Details | Pass |
+| T5 | Staff Task Routing | Staff ID assigned to tracking ID | DB updated to in_transit;<br>Staff assignment logged | DB updated to in_transit;<br>Staff assignment logged | Pass |
+| T6 | Fleet Status Update | Tracking ID status updated<br>to "Delivered" state | Status updated in DB;<br>Total Revenue incremented | Status updated in DB;<br>Total Revenue incremented | Pass |
+| T7 | Admin User Control | Execute delete command on<br>suspicious user account | Record deleted from DB;<br>Access revoked | Record deleted from DB;<br>Access revoked | Pass |
+| T8 | Franchise Deployment | Admin registers new Franchise<br>with servicing Pincodes | Organization record created;<br>Franchisee account generated| Organization record created;<br>Franchisee account generated| Pass |
+| T9 | Financial Metrics | Admin queries total<br>delivered shipment revenue | Sum of all delivered prices<br>returned dynamically | Sum of all delivered prices<br>returned dynamically | Pass |
+| T10 | Profile Management | User updates phone number<br>in Settings panel | Phone number overwritten;<br>Profile UI refreshed | Phone number overwritten;<br>Profile UI refreshed | Pass |

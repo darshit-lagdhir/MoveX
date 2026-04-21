@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoveX Architect | Technical Blueprint Suite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-soft: #eff6ff;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #ffffff;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(#cbd5e1 0.7px, transparent 0.7px);
+            background-size: 30px 30px;
+        }
+
+        .system-nav {
+            background: #ffffff;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            padding: 0 40px;
+            height: 70px;
+            align-items: center;
+            justify-content: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .brand {
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: var(--primary);
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+
+        .hero {
+            padding: 80px 40px 40px;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            margin-bottom: 20px;
+            color: #0f172a;
+            line-height: 0.95;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .level-card {
+            background: #ffffff;
+            border: 3px solid var(--border);
+            padding: 40px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .level-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 20px 50px rgba(30, 64, 175, 0.08);
+            transform: translateY(-8px);
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 15px;
+            background: var(--primary-soft);
+            padding: 6px 14px;
+            width: fit-content;
+        }
+
+        .level-card h3 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: #0f172a;
+        }
+
+        .level-card p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .view-link {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .view-link svg {
+            transition: transform 0.3s;
+        }
+
+        .level-card:hover .view-link svg {
+            transform: translateX(6px);
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 60px 40px;
+            text-align: center;
+            border-top: 2px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            background: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="system-nav">
+        <div class="brand">MoveX Logistic Architect</div>
+    </nav>
+
+    <main>
+        <div class="hero">
+            <h1>Engine Blueprints</h1>
+            <p>Formal functional decomposition of the MoveX platform. Standardized DFD mapping for process orchestration
+                and data persistence.</p>
+        </div>
+
+        <div class="grid-container">
+            <!-- Level 0 -->
+            <a href="level0.html" class="level-card">
+                <div class="tag">Blueprint L0</div>
+                <h3>Context Boundary</h3>
+                <p>System-wide view of all external actors and their primary interactions with the central backend
+                    engine.</p>
+                <div class="view-link">
+                    Open Specification
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </div>
+            </a>
+
+            <!-- Level 1 -->
+            <a href="level1.html" class="level-card">
+                <div class="tag">Blueprint L1</div>
+                <h3>Functional Mapping</h3>
+                <p>Full decomposition of core services: Authentication, Booking Lifecycles, Price Engines, and Dispatch
+                    Logic.</p>
+                <div class="view-link">
+                    Open Specification
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </div>
+            </a>
+
+        </div>
+    </main>
+
+    <footer>
+        MoveX Engineering Unit | Blueprint Standard v4.0 | Generated 2026
+    </footer>
+
+</body>
+
+</html>

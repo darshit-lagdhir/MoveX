@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoveX - ER Diagram</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #fff;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #wrapper {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .canvas {
+            position: absolute;
+            width: 2400px;
+            height: 1400px;
+            transform-origin: top left;
+        }
+
+        svg#lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* ENTITY BOX */
+        .E {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            padding: 8px 18px;
+            border: 3px solid #1565C0;
+            background: #BBDEFB;
+            font-size: 22px;
+            font-weight: 900;
+            color: #0D47A1;
+            text-transform: uppercase;
+            z-index: 50;
+            border-radius: 5px;
+            white-space: nowrap;
+        }
+
+        .E.WK {
+            border: 5px double #AD1457;
+            background: #F8BBD9;
+            color: #880E4F;
+        }
+
+        /* ATTRIBUTE PILL */
+        .A {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            padding: 4px 10px;
+            border: 2px solid #EF6C00;
+            background: #FFF8E1;
+            border-radius: 30px;
+            font-size: 21px;
+            font-weight: 700;
+            color: #E65100;
+            z-index: 40;
+            white-space: nowrap;
+        }
+
+        .A.PK {
+            border: 2.5px solid #FF8F00;
+            background: #FFECB3;
+            font-weight: 900;
+        }
+
+        .A.PK span {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .A.FK {
+            border: 2.5px solid #43A047;
+            background: #E8F5E9;
+            color: #2E7D32;
+            font-weight: 800;
+        }
+
+        .A.FK span {
+            text-decoration: underline dashed;
+            text-underline-offset: 3px;
+        }
+
+        /* RELATIONSHIP DIAMOND */
+        .R {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            transform: translate(-50%, -50%);
+            z-index: 45;
+        }
+
+        .R-box {
+            width: 100%;
+            height: 100%;
+            transform: rotate(45deg);
+            background: #C8E6C9;
+            border: 3px solid #2E7D32;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .R.ID .R-box {
+            background: #F8BBD9;
+            border: 5px double #AD1457;
+        }
+
+        .R-text {
+            transform: rotate(-45deg);
+            font-size: 18px;
+            font-weight: 950;
+            color: #1B5E20;
+            text-transform: uppercase;
+        }
+
+        .R.ID .R-text {
+            color: #880E4F;
+        }
+
+        /* CARDINALITY LABEL */
+        .C {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            font-size: 22px;
+            font-weight: 950;
+            color: #C62828;
+            z-index: 60;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="wrapper">
+        <div class="canvas" id="canvas">
+            <svg id="lines" viewBox="0 0 2400 1400"></svg>
+            <div id="nodes"></div>
+        </div>
+    </div>
+    <script>
+        // ============================================================
+        // MASTER COORDINATE MAP — every node has a unique [x, y]
+        // Canvas: 2400 x 1400. Entities form an inverted triangle
+        // with PASSWORD_RESETS isolated far-right.
+        // ============================================================
+
+        const W = 2400, H = 1400;
+
+        // ---------- ENTITY CENTERS ----------
+        const ORG = [420, 320];
+        const USR = [1680, 320];
+        const SHP = [1050, 1100];
+        const PWR = [2150, 880];
+
+        // ---------- RELATIONSHIP CENTERS ----------
+        const BEL = [1050, 320];   // between ORG & USR (horizontal)
+        const HAN = [700, 710];    // between ORG & SHP (diagonal left)
+        const CRE = [1400, 710];   // between USR & SHP (diagonal right)
+        const REQ = [1920, 600];   // between USR & PWR (diagonal right)
+
+        // ============================================================
+        // ATTRIBUTES — manually placed with 100+ px clearance
+        // ============================================================
+
+        const data = [
+            // ---- ORGANIZATIONS attributes (fan top-left & bottom-left) ----
+            { parent: ORG, t: 'organization_id', type: 'PK', pos: [140, 100] },
+            { parent: ORG, t: 'name', type: '', pos: [380, 80] },
+            { parent: ORG, t: 'type', type: '', pos: [620, 80] },
+            { parent: ORG, t: 'status', type: '', pos: [80, 280] },
+            { parent: ORG, t: 'pincodes', type: '', pos: [750, 180] },
+            { parent: ORG, t: 'full_address', type: '', pos: [100, 480] },
+            { parent: ORG, t: 'created_at', type: '', pos: [120, 600] },
+            { parent: ORG, t: 'updated_at', type: '', pos: [350, 580] },
+
+
+            // ---- USERS attributes (fan top & far-right column) ----
+            { parent: USR, t: 'username', type: 'PK', pos: [1460, 80] },
+            { parent: USR, t: 'user_id', type: '', pos: [1680, 80] },
+            { parent: USR, t: 'full_name', type: '', pos: [1880, 80] },
+            { parent: USR, t: 'organization_id', type: 'FK', pos: [1400, 160] },
+            { parent: USR, t: 'last_login_at', type: '', pos: [1240, 220] },
+            { parent: USR, t: 'phone', type: '', pos: [2000, 140] },
+            { parent: USR, t: 'password_hash', type: '', pos: [2100, 240] },
+            { parent: USR, t: 'role', type: '', pos: [2150, 340] },
+            { parent: USR, t: 'updated_at', type: '', pos: [1920, 480] },
+            { parent: USR, t: 'created_at', type: '', pos: [1680, 560] },
+            { parent: USR, t: 'status', type: '', pos: [2150, 420] },
+            { parent: USR, t: 'security_answers', type: '', pos: [2280, 530] },
+
+            // ---- SHIPMENTS attributes (wide arc across the bottom) ----
+            { parent: SHP, t: 'shipment_id', type: '', pos: [500, 870] },
+            { parent: SHP, t: 'tracking_id', type: 'PK', pos: [680, 850] },
+            { parent: SHP, t: 'organization_id', type: 'FK', pos: [850, 680] },
+            { parent: SHP, t: 'creator_username', type: 'FK', pos: [1200, 680] },
+            { parent: SHP, t: 'origin_address', type: '', pos: [250, 970] },
+            { parent: SHP, t: 'weight', type: '', pos: [140, 1100] },
+            { parent: SHP, t: 'price', type: '', pos: [180, 1240] },
+            { parent: SHP, t: 'status', type: '', pos: [360, 1320] },
+            { parent: SHP, t: 'destination_address', type: '', pos: [580, 1350] },
+            { parent: SHP, t: 'created_at', type: '', pos: [800, 1350] },
+            { parent: SHP, t: 'updated_at', type: '', pos: [1180, 1350] },
+            { parent: SHP, t: 'current_location', type: '', pos: [1350, 1350] },
+            { parent: SHP, t: 'receiver_address', type: '', pos: [1600, 1250] },
+            { parent: SHP, t: 'receiver_phone', type: '', pos: [1720, 1150] },
+            { parent: SHP, t: 'receiver_name', type: '', pos: [1680, 1050] },
+            { parent: SHP, t: 'sender_pincode', type: '', pos: [1750, 950] },
+            { parent: SHP, t: 'sender_address', type: '', pos: [1650, 860] },
+            { parent: SHP, t: 'sender_phone', type: '', pos: [1600, 800] },
+            { parent: SHP, t: 'sender_name', type: '', pos: [1580, 700] },
+            { parent: SHP, t: 'receiver_pincode', type: 'FK', pos: [1000, 1350] },
+            { parent: SHP, t: 'assigned_staff_id', type: 'FK', pos: [1550, 1350] },
+
+            // ---- PASSWORD_RESETS attributes (isolated cluster far-right) ----
+            { parent: PWR, t: 'reset_id', type: 'PK', pos: [1840, 850] },
+            { parent: PWR, t: 'token_hash', type: '', pos: [2250, 780] },
+            { parent: PWR, t: 'expires_at', type: '', pos: [2350, 850] },
+            { parent: PWR, t: 'used', type: '', pos: [2380, 950] },
+            { parent: PWR, t: 'created_at', type: '', pos: [2350, 1050] },
+            { parent: PWR, t: 'username', type: 'FK', pos: [2050, 1120] },
+        ];
+
+        // ============================================================
+        // RELATIONSHIPS & CARDINALITIES
+        // ============================================================
+        const rels = [
+            { from: ORG, to: BEL, color: '#1565C0' },
+            { from: BEL, to: USR, color: '#1565C0' },
+            { from: ORG, to: HAN, color: '#2E7D32' },
+            { from: HAN, to: SHP, color: '#2E7D32' },
+            { from: USR, to: CRE, color: '#2E7D32' },
+            { from: CRE, to: SHP, color: '#2E7D32' },
+            { from: USR, to: REQ, color: '#AD1457' },
+            { from: REQ, to: PWR, color: '#AD1457' },
+        ];
+
+        const cards = [
+            { label: '1', pos: [560, 290] }, { label: 'N', pos: [1480, 290] },
+            { label: '1', pos: [540, 420] }, { label: 'N', pos: [800, 850] },
+            { label: '1', pos: [1560, 420] }, { label: 'N', pos: [1300, 850] },
+            { label: '1', pos: [1790, 420] }, { label: 'N', pos: [2050, 720] },
+        ];
+
+        const entityDefs = [
+            { id: 'ORG', label: 'ORGANIZATIONS', pos: ORG, wk: false },
+            { id: 'USR', label: 'USERS', pos: USR, wk: false },
+            { id: 'SHP', label: 'SHIPMENTS', pos: SHP, wk: false },
+            { id: 'PWR', label: 'PASSWORD_RESETS', pos: PWR, wk: true },
+        ];
+
+        const relDefs = [
+            { label: 'BELONGS', pos: BEL, id: false },
+            { label: 'HANDLES', pos: HAN, id: false },
+            { label: 'CREATES', pos: CRE, id: false },
+            { label: 'REQUESTS', pos: REQ, id: true },
+        ];
+
+        // ============================================================
+        // RENDER
+        // ============================================================
+        function render() {
+            const svg = document.getElementById('lines');
+            const nodes = document.getElementById('nodes');
+            svg.innerHTML = '';
+            nodes.innerHTML = '';
+
+            function line(a, b, color, w) {
+                const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                l.setAttribute('x1', a[0]); l.setAttribute('y1', a[1]);
+                l.setAttribute('x2', b[0]); l.setAttribute('y2', b[1]);
+                l.setAttribute('stroke', color); l.setAttribute('stroke-width', w);
+                svg.appendChild(l);
+            }
+
+            // Draw attribute lines first (behind everything)
+            data.forEach(d => line(d.parent, d.pos, '#475569', 4.0));
+
+            // Draw relationship lines
+            rels.forEach(r => line(r.from, r.to, r.color, 5));
+
+            // Draw entities
+            entityDefs.forEach(e => {
+                const el = document.createElement('div');
+                el.className = 'E' + (e.wk ? ' WK' : '');
+                el.style.left = e.pos[0] + 'px'; el.style.top = e.pos[1] + 'px';
+                el.textContent = e.label;
+                nodes.appendChild(el);
+            });
+
+            // Draw relationship diamonds
+            relDefs.forEach(r => {
+                const el = document.createElement('div');
+                el.className = 'R' + (r.id ? ' ID' : '');
+                el.style.left = r.pos[0] + 'px'; el.style.top = r.pos[1] + 'px';
+                el.innerHTML = `<div class="R-box"><span class="R-text">${r.label}</span></div>`;
+                nodes.appendChild(el);
+            });
+
+            // Draw attributes
+            data.forEach(d => {
+                const el = document.createElement('div');
+                el.className = 'A' + (d.type ? ' ' + d.type : '');
+                el.style.left = d.pos[0] + 'px'; el.style.top = d.pos[1] + 'px';
+                el.innerHTML = d.type ? `<span>${d.t}</span>` : d.t;
+                nodes.appendChild(el);
+            });
+
+            // Draw cardinality labels
+            cards.forEach(c => {
+                const el = document.createElement('div');
+                el.className = 'C';
+                el.style.left = c.pos[0] + 'px'; el.style.top = c.pos[1] + 'px';
+                el.textContent = c.label;
+                nodes.appendChild(el);
+            });
+        }
+
+        function fit() {
+            const wrap = document.getElementById('wrapper');
+            const canv = document.getElementById('canvas');
+            const r = Math.min(wrap.clientWidth / W, wrap.clientHeight / H);
+            canv.style.transform = `scale(${r})`;
+            canv.style.left = `${(wrap.clientWidth - W * r) / 2}px`;
+            canv.style.top = `${(wrap.clientHeight - H * r) / 2}px`;
+        }
+
+        window.onload = () => { fit(); render(); };
+        window.onresize = fit;
+    </script>
+</body>
+
+</html>
