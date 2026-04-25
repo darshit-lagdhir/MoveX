@@ -12,4 +12,3 @@
 | T8 | Franchise Deployment | Admin registers new Franchise<br>with servicing Pincodes | Organization record created;<br>Franchisee account generated| Organization record created;<br>Franchisee account generated| Pass |
 | T9 | Financial Metrics | Admin queries total<br>delivered shipment revenue | Sum of all delivered prices<br>returned dynamically | Sum of all delivered prices<br>returned dynamically | Pass |
 | T10 | Profile Management | User updates phone number<br>in Settings panel | Phone number overwritten;<br>Profile UI refreshed | Phone number overwritten;<br>Profile UI refreshed | Pass |
-

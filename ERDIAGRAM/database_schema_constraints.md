@@ -74,5 +74,3 @@
 | used                                         | boolean                                             | DEFAULT false                                |
 | created_at                                   | timestamp with time zone                            | DEFAULT now()                                |
 | username                                     | character varying(255)                              | FOREIGN KEY                                  |
-
-
